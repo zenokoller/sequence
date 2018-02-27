@@ -3,13 +3,9 @@ from unittest import TestCase
 import pandas as pd
 
 from experiments.rtt.rtts_from_timestamps import rtts_from_flow
+from experiments.test.utils import load_dataframe
 
 STORE_PATH = 'resources/test_flow.hdf5'
-
-
-def load_dataframe(path: str, key: str) -> pd.DataFrame:
-    with pd.HDFStore(path) as store:
-        return store[key]
 
 
 class TestRTTsFromTimestamp(TestCase):
