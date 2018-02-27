@@ -1,8 +1,9 @@
-from collections import namedtuple
+import logging
 from typing import NamedTuple, Tuple, List
 
 import pandas as pd
 
+from experiments.utils.tcp_flags import is_fin_set
 from .rtt import RTT
 
 
@@ -32,6 +33,8 @@ def signals_from_flow(packets_df: pd.DataFrame) -> Tuple[List[DataPoint], List[D
             client.spin_bit = not server.spin_bit
 
     for packet in packets_df.itertuples():
+        if is_fin_set(packet.flags):
+            break
         if packet.ip_direction_asc:
             update_up_signal()
         else:
@@ -40,19 +43,21 @@ def signals_from_flow(packets_df: pd.DataFrame) -> Tuple[List[DataPoint], List[D
 
 
 def rtts_from_signal(flow_hash: str, signal: List[DataPoint]) -> pd.DataFrame:
-    assert len(signal) > 0
     rtts: List[RTT] = []
-    last_edge = signal[0]
-    for datapoint in signal:
-        if datapoint.spin_bit != last_edge.spin_bit:
-            rtts.append(RTT(flow_hash=flow_hash,
-                            timestamp=datapoint.timestamp,
-                            rtt=datapoint.timestamp - last_edge.timestamp))
-            last_edge = datapoint
+    if len(signal) == 0:
+        logging.info(f'Empty signal: {flow_hash}')
+    else:
+        last_edge = signal[0]
+        for datapoint in signal:
+            if datapoint.spin_bit != last_edge.spin_bit:
+                rtts.append(RTT(flow_hash=flow_hash,
+                                timestamp=datapoint.timestamp,
+                                rtt=datapoint.timestamp - last_edge.timestamp))
+                last_edge = datapoint
     return pd.DataFrame(rtts, columns=RTT._fields)
 
 
-def rtts_from_flow(flow: Tuple[str, pd.DataFrame]) -> pd.DataFrame:
+def rtts_from_square_wave(flow: Tuple[str, pd.DataFrame]) -> pd.DataFrame:
     flow_hash, packets_df = flow
     signals = signals_from_flow(packets_df)
     return pd.concat(rtts_from_signal(flow_hash, signal) for signal in signals)

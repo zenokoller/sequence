@@ -2,14 +2,14 @@ from unittest import TestCase
 
 import pandas as pd
 
-from experiments.rtt.rtts_from_square_wave import signals_from_flow, rtts_from_signal
+from experiments.rtt.square_wave import signals_from_flow, rtts_from_signal
 from experiments.test.utils import load_dataframe
 
 STORE_PATH = 'resources/test_flow.hdf5'
 
 EXPECTED_SIGNAL_BITS = tuple([bool(val) for val in signal] for signal in (
-    [1, 0, 1, 0, 1],
-    [0, 1, 0, 1, 1, 0, 0, 1]
+    [1, 0, 1, 0],
+    [0, 1, 0, 1, 1, 0]
 ))
 
 EXPECTED_RTT = pd.Timestamp('2008-03-28 23:22:20.670131') - pd.Timestamp(

@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import pandas as pd
 
-from experiments.rtt.rtts_from_timestamps import rtts_from_flow
+from experiments.rtt.timestamps import rtts_from_timestamps
 from experiments.test.utils import load_dataframe
 
 STORE_PATH = 'resources/test_flow.hdf5'
@@ -12,7 +12,7 @@ class TestRTTsFromTimestamp(TestCase):
     def setUp(self):
         flow_df = load_dataframe(STORE_PATH, 'test_flow')
         flow_df.set_index('timestamp')
-        self.rtt_df = rtts_from_flow(('test_flow', flow_df))
+        self.rtt_df = rtts_from_timestamps(('test_flow', flow_df))
 
     def test_result_correctness(self):
         actual_rtt = self.rtt_df.iloc[0].rtt

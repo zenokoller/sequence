@@ -5,7 +5,7 @@ import pandas as pd
 from .rtt import RTT
 
 
-def rtts_from_flow(flow: Tuple[str, pd.DataFrame]) -> pd.DataFrame:
+def rtts_from_timestamps(flow: Tuple[str, pd.DataFrame]) -> pd.DataFrame:
     flow_hash, packets_df = flow
 
     rtts: List[RTT] = []
