@@ -13,7 +13,7 @@ class DataPoint(NamedTuple):
 
 
 def signals_from_flow(packets_df: pd.DataFrame) -> Tuple[List[DataPoint], List[DataPoint]]:
-    class Host():
+    class Host:
         highest_ts_val: int = 0
         spin_bit: bool = False
 
