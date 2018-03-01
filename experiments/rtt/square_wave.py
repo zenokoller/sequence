@@ -35,7 +35,7 @@ def signals_from_flow(packets_df: pd.DataFrame) -> Tuple[List[DataPoint], List[D
     for packet in packets_df.itertuples():
         if is_fin_set(packet.flags):
             break
-        if packet.ip_direction_asc:
+        if packet.direction:
             update_up_signal()
         else:
             update_down_signal()
