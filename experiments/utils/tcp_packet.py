@@ -47,3 +47,10 @@ def read_tcp_packet(packet: libtrace.packet) -> TCPPacket:
                      ts_val=timestamps[0],
                      ts_ecr=timestamps[1],
                      payload_length=len(tcp.payload.data) if tcp.payload is not None else 0)
+
+
+def try_read_tcp_packet(packet: libtrace.packet) -> Optional[TCPPacket]:
+    try:
+        return read_tcp_packet(packet)
+    except ValueError as e:
+        return None
