@@ -3,7 +3,7 @@ from unittest import TestCase
 import pandas as pd
 
 from experiments.rtt.square_wave import signals_from_flow, rtts_from_signal
-from experiments.test.utils import load_dataframe
+from experiments.test.rtt.utils import load_dataframe
 
 STORE_PATH = 'resources/test_flow.hdf5'
 

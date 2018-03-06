@@ -3,7 +3,7 @@ from unittest import TestCase
 import pandas as pd
 
 from experiments.rtt.timestamps import rtts_from_timestamps
-from experiments.test.utils import load_dataframe
+from experiments.test.rtt.utils import load_dataframe
 
 STORE_PATH = 'resources/test_flow.hdf5'
 
