@@ -3,9 +3,9 @@ from unittest import TestCase
 
 import itertools
 
-from experiments.test.arrival.utils import consume_all
+from utils import consume_all
 from simulator import simulator
-from simulator.duplication import duplication, ar1_duplication
+from simulator.duplication import ar1_duplication
 
 no_dupes = partial(ar1_duplication, prob=0, corr=0)
 all_dupes = partial(ar1_duplication, prob=1, corr=0)

@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from generator import Sequence
 from simulator import simulator
-from .utils import consume_all
+from utils import consume_all
 
 test_sequence = [1, 2, 3, 4, 5]
 
