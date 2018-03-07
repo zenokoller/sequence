@@ -1,5 +1,5 @@
 from experiments.arrival.generator import Sequence
-from simulator.random_process import ar1
+from simulator.random_process.ar1 import ar1
 from simulator.random_process.random_process import RandomProcess
 
 
