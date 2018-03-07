@@ -1,19 +1,19 @@
 from experiments.arrival.generator import Sequence
-from simulator.utils import memory_one_coin_toss
+from simulator.random_process import RandomProcess, ar1
 
 
-def loss(sequence: Sequence,
-         prob: int = 0,
-         corr: int = 0,
-         seed: int = None) -> Sequence:
-    """Drops `sequence` items with probability `prob`, correlated with the last loss by `corr`."""
+def loss(process: RandomProcess, sequence: Sequence) -> Sequence:
+    """Drops items from the `sequence` when the value drawn from `process` is true."""
     it = iter(sequence)
-    toss = memory_one_coin_toss(prob=prob, corr=corr, seed=seed)
     while True:
         try:
-            if next(toss):
+            if next(process):
                 next(it)
             else:
                 yield next(it)
         except StopIteration:
             return
+
+
+def ar1_loss(sequence: Sequence, prob=0.0, corr=0.0, seed: int = None) -> Sequence:
+    return loss(ar1(prob=prob, corr=corr, seed=seed), sequence)

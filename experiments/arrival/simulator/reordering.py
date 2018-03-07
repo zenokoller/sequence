@@ -1,7 +1,7 @@
 from typing import Deque
 
 from experiments.arrival.generator import Sequence
-from simulator.utils import memory_one_coin_toss
+from simulator.random_process import RandomProcess, ar1
 
 
 class Waiting:
@@ -12,14 +12,10 @@ class Waiting:
         self.remaining = remaining
 
 
-def fixed_delay(sequence: Sequence,
-                delay: int = 1,
-                prob: int = 0,
-                corr: int = 0,
-                seed: int = None) -> Sequence:
-    """Delays `prob` of packets by `delay`, correlated with the last delay by `corr`."""
+def fixed_delay(process: RandomProcess, sequence: Sequence, delay: int = 1) -> Sequence:
+    """Delays items from the `sequence` by `delay` items when the value drawn from `process` is
+    true."""
     it = iter(sequence)
-    toss = memory_one_coin_toss(prob=prob, corr=corr, seed=seed)
     queue: Deque[Waiting] = Deque()
     while True:
         if queue and queue[0].remaining == 0:
@@ -28,9 +24,17 @@ def fixed_delay(sequence: Sequence,
             waiting.remaining -= 1
         try:
             item = next(it)
-            if next(toss):
+            if next(process):
                 queue.append(Waiting(item=item, remaining=delay))
             else:
                 yield item
         except StopIteration:
             return
+
+
+def ar1_fixed_delay(sequence: Sequence,
+                    delay: int = 1,
+                    prob: float = 0.0,
+                    corr: float = 0.0,
+                    seed: int = None) -> Sequence:
+    return fixed_delay(ar1(prob=prob, corr=corr, seed=seed), sequence, delay=delay)
