@@ -1,7 +1,8 @@
 from typing import Deque
 
 from experiments.arrival.generator import Sequence
-from simulator.random_process import RandomProcess, ar1
+from simulator.random_process.ar1 import ar1
+from simulator.random_process.random_process import RandomProcess
 
 
 class Waiting:
