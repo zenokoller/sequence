@@ -1,4 +1,3 @@
-from collections import namedtuple
 from typing import List
 
 FLAGS = {1: 'FIN', 2: 'SYN', 4: 'RST', 8: 'PSH', 16: 'ACK', 32: 'URG'}
@@ -9,4 +8,4 @@ def read_tcp_flags(flags: int) -> List[str]:
 
 
 def is_fin_set(flags: int) -> bool:
-    return flags & 1
+    return bool(flags & 1)

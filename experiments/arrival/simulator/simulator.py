@@ -1,12 +1,12 @@
 from functools import reduce
-from typing import List, Callable
+from typing import List, Callable, Iterable
 
-from experiments.arrival.generator import Sequence
+Policy = Callable[[Iterable], Iterable]
+"""A function that takes an iterable, applies a policy (loss, reordering or duplication) and 
+returns the result as an iterable."""
 
-Policy = Callable[[Sequence], Sequence]
 
-
-def simulator(sequence: Sequence, policies: List[Policy]) -> Sequence:
+def simulator(sequence: Iterable, policies: List[Policy]) -> Iterable:
     """Applies the given `policies` to `input_` and returns the resulting sequence."""
     chain = reduce(lambda p, q: q(p), policies[1:], policies[0](sequence)) if len(policies) > 0 \
         else iter(sequence)

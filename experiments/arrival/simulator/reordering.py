@@ -1,6 +1,5 @@
-from typing import Deque
+from typing import Deque, Iterable
 
-from experiments.arrival.generator import Sequence
 from simulator.random_process.ar1 import ar1
 from simulator.random_process.random_process import RandomProcess
 
@@ -13,7 +12,7 @@ class Waiting:
         self.remaining = remaining
 
 
-def fixed_delay(process: RandomProcess, sequence: Sequence, delay: int = 1) -> Sequence:
+def fixed_delay(process: RandomProcess, sequence: Iterable, delay: int = 1) -> Iterable:
     """Delays items from the `sequence` by `delay` items when the value drawn from `process` is
     true."""
     it = iter(sequence)
@@ -33,9 +32,9 @@ def fixed_delay(process: RandomProcess, sequence: Sequence, delay: int = 1) -> S
             return
 
 
-def ar1_fixed_delay(sequence: Sequence,
+def ar1_fixed_delay(sequence: Iterable,
                     delay: int = 1,
                     prob: float = 0.0,
                     corr: float = 0.0,
-                    seed: int = None) -> Sequence:
+                    seed: int = None) -> Iterable:
     return fixed_delay(ar1(prob=prob, corr=corr, seed=seed), sequence, delay=delay)

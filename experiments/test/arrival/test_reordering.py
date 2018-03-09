@@ -3,7 +3,7 @@ from unittest import TestCase
 
 from simulator import simulator
 from simulator.reordering import ar1_fixed_delay
-from utils import consume_all
+from utils.consume import consume_all
 
 ar1_uncorrelated_fixed = partial(ar1_fixed_delay, delay=2, prob=0.2, seed=38)
 

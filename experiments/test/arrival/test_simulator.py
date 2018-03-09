@@ -1,8 +1,8 @@
+from typing import Iterable
 from unittest import TestCase
 
-from generator import Sequence
 from simulator import simulator
-from utils import consume_all
+from utils.consume import consume_all
 
 test_sequence = [1, 2, 3, 4, 5]
 
@@ -14,8 +14,8 @@ class TestSimulator(TestCase):
         self.assertEqual(expected, actual, 'Returned sequence should not have been altered.')
 
     def test_lose_every_second(self):
-        def lose_every_second(input_: Sequence) -> Sequence:
-            it = iter(input_)
+        def lose_every_second(sequence: Iterable) -> Iterable:
+            it = iter(sequence)
             lose_item = False
             while True:
                 try:
