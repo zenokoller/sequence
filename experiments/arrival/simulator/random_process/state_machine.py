@@ -28,17 +28,17 @@ def gilbert_elliot(prob_goodbad=0.0,
     - In the bad state, a packet can still be transmitted with `prob_transmit_bad`.
     """
     r = Random(seed)
-    prob_transmit_good = 1 - prob_loss_good
+    prob_loss_bad = 1 - prob_transmit_bad
 
     def good() -> Tuple[bool, int]:
         transition = r.random() < prob_goodbad
-        return (r.random() < prob_transmit_bad, 1) if transition \
-            else (r.random() < prob_transmit_good, 0)
+        return (r.random() < prob_loss_bad, 1) if transition \
+            else (r.random() < prob_loss_good, 0)
 
     def bad() -> Tuple[bool, int]:
         transition = r.random() < prob_badgood
-        return (r.random() < prob_transmit_good, 0) if transition \
-            else (r.random() < prob_transmit_bad, 1)
+        return (r.random() < prob_loss_good, 0) if transition \
+            else (r.random() < prob_loss_bad, 1)
 
     return state_machine([good, bad])
 
