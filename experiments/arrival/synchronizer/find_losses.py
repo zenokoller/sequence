@@ -1,11 +1,11 @@
 from difflib import SequenceMatcher
-from typing import List, Tuple, Dict, Iterable
+from typing import List, Tuple, Dict, Iterable, Optional
 
 Range = Tuple[int, int]
 
 
 def find_losses(orig: List[int], recv: List[int]) -> List[int]:
-    """Finds the loss indices, where an element in the original array was lost.
+    """Tries to finds the indices, where an element in the original array was lost.
     Returns an array of indices of the lost elements from orig. Assumes that there are _only_
     losses and no duplicates or reorderings."""
     losses = _get_loss_mask(orig, recv)
@@ -19,17 +19,24 @@ def _get_loss_mask(orig: List[int], recv: List[int]) -> List[bool]:
         i, j = range_
         losses[i:j] = [False] * (j - i)
 
-    def longest_subranges(orig_full: Range, recv_full: Range) -> Tuple[Range, Range]:
+    def longest_subranges(orig_full: Range, recv_full: Range) -> Optional[Tuple[Range, Range]]:
         of1, of2 = orig_full
         rf1, rf2 = recv_full
         seq1, seq2 = orig[of1:of2], recv[rf1:rf2]
         m = SequenceMatcher(None, seq1, seq2).find_longest_match(0, len(seq1), 0, len(seq2))
-        return (of1 + m.a, of1 + m.a + m.size), (rf1 + m.b, rf1 + m.b + m.size)
+        if m.size > 0:
+            return (of1 + m.a, of1 + m.a + m.size), (rf1 + m.b, rf1 + m.b + m.size)
+        else:
+            return None
 
     def align_subranges(orig_full: Range, recv_full: Range) -> Dict[Range, Range]:
-        orig_sub, recv_sub = longest_subranges(orig_full, recv_full)
-        update_losses(orig_sub)
-        return remaining_ranges(orig_full, orig_sub, recv_full, recv_sub)
+        subranges = longest_subranges(orig_full, recv_full)
+        if subranges is not None:
+            orig_sub, recv_sub = subranges
+            update_losses(orig_sub)
+            return remaining_ranges(orig_full, orig_sub, recv_full, recv_sub)
+        else:
+            return {}
 
     ranges = {(0, len(orig)): (0, len(recv))}
     while len(ranges) > 0:
