@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from synchronizer.arrival_information import count_losses, count_reorderings, count_duplicates
+from utils.ground_truth import count_losses, count_reorderings, count_duplicates
 
 original = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 perturbed = [3, 1, 2, 5, 6, 6, 6, 7, 10, 9, 9]
@@ -10,7 +10,7 @@ expected_duplicates = 3
 expected_reorderings = 3
 
 
-class TestCountArrivalInformation(TestCase):
+class TestGroundTruth(TestCase):
     def test_count_losses(self):
         actual_losses = count_losses(original, perturbed)
         self.assertEqual(expected_losses, actual_losses, 'Number of losses does not match!')

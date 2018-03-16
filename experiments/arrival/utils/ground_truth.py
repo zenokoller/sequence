@@ -2,7 +2,7 @@ from collections import OrderedDict
 from typing import List, Tuple
 
 
-def arrival_information(original: List[int], received: List[int]) -> Tuple[int, int, int]:
+def ground_truth(original: List[int], received: List[int]) -> Tuple[int, int, int]:
     """Returns the number of losses, duplicates and reorderings in `actual` compared to
     `expected`, assuming that the elements in `expected` are unique."""
     return (count_losses(original, received),
