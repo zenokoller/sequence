@@ -5,26 +5,26 @@ from utils.consume import consume_all
 from .synchronizer import Match, Synchronizer, get_range_list
 
 
-def base_synchronizer(signal: Iterable,
-                      reference: Iterable,
+def base_synchronizer(reference: Iterable,
+                      signal: Iterable,
                       match: Callable[[Iterable, Iterable], Iterable[Match]] = None,
                       accept: Callable[[Iterable[Match]], bool] = None) -> Optional[List[Match]]:
-    matches = match(signal, reference)
+    matches = match(reference, signal)
     return matches if accept(matches) else None
 
 
-def match_ranges_and_fill_gaps(signal: Iterable,
-                               reference: Iterable,
+def match_ranges_and_fill_gaps(reference: Iterable,
+                               signal: Iterable,
                                n: int) -> List[Match]:
-    return fill_gaps(match_ranges(signal, reference, n))
+    return fill_gaps(match_ranges(reference, signal, n))
 
 
-def match_ranges(signal: Iterable,
-                 reference: Iterable,
+def match_ranges(reference: Iterable,
+                 signal: Iterable,
                  n: int) -> List[Match]:
     """Splits `reference` into ranges of length n and tries to find their exact offsets in
     the `signal`. If none is found, the reference range is set to `None`"""
-    signal, reference = (consume_all(x) for x in (signal, reference))
+    reference, signal = (consume_all(x) for x in (reference, signal))
 
     sig_ranges = get_range_list(0, len(signal), n, 1)
     ref_ranges = get_range_list(0, len(reference), n, n)
@@ -78,7 +78,6 @@ def accept(matches: List[Match], n=int) -> bool:
                                     for m1, m2 in zip(matches[:-1], matches[1:]))
     no_big_gaps = all(match.ref[1] - match.ref[0] <= 2 * n for match in matches)
     return ascending_non_overlapping and no_big_gaps
-
 
 
 def get_range_matcher(n: int) -> Synchronizer:
