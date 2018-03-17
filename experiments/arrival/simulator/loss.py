@@ -23,13 +23,13 @@ def ar1_loss(sequence: Iterable, prob=0.0, corr=0.0, seed: int = None) -> Iterab
 
 
 def ge_loss(sequence: Iterable,
-            prob_goodbad=0.0,
-            prob_badgood=0.0,
-            prob_loss_good=0.0,
-            prob_transmit_bad=0.0,
+            move_to_bad=0.0,
+            move_to_good=None,
+            drop_in_bad=1.0,
+            drop_in_good=0.0,
             seed: int = None) -> Iterable:
-    return loss(gilbert_elliot(prob_badgood=prob_badgood,
-                               prob_goodbad=prob_goodbad,
-                               prob_loss_good=prob_loss_good,
-                               prob_transmit_bad=prob_transmit_bad,
+    return loss(gilbert_elliot(move_to_good=move_to_good,
+                               move_to_bad=move_to_bad,
+                               drop_in_bad=drop_in_bad,
+                               drop_in_good=drop_in_good,
                                seed=seed), sequence)

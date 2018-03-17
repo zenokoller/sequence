@@ -17,10 +17,10 @@ def state_machine(states: List[StateFn]) -> RandomProcess:
         yield draw
 
 
-def gilbert_elliot(prob_goodbad=0.0,
-                   prob_badgood=0.0,
-                   prob_loss_good=0.0,
-                   prob_transmit_bad=0.0,
+def gilbert_elliot(move_to_bad=0.0,
+                   move_to_good=None,
+                   drop_in_bad=1.0,
+                   drop_in_good=0.0,
                    seed: int = None) -> RandomProcess:
     """
     Loss model with two states, good and bad. `True` corresponds to a loss.
@@ -28,17 +28,18 @@ def gilbert_elliot(prob_goodbad=0.0,
     - In the bad state, a packet can still be transmitted with `prob_transmit_bad`.
     """
     r = Random(seed)
-    prob_loss_bad = 1 - prob_transmit_bad
+
+    move_to_good = move_to_good if move_to_good is not None else 1 - move_to_bad
 
     def good() -> Tuple[bool, int]:
-        transition = r.random() < prob_goodbad
-        return (r.random() < prob_loss_bad, 1) if transition \
-            else (r.random() < prob_loss_good, 0)
+        transition = r.random() < move_to_bad
+        return (r.random() < drop_in_bad, 1) if transition \
+            else (r.random() < drop_in_good, 0)
 
     def bad() -> Tuple[bool, int]:
-        transition = r.random() < prob_badgood
-        return (r.random() < prob_loss_good, 0) if transition \
-            else (r.random() < prob_loss_bad, 1)
+        transition = r.random() < move_to_good
+        return (r.random() < drop_in_good, 0) if transition \
+            else (r.random() < drop_in_bad, 1)
 
     return state_machine([good, bad])
 
