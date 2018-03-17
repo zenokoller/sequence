@@ -27,11 +27,3 @@ def get_diff(a: Iterable, b: Iterable) -> Iterable[str]:
 
 def as_string(sequence: Iterable) -> str:
     return ''.join(str(el) for el in sequence)
-
-
-match_ranges = get_range_matcher(4)
-
-reference = [1, 2, 3, 0, 2, 1, 2, 2, 2, 0, 2]
-signal = [1, 2, 3, 0, 2, 1, 2, 0, 2]
-
-print(estimate_losses(reference, signal, match_ranges(reference, signal)))

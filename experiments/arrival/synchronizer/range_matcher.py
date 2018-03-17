@@ -1,16 +1,9 @@
 from functools import partial
-from typing import Iterable, Callable, List, Optional, Tuple
+from typing import Iterable, Callable, List, Tuple
 
+from synchronizer.synchronizer import base_synchronizer
 from utils.consume import consume_all
 from .synchronizer import Match, Synchronizer, get_range_list
-
-
-def base_synchronizer(reference: Iterable,
-                      signal: Iterable,
-                      match: Callable[[Iterable, Iterable], Iterable[Match]] = None,
-                      accept: Callable[[Iterable[Match]], bool] = None) -> Optional[List[Match]]:
-    matches = match(reference, signal)
-    return matches if accept(matches) else None
 
 
 def match_ranges_and_fill_gaps(reference: Iterable,
@@ -74,10 +67,11 @@ def _merger(iterable: Iterable, cond: Callable, merge: Callable) -> Iterable:
 def accept(matches: List[Match], n=int) -> bool:
     """Check whether the matches make sense. The detected ones should not overlap and the gaps
     should not be too big."""
+    have_matches = len(matches) > 0
     ascending_non_overlapping = all(m1.sig[0] < m2.sig[0] and m1.sig[1] <= m2.sig[0]
                                     for m1, m2 in zip(matches[:-1], matches[1:]))
     no_big_gaps = all(match.ref[1] - match.ref[0] <= 2 * n for match in matches)
-    return ascending_non_overlapping and no_big_gaps
+    return have_matches and ascending_non_overlapping and no_big_gaps
 
 
 def get_range_matcher(n: int) -> Synchronizer:
