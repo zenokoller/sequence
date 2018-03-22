@@ -4,20 +4,20 @@ from typing import List, Tuple, Dict
 from synchronizer.max_flow.alignment import Alignment
 
 
-def find_events(alignment: Alignment, sig: List[int]) -> Tuple[list, dict, list]:
-    losses = find_losses(alignment, sig)
-    reorders = find_reorders(alignment, sig)
+def find_events(sig: List[int], alignment: Alignment) -> Tuple[list, dict, list]:
+    losses = find_losses(sig, alignment)
+    reorders = find_reorders(alignment)
     dupes = find_dupe_candidates(alignment)
     return losses, reorders, dupes
 
 
-def find_losses(alignment: Alignment, sig: List[int]) -> List[int]:
+def find_losses(sig: List[int], alignment: Alignment) -> List[int]:
     """Returns a list of reference indices that were lost."""
     offset = min(r_i for r_i in alignment if r_i is not None)
     return sorted(set(range(offset, offset + len(sig))) - set(alignment))
 
 
-def find_reorders(alignment: Alignment, sig: List[int]) -> Dict[int, int]:
+def find_reorders(alignment: Alignment) -> Dict[int, int]:
     """Maps reference indeces of reordered packets to delay in number of packets."""
     offset = min(r_i for r_i in alignment if r_i is not None)
     cum_dupes = accumulate([1 if a is None else 0 for _, a in enumerate(alignment)])
@@ -30,7 +30,7 @@ def find_dupe_candidates(alignment: Alignment) -> List[int]:
     return [s_i for s_i, r_i in enumerate(alignment) if r_i is None]
 
 
-def print_events(alignment: Alignment, sig: List[int], ref: List[int], events: Tuple[list, dict,
+def print_events(sig: List[int], ref: List[int], alignment: Alignment, events: Tuple[list, dict,
                                                                                      list]):
     offset = min(r_i for r_i in alignment if r_i is not None)
     left_col_width = 10

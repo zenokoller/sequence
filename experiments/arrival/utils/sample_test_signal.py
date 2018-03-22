@@ -1,9 +1,6 @@
-from functools import partial
 from random import Random
 from typing import List, NamedTuple, Iterable
 
-from generator.sequence import generate_random_sequence
-from simulator.loss import ge_loss
 from simulator.permutation import generate_permutation, apply_permutation
 from simulator.simulator import Policy
 from utils import consume, consume_all
@@ -15,8 +12,10 @@ TestSignal = NamedTuple('TestSignals', [
 ])
 
 
-def sample_test_signal(generator: Iterable[int],
-                       policies: List[Policy],
+# TODO: Make sent_packets, reference_length callable
+
+def sample_test_signal(generator: Iterable[int] = None,
+                       policies: List[Policy] = None,
                        sent_packets: int = None,
                        reference_length: int = None) -> TestSignal:
     reference = consume(generator, reference_length)

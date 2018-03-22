@@ -8,8 +8,9 @@ from synchronizer.max_flow.alignment import Alignment
 from synchronizer.max_flow.find_events import find_events, print_events
 
 
-def max_flow_synchronzier(sig: List[int], ref: List[int], margin: int = None) -> List[Alignment]:
-    offsets = top_k_offsets(sig, ref, k=1)
+def max_flow_synchronzier(sig: List[int], ref: List[int], margin: int = None, k: int = 1) -> List[
+    Alignment]:
+    offsets = top_k_offsets(sig, ref, k)
     return list(synch_at(offset, sig, ref, margin=margin) for offset in offsets)
 
 
@@ -57,10 +58,10 @@ def first_key(d: dict, condition: Callable, default):
         return default
 
 
-sig = [1, 2, 5, 4, 7, 2, 1, 2]
-ref = [3, 1, 2, 7, 5, 4, 2, 2, 2, 1, 2]
-for alignment in max_flow_synchronzier(sig, ref, margin=3):
-    print(alignment)
-    lost, reordered, duped = find_events(alignment, sig)
-    print_events(alignment, sig, ref, (lost, reordered, duped))
-
+if __name__ == '__main__':
+    sig = [1, 2, 5, 4, 7, 2, 1, 2]
+    ref = [3, 1, 2, 7, 5, 4, 2, 2, 1, 2]
+    for alignment in max_flow_synchronzier(sig, ref, margin=3):
+        print(alignment)
+        lost, reordered, duped = find_events(sig, alignment)
+        print_events(sig, ref, alignment, (lost, reordered, duped))
