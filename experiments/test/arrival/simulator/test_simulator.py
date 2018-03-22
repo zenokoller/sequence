@@ -2,7 +2,7 @@ from typing import Iterable
 from unittest import TestCase
 
 from simulator import simulator
-from utils.consume import consume_all
+from utils import consume_all
 
 test_sequence = [1, 2, 3, 4, 5]
 

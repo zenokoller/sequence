@@ -1,17 +1,11 @@
-from typing import Callable, Tuple, List, Optional, Iterable, NamedTuple
+from typing import Callable, Tuple, List, Optional, Iterable
 
-from synchronizer.exceptions import SynchronizationError
+from synchronizer.range_matcher.exceptions import SynchronizationError
+from synchronizer.range_matcher.match import Match
 
 """A synchronizer takes a signal and a reference and upon successful synchronization,
 outputs a list of matches, where a match == (signal_offset, reference_offset)."""
 Synchronizer = Callable[[Iterable, Iterable], Optional[List[Tuple[int, int]]]]
-
-Range = Tuple[int, int]
-Match = NamedTuple("Match", [('ref', Range), ('sig', Optional[Range])])
-
-
-def get_range_list(start: int, end: int, length: int, step: int) -> List[Range]:
-    return [(i, min(i + length, end)) for i in range(start, end, step)]
 
 
 def base_synchronizer(reference: Iterable,
@@ -20,7 +14,6 @@ def base_synchronizer(reference: Iterable,
                       accept: Callable[[Iterable[Match]], bool] = None) -> List[Match]:
     matches = match(reference, signal)
     if accept(matches):
-        return matches
+        return list(matches)
     else:
-        # TODO add length of reference
         raise SynchronizationError('Could not synchronize reference ranges')

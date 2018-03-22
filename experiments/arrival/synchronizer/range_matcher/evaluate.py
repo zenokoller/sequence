@@ -1,11 +1,11 @@
 from collections import Iterable
 from typing import List, Tuple
 
-from estimator.estimator import Estimator
+from synchronizer.range_matcher.estimator import Estimator
 from simulator.permutation import generate_permutation, apply_permutation
 from simulator.simulator import Policy
-from synchronizer.synchronizer import Synchronizer
-from utils.consume import consume, consume_all
+from synchronizer.range_matcher.base_synchronizer import Synchronizer
+from utils import consume, consume_all
 
 
 def run_synch_estim_pair(synchronizer: Synchronizer,

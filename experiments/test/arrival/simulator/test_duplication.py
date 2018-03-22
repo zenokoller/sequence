@@ -5,7 +5,7 @@ import itertools
 
 from simulator import simulator
 from simulator.duplication import ar1_duplication
-from utils.consume import consume_all
+from utils import consume_all
 
 no_dupes = partial(ar1_duplication, prob=0, corr=0)
 all_dupes = partial(ar1_duplication, prob=1, corr=0)

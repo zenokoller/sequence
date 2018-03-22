@@ -1,9 +1,7 @@
 from difflib import Differ
-from itertools import chain
 from typing import Callable, List, Iterable
 
-from synchronizer.range_matcher import get_range_matcher
-from synchronizer.synchronizer import Match
+from synchronizer.range_matcher.base_synchronizer import Match
 
 """The estimator takes a signal, a reference and a list of matches 
 [(sig_range, ref_range)] and returns a list of reference indices of 

@@ -3,7 +3,7 @@ from unittest import TestCase
 
 from simulator import simulator
 from simulator.loss import ar1_loss
-from utils.consume import consume_all
+from utils import consume_all
 
 lose_all = partial(ar1_loss, prob=1)
 keep_all = partial(ar1_loss, prob=0)

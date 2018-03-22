@@ -1,8 +1,8 @@
 from unittest import TestCase
 
-from synchronizer.range_matcher import get_range_matcher
+from synchronizer.range_matcher.range_matcher import get_range_matcher
 
-from synchronizer.synchronizer import Match
+from synchronizer.range_matcher.base_synchronizer import Match
 
 match_ranges = get_range_matcher(4)
 
