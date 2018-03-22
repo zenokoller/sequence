@@ -6,19 +6,17 @@ from simulator.permutation import generate_permutation, apply_permutation
 from simulator.simulator import Policy
 from synchronizer.range_matcher.base_synchronizer import Synchronizer
 from utils import consume, consume_all
+from utils.sample_test_signal import sample_test_signal
 
 
 def run_synch_estim_pair(synchronizer: Synchronizer,
                          estimator: Estimator,
-                         reference: Iterable = None,
+                         generator: Iterable = None,
                          policies: List[Policy] = None,
                          reference_length: int = None) -> Tuple[List[int], List[int]]:
-    reference = consume(reference, reference_length)
-
-    # TODO: Consume policies in order to differentiate between different events
-    permutation = consume_all(generate_permutation(policies, reference_length))
-    signal = apply_permutation(reference, permutation)
-
+    signal, reference, permutation = sample_test_signal(generator, policies,
+                                                        sent_packets=reference_length,
+                                                        reference_length=reference_length)
     expected = sorted(set(range(reference_length)) - set(permutation))
     actual = estimator(reference, signal, synchronizer(reference, signal))
     return expected, actual
