@@ -22,6 +22,7 @@ def top_k_offsets(sig: List[int], ref: List[int], k: int = None) -> List[int]:
 
 
 def synch_at(offset: int, sig: List[int], ref: List[int], margin: int = None) -> Alignment:
+    # print(f'Synching at offset {offset}')
     graph = build_graph(sig, ref, offset, margin)
     min_cost_flow = nx.max_flow_min_cost(graph, 'S', 'T')
     return alignment_from(min_cost_flow, length=len(sig))
@@ -38,11 +39,20 @@ def build_graph(sig: List[int], ref: List[int], offset: int, margin: int) -> nx.
     graph.add_edges_from(('S', f's{i}', {'capacity': 1, 'weight': 0}) for i in range(len(sig)))
     graph.add_edges_from((f'r{i}', 'T', {'capacity': 1, 'weight': 0}) for i in ref_range)
     graph.add_edges_from(
-        (f's{i}', f'r{j}', {'capacity': 1, 'weight': 1 / 1 + abs(j - i - offset)})
+        (f's{i}', f'r{j}', {'capacity': 1, 'weight': edge_weight(i, j, offset)})
         for (i, s), j in product(enumerate(sig), ref_range)
         if s == ref[j])
 
     return graph
+
+
+def edge_weight(sig_idx: int, ref_idx: int, offset: int) -> int:
+    """In the edge weight, we can reflect the prior distribution of event types."""
+    delayed = ref_idx < sig_idx
+    if delayed:  # Favor losses over delays
+        return 3 * abs(ref_idx - sig_idx - offset)
+    else:
+        return abs(ref_idx - sig_idx - offset)
 
 
 def alignment_from(flow: dict, length: int = None) -> Alignment:
@@ -60,8 +70,8 @@ def first_key(d: dict, condition: Callable, default):
 
 
 if __name__ == '__main__':
-    sig = [1, 2, 5, 4, 7, 2, 1, 2]
-    ref = [3, 1, 2, 7, 5, 4, 2, 2, 1, 2]
+    sig = [6, 4, 0, 4, 6, 2, 3, 2, 3, 7, 0, 4, 0, 0, 1, 3, 1, 4]
+    ref = [6, 4, 0, 4, 3, 6, 2, 2, 3, 7, 0, 4, 0, 0, 1, 1, 4, 3, 1, 4]
     for alignment in max_flow_synchronzier(sig, ref, margin=3):
         print(alignment)
         lost, reordered, duped = find_events(alignment)
