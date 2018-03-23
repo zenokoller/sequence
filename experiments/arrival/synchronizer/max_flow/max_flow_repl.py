@@ -4,6 +4,7 @@ from random import Random
 from generator.sequence import generate_random_sequence
 from simulator.duplication import ar1_duplication
 from simulator.loss import ge_loss
+from simulator.policy import policies_str
 from simulator.random_process.state_machine import ge_configurations
 from simulator.reordering import ar1_fixed_delay
 from synchronizer.max_flow.alignment import expected_alignment, Alignment
@@ -45,6 +46,7 @@ max_flow_repl = partial(repl,
                         synchronizer=partial(max_flow_synchronzier, margin=margin, k=k),
                         debug_print=debug_print_events)
 
-print(f'max_flow_synchronizer\n\tsymbol_bits: {symbol_bits}\n\tmargin: {margin}\n\t'
+print('Policies:\n', policies_str(policies), '\n')
+print(f'Synchronizer: max_flow_synchronizer\n\tsymbol_bits: {symbol_bits}\n\tmargin: {margin}\n\t'
       f'hypotheses: {k}\n')
 max_flow_repl()

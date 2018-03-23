@@ -1,9 +1,7 @@
 from functools import reduce
-from typing import List, Callable, Iterable
+from typing import List, Iterable
 
-Policy = Callable[[Iterable], Iterable]
-"""A function that takes an iterable, applies a policy (loss, reordering or duplication) and 
-returns the result as an iterable."""
+from simulator.policy import Policy
 
 
 def simulator(sequence: Iterable, policies: List[Policy]) -> Iterable:
