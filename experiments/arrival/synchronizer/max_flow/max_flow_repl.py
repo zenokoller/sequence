@@ -1,6 +1,5 @@
 from functools import partial
 from random import Random
-from typing import List
 
 from generator.sequence import generate_random_sequence
 from simulator.duplication import ar1_duplication
@@ -26,24 +25,26 @@ def sample_signal_lengths():
     return signal_length, reference_length
 
 
-sample_2_bit_test_signal = partial(sample_test_signal,
-                                   generator=generate_random_sequence(3),
-                                   policies=policies,
-                                   sample_signal_lengths=sample_signal_lengths)
+symbol_bits = 2
+sample_random_test_signal = partial(sample_test_signal,
+                                    generator=generate_random_sequence(symbol_bits),
+                                    policies=policies,
+                                    sample_signal_lengths=sample_signal_lengths)
 
 
-def debug_print_events(test_signal: TestSignal, alignments: List[Alignment]):
+def debug_print_events(test_signal: TestSignal, alignment: Alignment):
     sig, ref, perm = test_signal
-    print(f'FOUND {len(alignments)} ALIGNMENT{"S" if len(alignments) > 1 else ""}:\n')
-    for alignment in alignments:
-        print_events(sig, ref, alignment, expected_alignment=expected_alignment(test_signal))
-        print('')
-    input('Press Enter to continue...\n')
+    print_events(sig, ref, alignment, expected_alignment=expected_alignment(test_signal))
+    input('\nPress Enter to continue...\n')
 
+
+margin, k = 3, 3
 
 max_flow_repl = partial(repl,
-                        get_test_signal=sample_2_bit_test_signal,
-                        synchronizer=partial(max_flow_synchronzier, margin=3, k=1),
+                        get_test_signal=sample_random_test_signal,
+                        synchronizer=partial(max_flow_synchronzier, margin=margin, k=k),
                         debug_print=debug_print_events)
 
+print(f'max_flow_synchronizer\n\tsymbol_bits: {symbol_bits}\n\tmargin: {margin}\n\t'
+      f'hypotheses: {k}\n')
 max_flow_repl()

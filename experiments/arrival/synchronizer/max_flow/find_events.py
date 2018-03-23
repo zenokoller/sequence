@@ -1,14 +1,20 @@
 from itertools import accumulate
-from typing import List, Tuple, Dict
+from typing import List, Dict, NamedTuple
 
 from synchronizer.max_flow.alignment import Alignment
 
+Events = NamedTuple('Events', [
+    ('losses', List[int]),
+    ('reorders', Dict[int, int]),
+    ('dupes', List[int])
+])
 
-def find_events(alignment: Alignment) -> Tuple[list, dict, list]:
+
+def find_events(alignment: Alignment) -> Events:
     losses = find_losses(alignment)
     reorders = find_reorders(alignment)
     dupes = find_dupe_candidates(alignment)
-    return losses, reorders, dupes
+    return Events(losses=losses, reorders=reorders, dupes=dupes)
 
 
 def find_losses(alignment: Alignment) -> List[int]:

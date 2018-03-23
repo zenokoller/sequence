@@ -5,14 +5,21 @@ from typing import List, Callable
 import networkx as nx
 
 from synchronizer.max_flow.alignment import Alignment
-from synchronizer.max_flow.find_events import find_events
+from synchronizer.max_flow.alignment_cost import choose_best
 from synchronizer.max_flow.print_events import print_events
 
 
-def max_flow_synchronzier(sig: List[int], ref: List[int], margin: int = None, k: int = 1) -> List[
-    Alignment]:
+def max_flow_synchronzier(sig: List[int],
+                          ref: List[int],
+                          margin: int = 1,
+                          k: int = 1) -> Alignment:
+    """Computes the best guess of signal `sig` within reference `ref` using min cost max flow.
+    `margin` is the number of reference symbols that are considered around the signal.
+    `k` controls the number of hypotheses for the initial placement of `sig` within `ref`."""
     offsets = top_k_offsets(sig, ref, k)
-    return list(synch_at(offset, sig, ref, margin=margin) for offset in offsets)
+    return choose_best(
+        synch_at(offset, sig, ref, margin=margin) for offset in offsets
+    )
 
 
 def top_k_offsets(sig: List[int], ref: List[int], k: int = None) -> List[int]:
@@ -22,7 +29,6 @@ def top_k_offsets(sig: List[int], ref: List[int], k: int = None) -> List[int]:
 
 
 def synch_at(offset: int, sig: List[int], ref: List[int], margin: int = None) -> Alignment:
-    # print(f'Synching at offset {offset}')
     graph = build_graph(sig, ref, offset, margin)
     min_cost_flow = nx.max_flow_min_cost(graph, 'S', 'T')
     return alignment_from(min_cost_flow, length=len(sig))
@@ -70,9 +76,7 @@ def first_key(d: dict, condition: Callable, default):
 
 
 if __name__ == '__main__':
-    sig = [6, 4, 0, 4, 6, 2, 3, 2, 3, 7, 0, 4, 0, 0, 1, 3, 1, 4]
-    ref = [6, 4, 0, 4, 3, 6, 2, 2, 3, 7, 0, 4, 0, 0, 1, 1, 4, 3, 1, 4]
-    for alignment in max_flow_synchronzier(sig, ref, margin=3):
-        print(alignment)
-        lost, reordered, duped = find_events(alignment)
-        print_events(sig, ref, alignment)
+    signal = [6, 4, 0, 4, 6, 2, 3, 2, 3, 7, 0, 4, 0, 0, 1, 3, 1, 4]
+    reference = [6, 4, 0, 4, 3, 6, 2, 2, 3, 7, 0, 4, 0, 0, 1, 1, 4, 3, 1, 4]
+    for alignment in max_flow_synchronzier(signal, reference, margin=3):
+        print_events(signal, reference, alignment)

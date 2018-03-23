@@ -1,5 +1,5 @@
-from typing import List, Optional
 from collections import Counter
+from typing import List, Optional
 
 from utils.sample_test_signal import TestSignal
 

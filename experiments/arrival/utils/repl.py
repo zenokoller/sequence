@@ -12,7 +12,7 @@ def repl(get_test_signal: Callable[[], TestSignal] = None,
     repeats = 0
     while max_repeats is None or repeats <= max_repeats:
         test_signal = get_test_signal()
-        alignments = synchronizer(test_signal.signal, test_signal.reference)
+        alignment = synchronizer(test_signal.signal, test_signal.reference)
         if callable(debug_print):
-            debug_print(test_signal, alignments)
+            debug_print(test_signal, alignment)
         repeats += 1
