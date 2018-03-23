@@ -9,7 +9,7 @@ TEST_ALIGNMENT = [1, 3, 4, 5, 2, 6, 7, None, 8, 9, 10, 12, 14, 15, 13]
 class TestFindEvents(TestCase):
     def test_find_losses(self):
         expected = [11]  # Note that we cannot find head or tail losses!
-        actual = find_losses(TEST_SIG, TEST_ALIGNMENT)
+        actual = find_losses(TEST_ALIGNMENT)
         self.assertEqual(expected, actual, 'Did not find the expected loss indices.')
 
     def test_find_reorders(self):

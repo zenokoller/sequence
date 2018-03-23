@@ -5,7 +5,8 @@ from typing import List, Callable
 import networkx as nx
 
 from synchronizer.max_flow.alignment import Alignment
-from synchronizer.max_flow.find_events import find_events, print_events
+from synchronizer.max_flow.find_events import find_events
+from synchronizer.max_flow.print_events import print_events
 
 
 def max_flow_synchronzier(sig: List[int], ref: List[int], margin: int = None, k: int = 1) -> List[
@@ -63,5 +64,5 @@ if __name__ == '__main__':
     ref = [3, 1, 2, 7, 5, 4, 2, 2, 1, 2]
     for alignment in max_flow_synchronzier(sig, ref, margin=3):
         print(alignment)
-        lost, reordered, duped = find_events(sig, alignment)
-        print_events(sig, ref, alignment, (lost, reordered, duped))
+        lost, reordered, duped = find_events(alignment)
+        print_events(sig, ref, alignment)
