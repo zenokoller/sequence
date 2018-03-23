@@ -1,4 +1,5 @@
 from functools import partial
+from random import Random
 from typing import List
 
 from generator.sequence import generate_random_sequence
@@ -18,11 +19,17 @@ dupes_policy = partial(ar1_duplication, prob=0.01)
 
 policies = [loss_policy, delay_policy, dupes_policy]
 
+
+def sample_signal_lengths():
+    signal_length = Random().randint(5, 20)
+    reference_length = 50
+    return signal_length, reference_length
+
+
 sample_2_bit_test_signal = partial(sample_test_signal,
                                    generator=generate_random_sequence(3),
                                    policies=policies,
-                                   sent_packets=20,
-                                   reference_length=50)
+                                   sample_signal_lengths=sample_signal_lengths)
 
 
 def debug_print_events(test_signal: TestSignal, alignments: List[Alignment]):

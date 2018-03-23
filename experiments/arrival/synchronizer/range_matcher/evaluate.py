@@ -12,10 +12,12 @@ def run_synch_estim_pair(synchronizer: Synchronizer,
                          generator: Iterable = None,
                          policies: List[Policy] = None,
                          reference_length: int = None) -> Tuple[List[int], List[int]]:
+    def sample_signal_lengths():
+        return reference_length, reference_length
+
     signal, reference, permutation = sample_test_signal(generator=generator,
                                                         policies=policies,
-                                                        sent_packets=reference_length,
-                                                        reference_length=reference_length)
+                                                        sample_signal_lengths=sample_signal_lengths)
     expected = sorted(set(range(reference_length)) - set(permutation))
     actual = estimator(reference, signal, synchronizer(reference, signal))
     return expected, actual

@@ -7,7 +7,7 @@ returns the result as an iterable."""
 
 
 def simulator(sequence: Iterable, policies: List[Policy]) -> Iterable:
-    """Applies the given `policies` to `input_` and returns the resulting sequence."""
+    """Applies the given `policies` to `sequence` and yields the resulting sequence."""
     chain = reduce(lambda p, q: q(p), policies[1:], policies[0](sequence)) if len(policies) > 0 \
         else iter(sequence)
     while True:

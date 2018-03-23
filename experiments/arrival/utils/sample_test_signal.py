@@ -1,5 +1,5 @@
 from random import Random
-from typing import List, NamedTuple, Iterable
+from typing import List, NamedTuple, Iterable, Callable, Union, Tuple
 
 from simulator.permutation import generate_permutation, apply_permutation
 from simulator.simulator import Policy
@@ -12,16 +12,15 @@ TestSignal = NamedTuple('TestSignals', [
 ])
 
 
-# TODO: Make sent_packets, reference_length callable
-
 def sample_test_signal(generator: Iterable[int] = None,
                        policies: List[Policy] = None,
-                       sent_packets: int = None,
-                       reference_length: int = None) -> TestSignal:
-    reference = consume(generator, reference_length)
-    offset = sample_offset(sent_packets, reference_length)
+                       sample_signal_lengths: Callable[[], Tuple[int, int]] = None) -> TestSignal:
+    signal_length, reference_length = sample_signal_lengths()
 
-    sent_signal = reference[offset:offset + sent_packets]
+    reference = consume(generator, reference_length)
+    offset = sample_offset(signal_length, reference_length)
+
+    sent_signal = reference[offset:offset + signal_length]
     permutation = consume_all(i + offset for i in generate_permutation(policies, len(sent_signal)))
     sig = apply_permutation(reference, permutation)
 
