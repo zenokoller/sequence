@@ -35,18 +35,20 @@ sample_random_test_signal = partial(sample_test_signal,
 
 def debug_print_events(test_signal: TestSignal, alignment: Alignment):
     sig, ref, perm = test_signal
-    print_events(sig, ref, alignment, expected_alignment=expected_alignment(test_signal))
-    input('\nPress Enter to continue...\n')
+    print_events(sig, ref, alignment, expected_alignment=test_signal.expected_alignment)
+    input('\nPress Enter to run again...\n')
 
 
 margin, k = 3, 3
 
-max_flow_repl = partial(repl,
+max_flow_repl = partial(eval_loop,
                         get_test_signal=sample_random_test_signal,
                         synchronizer=partial(max_flow_synchronzier, margin=margin, k=k),
-                        debug_print=debug_print_events)
+                        postprocess=debug_print_events)
 
 print('Policies:\n', policies_str(policies), '\n')
 print(f'Synchronizer: max_flow_synchronizer\n\tsymbol_bits: {symbol_bits}\n\tmargin: {margin}\n\t'
       f'hypotheses: {k}\n')
-max_flow_repl()
+repl = max_flow_repl()
+while True:
+    next(repl)

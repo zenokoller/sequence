@@ -4,7 +4,7 @@ from typing import List, Tuple
 from simulator.simulator import Policy
 from synchronizer.range_matcher.base_synchronizer import Synchronizer
 from synchronizer.range_matcher.estimator import Estimator
-from utils.sample_test_signal import sample_test_signal
+from utils.test_signal import TestSignal
 
 
 def run_synch_estim_pair(synchronizer: Synchronizer,
@@ -15,9 +15,9 @@ def run_synch_estim_pair(synchronizer: Synchronizer,
     def sample_signal_lengths():
         return reference_length, reference_length
 
-    signal, reference, permutation = sample_test_signal(generator=generator,
-                                                        policies=policies,
-                                                        sample_signal_lengths=sample_signal_lengths)
+    signal, reference, permutation = TestSignal.sample(generator=generator,
+                                                       policies=policies,
+                                                       sample_signal_lengths=sample_signal_lengths)
     expected = sorted(set(range(reference_length)) - set(permutation))
     actual = estimator(reference, signal, synchronizer(reference, signal))
     return expected, actual
