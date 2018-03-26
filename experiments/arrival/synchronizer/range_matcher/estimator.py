@@ -6,7 +6,7 @@ from synchronizer.range_matcher.base_synchronizer import Match
 """The estimator takes a signal, a reference and a list of matches 
 [(sig_range, ref_range)] and returns a list of reference indices of 
 the estimated event."""
-Estimator = Callable[[list, list, List[Match]], List[int]]
+Estimator = Callable[[list, list, Iterable[Match]], List[int]]
 
 
 def estimate_losses(reference: list, signal: list, matches: List[Match]) -> List[int]:

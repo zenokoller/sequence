@@ -17,5 +17,4 @@ def eval_loop(get_test_signal: Callable[[], TestSignal] = None,
         repeats += 1
 
 # TODO: Return the results and use for experiments
-# Consider adding the original alignment to `TestSignal`
 # Test with experiment

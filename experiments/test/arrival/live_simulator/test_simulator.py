@@ -1,7 +1,7 @@
 from typing import Iterable
 from unittest import TestCase
 
-from simulator import simulator
+from simulator import live_simulator as simulator
 from utils import consume_all
 
 test_sequence = [1, 2, 3, 4, 5]

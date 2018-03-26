@@ -2,11 +2,11 @@ from functools import partial
 from random import Random
 
 from generator.sequence import generate_random_sequence
-from simulator.duplication import ar1_duplication
-from simulator.loss import ge_loss
+from simulator.ground_truth.duplication import ar1_duplication
+from simulator.ground_truth.loss import ge_loss
 from simulator.policy import policies_str
 from simulator.random_process.state_machine import ge_configurations
-from simulator.reordering import ar1_fixed_delay
+from simulator.ground_truth.reordering import ar1_fixed_delay
 from synchronizer.max_flow.alignment import Alignment
 from synchronizer.max_flow.build_graph import default_build_graph
 from synchronizer.max_flow.max_flow import max_flow_synchronzier
@@ -35,8 +35,8 @@ sample_random_test_signal = partial(TestSignal.sample,
 
 
 def debug_print_events(test_signal: TestSignal, alignment: Alignment):
-    sig, ref, perm = test_signal
-    print_events(sig, ref, alignment, expected_alignment=test_signal.expected_alignment)
+    sig, ref, ground_truth = test_signal
+    print_events(sig, ref, alignment, ground_truth=ground_truth)
     input('\nPress Enter to run again...\n')
 
 

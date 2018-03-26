@@ -1,4 +1,5 @@
-from typing import Deque, Iterable
+from functools import partial
+from typing import Deque, Iterable, Callable
 
 from simulator.random_process.ar1 import ar1
 from simulator.random_process.random_process import RandomProcess
@@ -12,7 +13,7 @@ class Waiting:
         self.remaining = remaining
 
 
-def fixed_delay(process: RandomProcess, sequence: Iterable, delay: int = 1) -> Iterable:
+def delay(process: RandomProcess, sequence: Iterable, delay: Callable[[], int] = None) -> Iterable:
     """Delays items from the `sequence` by `delay` items when the value drawn from `process` is
     true."""
     it = iter(sequence)
@@ -25,11 +26,14 @@ def fixed_delay(process: RandomProcess, sequence: Iterable, delay: int = 1) -> I
         try:
             item = next(it)
             if next(process):
-                queue.append(Waiting(item=item, remaining=delay))
+                queue.append(Waiting(item=item, remaining=delay()))
             else:
                 yield item
         except StopIteration:
             return
+
+
+fixed_delay = partial(delay, delay=lambda: 1)
 
 
 def ar1_fixed_delay(sequence: Iterable,

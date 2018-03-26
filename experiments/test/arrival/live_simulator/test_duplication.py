@@ -3,8 +3,8 @@ from unittest import TestCase
 
 import itertools
 
-from simulator import simulator
-from simulator.duplication import ar1_duplication
+from simulator import live_simulator as simulator
+from simulator.live.duplication import ar1_duplication
 from utils import consume_all
 
 no_dupes = partial(ar1_duplication, prob=0, corr=0)

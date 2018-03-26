@@ -1,8 +1,8 @@
 from functools import partial
 from unittest import TestCase
 
-from simulator import simulator
-from simulator.loss import ar1_loss
+from simulator import live_simulator as simulator
+from simulator.live.loss import ar1_loss
 from utils import consume_all
 
 lose_all = partial(ar1_loss, prob=1)

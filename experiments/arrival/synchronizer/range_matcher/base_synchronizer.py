@@ -5,7 +5,7 @@ from synchronizer.range_matcher.match import Match
 
 """A synchronizer takes a signal and a reference and upon successful synchronization,
 outputs a list of matches, where a match == (signal_offset, reference_offset)."""
-Synchronizer = Callable[[Iterable, Iterable], Optional[List[Tuple[int, int]]]]
+Synchronizer = Callable[[Iterable, Iterable], Iterable[Match]]
 
 
 def base_synchronizer(reference: Iterable,
