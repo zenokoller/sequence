@@ -3,6 +3,7 @@ from typing import List, Dict
 
 from termcolor import colored
 
+from synchronizer.exceptions import SynchronizationError
 from synchronizer.max_flow.alignment import Alignment
 from synchronizer.max_flow.find_events import find_events, get_offset
 
@@ -13,7 +14,11 @@ def print_events(sig: List[int],
                  ref: List[int],
                  alignment: Alignment,
                  expected_alignment: Alignment = None):
-    offset = get_offset(alignment)
+    try:
+        offset = get_offset(alignment)
+    except SynchronizationError:
+        print('Could not synchronize.')
+        return
 
     losses, reorders, dupes = find_events(alignment)
     exp_losses, exp_reorders, exp_dupes = find_events(expected_alignment) \

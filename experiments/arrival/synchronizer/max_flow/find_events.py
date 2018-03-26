@@ -2,6 +2,7 @@ from itertools import accumulate
 from typing import List, Dict, NamedTuple
 
 from synchronizer.max_flow.alignment import Alignment
+from synchronizer.exceptions import SynchronizationError
 
 Events = NamedTuple('Events', [
     ('losses', List[int]),
@@ -37,4 +38,7 @@ def find_dupe_candidates(alignment: Alignment) -> List[int]:
 
 
 def get_offset(alignment: Alignment) -> int:
-    return next(a for a in alignment if a is not None)
+    try:
+        return next(a for a in alignment if a is not None)
+    except StopIteration:
+        raise SynchronizationError

@@ -1,6 +1,6 @@
 from typing import Callable, Tuple, List, Optional, Iterable
 
-from synchronizer.range_matcher.exceptions import SynchronizationError
+from synchronizer.exceptions import SynchronizationError
 from synchronizer.range_matcher.match import Match
 
 """A synchronizer takes a signal and a reference and upon successful synchronization,

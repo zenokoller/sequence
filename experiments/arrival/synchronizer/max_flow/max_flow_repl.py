@@ -7,11 +7,11 @@ from simulator.loss import ge_loss
 from simulator.policy import policies_str
 from simulator.random_process.state_machine import ge_configurations
 from simulator.reordering import ar1_fixed_delay
-from synchronizer.max_flow.alignment import expected_alignment, Alignment
+from synchronizer.max_flow.alignment import Alignment
 from synchronizer.max_flow.max_flow import max_flow_synchronzier
 from synchronizer.max_flow.print_events import print_events
-from utils.repl import repl
-from utils.sample_test_signal import TestSignal, sample_test_signal
+from utils.eval_loop import eval_loop
+from utils.test_signal import TestSignal
 
 loss_policy = partial(ge_loss, **ge_configurations[0.02])
 delay_policy = partial(ar1_fixed_delay, delay=2, prob=0.01)
@@ -27,7 +27,7 @@ def sample_signal_lengths():
 
 
 symbol_bits = 2
-sample_random_test_signal = partial(sample_test_signal,
+sample_random_test_signal = partial(TestSignal.sample,
                                     generator=generate_random_sequence(symbol_bits),
                                     policies=policies,
                                     sample_signal_lengths=sample_signal_lengths)
@@ -40,10 +40,11 @@ def debug_print_events(test_signal: TestSignal, alignment: Alignment):
 
 
 margin, k = 3, 3
+synchronizer = partial(max_flow_synchronzier, margin=margin, k=k)
 
 max_flow_repl = partial(eval_loop,
                         get_test_signal=sample_random_test_signal,
-                        synchronizer=partial(max_flow_synchronzier, margin=margin, k=k),
+                        synchronizer=synchronizer,
                         postprocess=debug_print_events)
 
 print('Policies:\n', policies_str(policies), '\n')

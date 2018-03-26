@@ -1,11 +1,10 @@
-from itertools import product
 from operator import itemgetter
-from typing import List, Callable
+from typing import List, Callable, Tuple, Iterable
 
 import networkx as nx
 
 from synchronizer.max_flow.alignment import Alignment
-from synchronizer.max_flow.alignment_cost import choose_best
+from synchronizer.max_flow.build_graph import build_graph
 from synchronizer.max_flow.print_events import print_events
 
 
@@ -28,37 +27,15 @@ def top_k_offsets(sig: List[int], ref: List[int], k: int = None) -> List[int]:
     return [offset for offset, _ in sorted(enumerate(exact_matches), key=itemgetter(1))[-k:]]
 
 
-def synch_at(offset: int, sig: List[int], ref: List[int], margin: int = None) -> Alignment:
+def synch_at(offset: int,
+             sig: List[int],
+             ref: List[int],
+             margin: int = None) -> Tuple[Alignment, int]:
+    """Returns the alignment and the cost of it."""
     graph = build_graph(sig, ref, offset, margin)
     min_cost_flow = nx.max_flow_min_cost(graph, 'S', 'T')
-    return alignment_from(min_cost_flow, length=len(sig))
-
-
-def build_graph(sig: List[int], ref: List[int], offset: int, margin: int) -> nx.DiGraph:
-    graph = nx.DiGraph()
-    ref_range = range(max(0, offset - margin), min(len(ref), offset + len(sig) + margin))
-
-    graph.add_nodes_from(['S', 'T'])
-    graph.add_nodes_from([f's{i}' for i in range(len(sig))])
-    graph.add_nodes_from([f'r{i}' for i in ref_range])
-
-    graph.add_edges_from(('S', f's{i}', {'capacity': 1, 'weight': 0}) for i in range(len(sig)))
-    graph.add_edges_from((f'r{i}', 'T', {'capacity': 1, 'weight': 0}) for i in ref_range)
-    graph.add_edges_from(
-        (f's{i}', f'r{j}', {'capacity': 1, 'weight': edge_weight(i, j, offset)})
-        for (i, s), j in product(enumerate(sig), ref_range)
-        if s == ref[j])
-
-    return graph
-
-
-def edge_weight(sig_idx: int, ref_idx: int, offset: int) -> int:
-    """In the edge weight, we can reflect the prior distribution of event types."""
-    delayed = ref_idx < sig_idx
-    if delayed:  # Favor losses over delays
-        return 3 * abs(ref_idx - sig_idx - offset)
-    else:
-        return abs(ref_idx - sig_idx - offset)
+    cost = nx.cost_of_flow(graph, min_cost_flow)
+    return alignment_from(min_cost_flow, length=len(sig)), cost
 
 
 def alignment_from(flow: dict, length: int = None) -> Alignment:
@@ -66,6 +43,10 @@ def alignment_from(flow: dict, length: int = None) -> Alignment:
                    for src, values in flow.items()}
     alignment_nodes = [connections.get(f's{i}', None) for i in range(length)]
     return [int(node[1:]) if node is not None else None for node in alignment_nodes]
+
+
+def choose_best(alignments_costs: Iterable[Tuple[Alignment, int]]) -> Alignment:
+    return sorted(alignments_costs, key=itemgetter(1))[0][0]
 
 
 def first_key(d: dict, condition: Callable, default):
@@ -76,7 +57,8 @@ def first_key(d: dict, condition: Callable, default):
 
 
 if __name__ == '__main__':
-    signal = [6, 4, 0, 4, 6, 2, 3, 2, 3, 7, 0, 4, 0, 0, 1, 3, 1, 4]
-    reference = [6, 4, 0, 4, 3, 6, 2, 2, 3, 7, 0, 4, 0, 0, 1, 1, 4, 3, 1, 4]
-    for alignment in max_flow_synchronzier(signal, reference, margin=3):
-        print_events(signal, reference, alignment)
+    signal = [0, 1, 1, 2, 2, 3]
+    reference = [3, 0, 1, 2, 1, 2, 2, 3, 4]
+    alignment = max_flow_synchronzier(signal, reference, margin=3, k=3)
+    print(alignment)
+    print_events(signal, reference, alignment)
