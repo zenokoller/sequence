@@ -1,23 +1,25 @@
+from functools import partial
 from operator import itemgetter
 from typing import List, Callable, Tuple, Iterable
 
 import networkx as nx
 
 from synchronizer.max_flow.alignment import Alignment
-from synchronizer.max_flow.build_graph import build_graph
+from synchronizer.max_flow.build_graph import default_build_graph
 from synchronizer.max_flow.print_events import print_events
 
 
 def max_flow_synchronzier(sig: List[int],
                           ref: List[int],
-                          margin: int = 1,
+                          build_graph: Callable = None,
                           k: int = 1) -> Alignment:
     """Computes the best guess of signal `sig` within reference `ref` using min cost max flow.
-    `margin` is the number of reference symbols that are considered around the signal.
-    `k` controls the number of hypotheses for the initial placement of `sig` within `ref`."""
+    `k` controls the number of hypotheses, `build_graph` produces the graph given `sig`,
+    `ref` and an offset."""
     offsets = top_k_offsets(sig, ref, k)
+    synch_at = partial(_synchronize, sig, ref, build_graph)
     return choose_best(
-        synch_at(offset, sig, ref, margin=margin) for offset in offsets
+        synch_at(offset) for offset in offsets
     )
 
 
@@ -27,12 +29,12 @@ def top_k_offsets(sig: List[int], ref: List[int], k: int = None) -> List[int]:
     return [offset for offset, _ in sorted(enumerate(exact_matches), key=itemgetter(1))[-k:]]
 
 
-def synch_at(offset: int,
-             sig: List[int],
-             ref: List[int],
-             margin: int = None) -> Tuple[Alignment, int]:
+def _synchronize(sig: List[int],
+                 ref: List[int],
+                 build_graph: Callable,
+                 offset: int) -> Tuple[Alignment, int]:
     """Returns the alignment and the cost of it."""
-    graph = build_graph(sig, ref, offset, margin)
+    graph = build_graph(sig, ref, offset)
     min_cost_flow = nx.max_flow_min_cost(graph, 'S', 'T')
     cost = nx.cost_of_flow(graph, min_cost_flow)
     return alignment_from(min_cost_flow, length=len(sig)), cost
@@ -59,6 +61,7 @@ def first_key(d: dict, condition: Callable, default):
 if __name__ == '__main__':
     signal = [0, 1, 1, 2, 2, 3]
     reference = [3, 0, 1, 2, 1, 2, 2, 3, 4]
-    alignment = max_flow_synchronzier(signal, reference, margin=3, k=3)
+
+    alignment = max_flow_synchronzier(signal, reference, default_build_graph, k=3)
     print(alignment)
     print_events(signal, reference, alignment)

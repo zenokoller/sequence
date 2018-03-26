@@ -1,13 +1,23 @@
-from typing import List, Iterable, Tuple
+from functools import partial
+from typing import List, Tuple
 
 import networkx as nx
 
-D = 3
+from utils.range import matching_ranges, tuple_to_range
+
+DEFAULT_MARGIN = 3
+DEFAULT_DISPLACEMENT_RANGE = (-3, 4)
 DEFAULT_DELAY_PENALTY = 3
 DEFAULT_DISCRETIZE_FACTOR = 50
 
 
-def build_graph(sig: List[int], ref: List[int], offset: int, margin: int) -> nx.DiGraph:
+def build_graph(sig: List[int],
+                ref: List[int],
+                offset: int,
+                margin: int = None,
+                displacement_range: Tuple[int, int] = None,
+                delay_penalty: int = None,
+                discretize_factor: int = None) -> nx.DiGraph:
     graph = nx.DiGraph()
     ref_range = range(max(0, offset - margin), min(len(ref), offset + len(sig) + margin))
 
@@ -23,38 +33,25 @@ def build_graph(sig: List[int], ref: List[int], offset: int, margin: int) -> nx.
         s0 = r0 - d - offset
         return s0, r0
 
+    def edge_weight(displacement: int, range_length: int) -> int:
+        p = delay_penalty if displacement < 0 else 1
+        return p * int(discretize_factor * (1 + abs(displacement)) / range_length)
+
     def add_edges_with_displacement(d: int):
         s0, r0 = displaced_range_starts(d)
         for lower, upper in matching_ranges(sig[s0:], ref[r0:]):
-            weight = _edge_weight(d, upper - lower)
+            weight = edge_weight(d, upper - lower)
             graph.add_edges_from((f's{s0 + i}', f'r{r0 + i}', {'capacity': 1, 'weight': weight})
                                  for i in range(lower, upper))
 
-    for d in range(-D, D + 1):
+    for d in tuple_to_range(displacement_range):
         add_edges_with_displacement(d)
 
     return graph
 
 
-def matching_ranges(first: Iterable[int],
-                    second: Iterable[int]) -> Iterable[Tuple[int, int]]:
-    """Given two lists `first` and `second`, yields bounds of matching subsequences."""
-    start = None
-    for i, (a, b) in enumerate(zip(first, second)):
-        if a == b and start is None:
-            start = i
-        elif a != b and start is not None:
-            yield (start, i)
-            start = None
-
-    if start is not None:
-        yield (start, min(len(first), len(second)))
-    return
-
-
-def _edge_weight(displacement: int,
-                 range_length: int,
-                 delay_penalty: int = DEFAULT_DELAY_PENALTY,
-                 discretize_factor: int = DEFAULT_DISCRETIZE_FACTOR) -> int:
-    delay_penalty = delay_penalty if displacement < 0 else 1
-    return delay_penalty * int(discretize_factor * (1 + abs(displacement)) / range_length)
+default_build_graph = partial(build_graph,
+                              margin=DEFAULT_MARGIN,
+                              displacement_range=DEFAULT_DISPLACEMENT_RANGE,
+                              delay_penalty=DEFAULT_DELAY_PENALTY,
+                              discretize_factor=DEFAULT_DISCRETIZE_FACTOR)
