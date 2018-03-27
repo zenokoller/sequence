@@ -1,5 +1,5 @@
 from unittest import TestCase
-from synchronizer.max_flow.find_events import find_losses, find_reorders, find_dupe_candidates
+from estimator.find_events import find_losses, find_delays, find_dupe_candidates
 
 TEST_SIG = [2, 4, 5, 6, 3, 7, 8, 7, 9, 10, 11, 13, 15, 16, 14]
 TEST_REF = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
@@ -14,7 +14,7 @@ class TestFindEvents(TestCase):
 
     def test_find_reorders(self):
         expected = {2: 3, 13: 2}
-        actual = find_reorders(TEST_ALIGNMENT)
+        actual = find_delays(TEST_ALIGNMENT)
         self.assertEqual(expected, actual, 'Did not find the expected reordering delays.')
 
     def test_find_dupe_candidates(self):

@@ -5,7 +5,7 @@ from termcolor import colored
 
 from simulator.ground_truth.ground_truth import GroundTruth
 from synchronizer.max_flow.alignment import Alignment
-from synchronizer.max_flow.find_events import find_events
+from estimator.find_events import find_events
 
 left_col_width = 10
 
@@ -15,14 +15,14 @@ def print_events(sig: List[int],
                  alignment: Alignment,
                  ground_truth: GroundTruth = None):
     offset, _ = alignment
-    losses, reorders, dupes = find_events(alignment)
-    exp_losses, exp_reorders, exp_dupes = ground_truth if ground_truth is not None \
+    losses, delays, dupes = find_events(alignment)
+    exp_losses, exp_delays, exp_dupes = ground_truth if ground_truth is not None \
         else (None, None, None)
 
     _print_dupes(sig, offset, dupes, exp_dupes)
     _print_signals(sig, ref, offset)
     _print_losses(ref, losses, exp_losses)
-    _print_reorders(ref, reorders, exp_reorders)
+    _print_delays(ref, delays, exp_delays)
 
 
 def _print_dupes(sig: List[int], offset: int, dupes: List[int], expected_dupes: List[int] = None):
@@ -66,9 +66,9 @@ def _print_losses(ref: List[int], losses: List[int], expected_losses: List[int] 
     print(f'{"losses".rjust(left_col_width)} | {loss_str}')
 
 
-def _print_reorders(ref: List[int],
-                    reorders: Dict[int, int],
-                    expected_reorders: Dict[int, int] = None):
+def _print_delays(ref: List[int],
+                  reorders: Dict[int, int],
+                  expected_reorders: Dict[int, int] = None):
     def print_(title: str, r: Dict[int, int]):
         reorder_str = ' '.join(str(r.get(i, ' ')) for i in range(len(ref)))
         print(f'{title.rjust(left_col_width)} | {reorder_str}')

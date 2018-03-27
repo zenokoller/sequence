@@ -1,20 +1,15 @@
 from itertools import accumulate
-from typing import List, Dict, NamedTuple
+from typing import List, Dict
 
+from estimator.events import Events
 from synchronizer.max_flow.alignment import Alignment
-
-Events = NamedTuple('Events', [
-    ('losses', List[int]),
-    ('reorders', Dict[int, int]),
-    ('dupes', List[int])
-])
 
 
 def find_events(alignment: Alignment) -> Events:
     losses = find_losses(alignment)
-    reorders = find_reorders(alignment)
+    delays = find_delays(alignment)
     dupes = find_dupe_candidates(alignment)
-    return Events(losses=losses, reorders=reorders, dupes=dupes)
+    return Events(losses=losses, delays=delays, dupes=dupes)
 
 
 def find_losses(alignment: Alignment) -> List[int]:
@@ -23,8 +18,8 @@ def find_losses(alignment: Alignment) -> List[int]:
     return sorted(set(range(offset, offset + len(indices))) - set(indices))
 
 
-def find_reorders(alignment: Alignment) -> Dict[int, int]:
-    """Maps reference indeces of reordered packets to delay in number of packets."""
+def find_delays(alignment: Alignment) -> Dict[int, int]:
+    """Maps reference indeces of delayed packets to delay in number of packets."""
     offset, indices = alignment
     cum_dupes = accumulate([1 if a is None else 0 for _, a in enumerate(indices)])
     return {r_i: s_i + offset - r_i for s_i, (r_i, dupes) in enumerate(zip(indices, cum_dupes))

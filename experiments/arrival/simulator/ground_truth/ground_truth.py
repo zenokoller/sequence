@@ -1,13 +1,10 @@
 from typing import NamedTuple, List, Dict, Iterable, Tuple
 
+from estimator.events import Events
 from simulator.ground_truth.packet import Packet
 
 
-class GroundTruth(NamedTuple):
-    losses: List[int]  # as reference indices
-    delays: Dict[int, int]  # as reference index to delay in packets
-    dupes: List[int]  # as signal indices
-
+class GroundTruth(Events):
     @classmethod
     def from_packets(cls, packets: List[Packet], offset: int = 0) -> 'GroundTruth':
         return GroundTruth(losses=cls._get_loss_indices(packets, offset),

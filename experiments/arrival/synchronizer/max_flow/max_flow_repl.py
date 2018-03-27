@@ -10,13 +10,13 @@ from simulator.random_process.state_machine import ge_configurations
 from synchronizer.max_flow.alignment import Alignment
 from synchronizer.max_flow.build_graph import default_build_graph
 from synchronizer.max_flow.max_flow import max_flow_synchronzier
-from synchronizer.max_flow.print_events import print_events
+from estimator.print_events import print_events
 from utils.eval_loop import eval_loop
 from utils.test_signal import TestSignal
 
-loss_policy = partial(ge_loss, **ge_configurations[0.02])
+loss_policy = partial(ge_loss, **ge_configurations[0.05])
 delay_policy = partial(ar1_uniform_delay, delay_bounds=(1,5), prob=0.01)
-dupes_policy = partial(ar1_duplication, prob=0.01)
+dupes_policy = partial(ar1_duplication, prob=0.001)
 
 policies = [loss_policy, delay_policy, dupes_policy]
 
@@ -27,7 +27,7 @@ def sample_signal_lengths():
     return signal_length, reference_length
 
 
-symbol_bits = 2
+symbol_bits = 3
 sample_random_test_signal = partial(TestSignal.sample,
                                     generator=generate_random_sequence(symbol_bits),
                                     policies=policies,

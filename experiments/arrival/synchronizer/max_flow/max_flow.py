@@ -6,7 +6,7 @@ import networkx as nx
 
 from synchronizer.max_flow.alignment import Alignment
 from synchronizer.max_flow.build_graph import default_build_graph
-from synchronizer.max_flow.print_events import print_events
+from estimator.print_events import print_events
 
 
 def max_flow_synchronzier(sig: List[int],
