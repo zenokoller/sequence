@@ -4,9 +4,8 @@ from typing import List, Dict
 from termcolor import colored
 
 from simulator.ground_truth.ground_truth import GroundTruth
-from synchronizer.exceptions import SynchronizationError
 from synchronizer.max_flow.alignment import Alignment
-from synchronizer.max_flow.find_events import find_events, get_offset
+from synchronizer.max_flow.find_events import find_events
 
 left_col_width = 10
 
@@ -15,12 +14,7 @@ def print_events(sig: List[int],
                  ref: List[int],
                  alignment: Alignment,
                  ground_truth: GroundTruth = None):
-    try:
-        offset = get_offset(alignment)
-    except SynchronizationError:
-        print('Could not synchronize.')
-        return
-
+    offset, _ = alignment
     losses, reorders, dupes = find_events(alignment)
     exp_losses, exp_reorders, exp_dupes = ground_truth if ground_truth is not None \
         else (None, None, None)

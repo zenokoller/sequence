@@ -1,6 +1,6 @@
 from functools import partial
 from operator import itemgetter
-from typing import List, Callable, Tuple, Iterable
+from typing import List, Callable, Tuple, Iterable, Optional
 
 import networkx as nx
 
@@ -33,14 +33,15 @@ def _synchronize(sig: List[int],
                  ref: List[int],
                  build_graph: Callable,
                  offset: int) -> Tuple[Alignment, int]:
-    """Returns the alignment and the cost of it."""
+    """Returns the the alignment and the cost of it."""
     graph = build_graph(sig, ref, offset)
     min_cost_flow = nx.max_flow_min_cost(graph, 'S', 'T')
     cost = nx.cost_of_flow(graph, min_cost_flow)
-    return alignment_from(min_cost_flow, length=len(sig)), cost
+    indices = _alignment_indices(min_cost_flow, length=len(sig))
+    return Alignment(offset=offset, indices=indices), cost
 
 
-def alignment_from(flow: dict, length: int = None) -> Alignment:
+def _alignment_indices(flow: dict, length: int = None) -> List[Optional[int]]:
     connections = {src: first_key(values, lambda x: x == 1, None)
                    for src, values in flow.items()}
     alignment_nodes = [connections.get(f's{i}', None) for i in range(length)]
@@ -48,7 +49,8 @@ def alignment_from(flow: dict, length: int = None) -> Alignment:
 
 
 def choose_best(alignments_costs: Iterable[Tuple[Alignment, int]]) -> Alignment:
-    return sorted(alignments_costs, key=itemgetter(1))[0][0]
+    (best_offset, best_alignment), _ = sorted(alignments_costs, key=itemgetter(1))[0]
+    return best_offset, best_alignment
 
 
 def first_key(d: dict, condition: Callable, default):
@@ -63,5 +65,4 @@ if __name__ == '__main__':
     reference = [3, 0, 1, 2, 1, 2, 2, 3, 4]
 
     alignment = max_flow_synchronzier(signal, reference, default_build_graph, k=3)
-    print(alignment)
     print_events(signal, reference, alignment)
