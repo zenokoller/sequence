@@ -1,4 +1,3 @@
-from functools import partial
 from typing import Deque, Callable, Iterable
 
 from simulator.ground_truth.packet import Packet
@@ -23,7 +22,7 @@ def _delay(process: RandomProcess,
     queue: Deque[Waiting] = Deque()
     while True:
         if queue and queue[0].remaining == 0:
-            yield queue.popleft().item
+            yield queue.popleft().packet
         for waiting in queue:
             waiting.remaining -= 1
         try:
@@ -36,12 +35,9 @@ def _delay(process: RandomProcess,
             return
 
 
-fixed_delay = partial(_delay, delay=lambda: 1)
-
-
 def ar1_fixed_delay(sequence: Iterable,
                     delay: int = 1,
                     prob: float = 0.0,
                     corr: float = 0.0,
                     seed: int = None) -> Iterable:
-    return fixed_delay(ar1(prob=prob, corr=corr, seed=seed), sequence, delay=delay)
+    return _delay(ar1(prob=prob, corr=corr, seed=seed), sequence, delay=lambda: delay)
