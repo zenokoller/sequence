@@ -1,4 +1,5 @@
-from typing import Deque, Callable, Iterable
+from random import Random
+from typing import Deque, Callable, Iterable, Tuple
 
 from simulator.ground_truth.packet import Packet
 from simulator.random_process.ar1 import ar1
@@ -41,3 +42,13 @@ def ar1_fixed_delay(sequence: Iterable,
                     corr: float = 0.0,
                     seed: int = None) -> Iterable:
     return _delay(ar1(prob=prob, corr=corr, seed=seed), sequence, delay=lambda: delay)
+
+
+def ar1_uniform_delay(sequence: Iterable,
+                      delay_bounds: Tuple[int, int] = (1, 5),
+                      prob: float = 0.0,
+                      corr: float = 0.0,
+                      seed: int = None) -> Iterable:
+    return _delay(ar1(prob=prob, corr=corr, seed=seed),
+                  sequence,
+                  delay=lambda: Random().randint(*delay_bounds))

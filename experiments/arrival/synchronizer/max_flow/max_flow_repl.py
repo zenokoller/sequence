@@ -4,9 +4,9 @@ from random import Random
 from generator.sequence import generate_random_sequence
 from simulator.ground_truth.duplication import ar1_duplication
 from simulator.ground_truth.loss import ge_loss
+from simulator.ground_truth.reordering import ar1_uniform_delay
 from simulator.policy import policies_str
 from simulator.random_process.state_machine import ge_configurations
-from simulator.ground_truth.reordering import ar1_fixed_delay
 from synchronizer.max_flow.alignment import Alignment
 from synchronizer.max_flow.build_graph import default_build_graph
 from synchronizer.max_flow.max_flow import max_flow_synchronzier
@@ -15,7 +15,7 @@ from utils.eval_loop import eval_loop
 from utils.test_signal import TestSignal
 
 loss_policy = partial(ge_loss, **ge_configurations[0.02])
-delay_policy = partial(ar1_fixed_delay, delay=2, prob=0.01)
+delay_policy = partial(ar1_uniform_delay, delay_bounds=(1,5), prob=0.01)
 dupes_policy = partial(ar1_duplication, prob=0.01)
 
 policies = [loss_policy, delay_policy, dupes_policy]
