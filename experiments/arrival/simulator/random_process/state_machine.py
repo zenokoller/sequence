@@ -43,18 +43,5 @@ def gilbert_elliot(move_to_bad=0.0,
 
     return state_machine([good, bad])
 
-
-"""Some configurations for the GE model which yield the given net loss rates."""
-loss_rates = [0.01, 0.02, 0.05, 0.10]
-ge_configurations = {
-    key: {kw: param for kw, param in zip(('move_to_bad', 'move_to_good', 'drop_in_bad',
-                                          'drop_in_good'), conf)} for key, conf in zip(loss_rates, [
-    (0.005, 0.7, 0.5, 0.0075),  # 1% loss
-    (0.01, 0.75, 0.8, 0.01),    # 2% loss
-    (0.035, 0.75, 0.8, 0.02),   # 5% loss
-    (0.075, 0.75, 0.8, 0.03),   # 10% loss
-])
-}
-
 # TODO: Implement GI model from below
 # http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.479.8782&rep=rep1&type=pdf

@@ -13,10 +13,10 @@ class TestSignal(NamedTuple):
     ground_truth: GroundTruth
 
     @classmethod
-    def sample(cls,
-               generator: Iterable[int] = None,
-               policies: List[Policy] = None,
-               sample_signal_lengths: Callable[[], Tuple[int, int]] = None) -> 'TestSignal':
+    def generate(cls,
+                 generator: Iterable[int] = None,
+                 policies: List[Policy] = None,
+                 sample_signal_lengths: Callable[[], Tuple[int, int]] = None) -> 'TestSignal':
         signal_length, reference_length = sample_signal_lengths()
 
         reference = consume(generator, reference_length)

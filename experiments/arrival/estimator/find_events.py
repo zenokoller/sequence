@@ -2,7 +2,7 @@ from itertools import accumulate
 from typing import List, Dict
 
 from estimator.events import Events
-from synchronizer.max_flow.alignment import Alignment
+from synchronizer.alignment import Alignment
 
 
 def find_events(alignment: Alignment) -> Events:

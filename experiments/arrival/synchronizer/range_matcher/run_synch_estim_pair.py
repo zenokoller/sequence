@@ -15,9 +15,9 @@ def run_synch_estim_pair(synchronizer: Synchronizer,
     def sample_signal_lengths():
         return reference_length, reference_length
 
-    signal, reference, ground_truth = TestSignal.sample(generator=generator,
-                                                        policies=policies,
-                                                        sample_signal_lengths=sample_signal_lengths)
+    signal, reference, ground_truth = TestSignal.generate(generator=generator,
+                                                          policies=policies,
+                                                          sample_signal_lengths=sample_signal_lengths)
     expected = ground_truth.losses
     actual = estimator(reference, signal, synchronizer(reference, signal))
     return expected, actual

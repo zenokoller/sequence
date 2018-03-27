@@ -1,50 +1,42 @@
 from functools import partial
-from random import Random
 
+from estimator.print_events import print_events
 from generator.sequence import generate_random_sequence
-from simulator.ground_truth.duplication import ar1_duplication
-from simulator.ground_truth.loss import ge_loss
-from simulator.ground_truth.reordering import ar1_uniform_delay
+from simulator.ground_truth.predefined import predefined_policies
 from simulator.policy import policies_str
-from simulator.random_process.state_machine import ge_configurations
-from synchronizer.max_flow.alignment import Alignment
+from synchronizer.alignment import Alignment
 from synchronizer.max_flow.build_graph import default_build_graph
 from synchronizer.max_flow.max_flow import max_flow_synchronzier
-from estimator.print_events import print_events
 from utils.eval_loop import eval_loop
+from utils.sample import sample_uniform
 from utils.test_signal import TestSignal
 
-loss_policy = partial(ge_loss, **ge_configurations[0.05])
-delay_policy = partial(ar1_uniform_delay, delay_bounds=(1,5), prob=0.01)
-dupes_policy = partial(ar1_duplication, prob=0.001)
-
-policies = [loss_policy, delay_policy, dupes_policy]
+symbol_bits = 4
 
 
 def sample_signal_lengths():
-    signal_length = Random().randint(5, 20)
-    reference_length = 50
-    return signal_length, reference_length
+    return sample_uniform(5, 20), 30
 
 
-symbol_bits = 3
-sample_random_test_signal = partial(TestSignal.sample,
-                                    generator=generate_random_sequence(symbol_bits),
-                                    policies=policies,
-                                    sample_signal_lengths=sample_signal_lengths)
+policies = predefined_policies['medium']
+
+generate_random_test_signal = partial(TestSignal.generate,
+                                      generator=generate_random_sequence(symbol_bits),
+                                      policies=policies,
+                                      sample_signal_lengths=sample_signal_lengths)
 
 
 def debug_print_events(test_signal: TestSignal, alignment: Alignment):
     sig, ref, ground_truth = test_signal
-    print_events(sig, ref, alignment, ground_truth=ground_truth)
+    print_events(sig, ref, alignment, ground_truth=ground_truth, symbol_bits=symbol_bits)
     input('\nPress Enter to run again...\n')
+    # TODO: Make printing work for more symbol_bits
 
-
-margin, k = 3, 3
+k = 3
 synchronizer = partial(max_flow_synchronzier, build_graph=default_build_graph, k=k)
 
 max_flow_repl = partial(eval_loop,
-                        get_test_signal=sample_random_test_signal,
+                        generate_test_signal=generate_random_test_signal,
                         synchronizer=synchronizer,
                         postprocess=debug_print_events)
 
@@ -54,3 +46,5 @@ print(f'Synchronizer: max_flow_synchronizer\n\tsymbol_bits: {symbol_bits}\n\t'
 repl = max_flow_repl()
 while True:
     next(repl)
+
+

@@ -4,7 +4,7 @@ from typing import List, Callable, Tuple, Iterable, Optional
 
 import networkx as nx
 
-from synchronizer.max_flow.alignment import Alignment
+from synchronizer.alignment import Alignment
 from synchronizer.max_flow.build_graph import default_build_graph
 from estimator.print_events import print_events
 
@@ -59,6 +59,10 @@ def first_key(d: dict, condition: Callable, default):
     except StopIteration:
         return default
 
+
+default_max_flow_synchronizer = partial(max_flow_synchronzier,
+                                        build_graph=default_build_graph,
+                                        k=3)
 
 if __name__ == '__main__':
     signal = [0, 1, 1, 2, 2, 3]
