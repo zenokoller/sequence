@@ -4,9 +4,11 @@ from typing import List, Callable, Tuple, Iterable, Optional
 
 import networkx as nx
 
+from estimator.print_events import print_events
 from synchronizer.alignment import Alignment
 from synchronizer.max_flow.build_graph import default_build_graph
-from estimator.print_events import print_events
+
+NONE_PENALTY = 100
 
 
 def max_flow_synchronzier(sig: List[int],
@@ -49,8 +51,14 @@ def _alignment_indices(flow: dict, length: int = None) -> List[Optional[int]]:
 
 
 def choose_best(alignments_costs: Iterable[Tuple[Alignment, int]]) -> Alignment:
+    alignments_costs = ((alignment, cost + nones_penalty(alignment))
+                        for alignment, cost in alignments_costs)
     (best_offset, best_alignment), _ = sorted(alignments_costs, key=itemgetter(1))[0]
     return best_offset, best_alignment
+
+
+def nones_penalty(alignment: Alignment) -> int:
+    return sum(NONE_PENALTY for i in alignment.indices if i is None)
 
 
 def first_key(d: dict, condition: Callable, default):
