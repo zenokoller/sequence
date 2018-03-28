@@ -7,7 +7,8 @@ from simulator.ground_truth.ground_truth import GroundTruth
 from synchronizer.alignment import Alignment
 from estimator.find_events import find_events
 
-left_col_width = 10
+LABEL_WIDTH = 10
+DIVIDER = ' '
 
 
 def print_events(sig: List[int],
@@ -40,11 +41,14 @@ def _print_dupes(sig: List[int],
                               expected=expected_dupes, symbol_width=symbol_width)
         dupes_str = ' '.join(print_token(i) for i in range(len(sig)))
     offset_str = _offset_str(offset, symbol_width=symbol_width)
-    print(f'{"dupes".rjust(left_col_width)} | {offset_str}{dupes_str}')
+    print(f'{"dupes".rjust(LABEL_WIDTH)} | {offset_str}{dupes_str}')
 
 
 def _offset_str(offset: int, symbol_width: int = 1) -> str:
-    return ' ' * (symbol_width + 1) * offset
+    if offset < 0:
+        return ''
+    else:
+        return ' ' * (symbol_width + 1) * offset
 
 
 def _print_actual_expected_token(i: int,
@@ -66,11 +70,13 @@ def _print_signals(sig: List[int],
                    ref: List[int],
                    offset: int,
                    symbol_width: int = 1):
-    sig_str = _offset_str(offset, symbol_width=symbol_width) + ' '.join(str(s).rjust(symbol_width) for s in
-                                                                        sig)
-    print(f'{"SIGNAL".rjust(left_col_width)} | {sig_str}')
-    ref_str = ' '.join(str(r).rjust(symbol_width) for r in ref)
-    print(f'{"REFERENCE".rjust(left_col_width)} | {ref_str}')
+    sig_offset = _offset_str(offset, symbol_width=symbol_width) if offset > 0 else ''
+    sig_str = DIVIDER.join(str(s).rjust(symbol_width) for s in sig)
+    print(f'{"SIGNAL".rjust(LABEL_WIDTH)} | {sig_offset}{sig_str}')
+
+    ref_offset = _offset_str(abs(offset), symbol_width=symbol_width) if offset < 0 else ''
+    ref_str = DIVIDER.join(str(r).rjust(symbol_width) for r in ref)
+    print(f'{"REFERENCE".rjust(LABEL_WIDTH)} | {ref_offset}{ref_str}')
 
 
 def _print_losses(ref: List[int],
@@ -83,9 +89,9 @@ def _print_losses(ref: List[int],
         loss_str = ' '.join(token if i in losses else space for i in range(len(ref)))
     else:
         print_token = partial(_print_actual_expected_token, token=token, actual=losses,
-                             expected=expected_losses, symbol_width=symbol_width)
+                              expected=expected_losses, symbol_width=symbol_width)
         loss_str = ' '.join(print_token(i) for i in range(len(ref)))
-    print(f'{"losses".rjust(left_col_width)} | {loss_str}')
+    print(f'{"losses".rjust(LABEL_WIDTH)} | {loss_str}')
 
 
 def _print_delays(ref: List[int],
@@ -94,7 +100,7 @@ def _print_delays(ref: List[int],
                   symbol_width: int = 1):
     def print_(title: str, r: Dict[int, int]):
         reorder_str = ' '.join(str(r.get(i, ' ')).rjust(symbol_width) for i in range(len(ref)))
-        print(f'{title.rjust(left_col_width)} | {reorder_str}')
+        print(f'{title.rjust(LABEL_WIDTH)} | {reorder_str}')
 
     print_('delay', reorders)
     if expected_reorders is not None:
