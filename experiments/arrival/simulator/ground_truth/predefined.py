@@ -18,7 +18,7 @@ _ge_confs = {
         (0.075, 0.75, 0.8, 0.03),  # 10% loss
     ])}
 
-low_policies = [
+normal_policies = [
     partial(ge_loss, **_ge_confs[0.01]),
     partial(ar1_uniform_delay, delay_bounds=(1, 5), prob=0.005),
     partial(ar1_duplication, prob=0.001)
@@ -43,7 +43,7 @@ severe_policies = [
 ]
 
 predefined_policies = {
-    'normal': low_policies,
+    'normal': normal_policies,
     'medium': medium_policies,
     'high': high_policies,
     'severe': severe_policies
