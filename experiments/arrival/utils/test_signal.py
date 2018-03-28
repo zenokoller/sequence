@@ -16,7 +16,8 @@ class TestSignal(NamedTuple):
     def generate(cls,
                  generator: Iterable[int] = None,
                  policies: List[Policy] = None,
-                 sample_signal_lengths: Callable[[], Tuple[int, int]] = None) -> 'TestSignal':
+                 sample_signal_lengths: Callable[[], Tuple[int, int]] = None,
+                 must_contain_events: bool = False) -> 'TestSignal':
         signal_length, reference_length = sample_signal_lengths()
 
         reference = consume(generator, reference_length)
@@ -24,6 +25,9 @@ class TestSignal(NamedTuple):
 
         sent_signal = reference[offset:offset + signal_length]
         signal, ground_truth = simulator(sent_signal, policies, offset=offset)
+
+        while must_contain_events and ground_truth.number_of_events == 0:
+            signal, ground_truth = simulator(sent_signal, policies, offset=offset)
 
         return TestSignal(signal=signal, reference=reference, ground_truth=ground_truth)
 
