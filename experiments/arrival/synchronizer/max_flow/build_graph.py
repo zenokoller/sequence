@@ -7,7 +7,7 @@ from utils.range import matching_ranges, tuple_to_range
 
 DEFAULT_MARGIN = 3
 DEFAULT_DISPLACEMENT_RANGE = (-3, 4)
-DEFAULT_DELAY_PENALTY = 3
+DEFAULT_DELAY_PENALTY = 2
 DEFAULT_DISCRETIZE_FACTOR = 50
 
 
@@ -21,12 +21,7 @@ def build_graph(sig: List[int],
     graph = nx.DiGraph()
     ref_range = range(max(0, offset - margin), min(len(ref), offset + len(sig) + margin))
 
-    graph.add_nodes_from(['S', 'T'])
-    graph.add_nodes_from([f's{i}' for i in range(len(sig))])
-    graph.add_nodes_from([f'r{i}' for i in ref_range])
-
-    graph.add_edges_from(('S', f's{i}', {'capacity': 1, 'weight': 0}) for i in range(len(sig)))
-    graph.add_edges_from((f'r{i}', 'T', {'capacity': 1, 'weight': 0}) for i in ref_range)
+    _add_source_sink(graph, ref_range, sig)
 
     def displaced_range_starts(d: int) -> Tuple[int, int]:
         r0 = max(0, offset - margin, offset + d)
@@ -48,6 +43,14 @@ def build_graph(sig: List[int],
         add_edges_with_displacement(d)
 
     return graph
+
+
+def _add_source_sink(graph, ref_range, sig):
+    graph.add_nodes_from(['S', 'T'])
+    graph.add_nodes_from([f's{i}' for i in range(len(sig))])
+    graph.add_nodes_from([f'r{i}' for i in ref_range])
+    graph.add_edges_from(('S', f's{i}', {'capacity': 1, 'weight': 0}) for i in range(len(sig)))
+    graph.add_edges_from((f'r{i}', 'T', {'capacity': 1, 'weight': 0}) for i in ref_range)
 
 
 default_build_graph = partial(build_graph,
