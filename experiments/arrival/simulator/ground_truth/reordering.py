@@ -24,16 +24,18 @@ def _delay(process: RandomProcess,
     while True:
         if queue and queue[0].remaining == 0:
             yield queue.popleft().packet
-        for waiting in queue:
-            waiting.remaining -= 1
         try:
             packet = next(it)
-            if next(process) and not packet.is_lost:
-                queue.append(Waiting(packet=packet, delay=delay()))
-            else:
-                yield packet
         except StopIteration:
             return
+
+        if not packet.is_lost:
+            for waiting in queue:
+                waiting.remaining -= 1
+        if next(process) and not packet.is_lost:
+            queue.append(Waiting(packet=packet, delay=delay()))
+        else:
+            yield packet
 
 
 def ar1_fixed_delay(sequence: Iterable,
