@@ -24,8 +24,8 @@ def max_flow_synchronzier(sig: List[int],
 
 
 def top_k_offsets(sig: List[int], ref: List[int], k: int = None) -> List[int]:
-    exact_matches = [sum(s == r for s, r in zip(sig, ref[offset:]))
-                     for offset in range(0, len(ref) - len(sig))]
+    exact_matches = (sum(s == r for s, r in zip(sig, ref[offset:]))
+                     for offset in range(0, len(ref) - len(sig) + 1))
     return [offset for offset, _ in sorted(enumerate(exact_matches), key=itemgetter(1))[-k:]]
 
 
