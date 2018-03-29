@@ -9,9 +9,9 @@ class GroundTruth(Events):
     @classmethod
     def from_packets(cls, packets: List[Packet], offset: int = 0) -> 'GroundTruth':
         loss_indices = cls._get_loss_indices(packets, offset)
-        return GroundTruth(losses=loss_indices,
-                           delays=cls._get_delays(packets, offset),
-                           dupes=cls._get_duplicate_indices(packets, loss_indices))
+        return cls(losses=loss_indices,
+                   delays=cls._get_delays(packets, offset),
+                   dupes=cls._get_duplicate_indices(packets, loss_indices))
 
     @staticmethod
     def _get_loss_indices(packets: List[Packet], offset: int) -> List[int]:

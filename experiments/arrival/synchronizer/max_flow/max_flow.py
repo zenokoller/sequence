@@ -44,13 +44,6 @@ def _synchronize(sig: List[int],
     graph = build_graph(sig, ref, offset)
     min_cost_flow = nx.max_flow_min_cost(graph, SOURCE_NODE, SINK_NODE)
     cost = nx.cost_of_flow(graph, min_cost_flow)
-
-
-def _alignment_indices(flow: dict, length: int = None) -> List[Optional[int]]:
-    connections = {src: first_key(values, lambda x: x == 1, None)
-                   for src, values in flow.items()}
-    alignment_nodes = [connections.get(f's{i}', None) for i in range(length)]
-    return [int(node[1:]) if node is not None else None for node in alignment_nodes]
     flow = sum(min_cost_flow[SOURCE_NODE].values())
     alignment = Alignment.from_flow(min_cost_flow,
                                     sig_length=len(sig),
@@ -66,11 +59,6 @@ def choose_best(results: Iterable[MaxFlowResult]) -> Alignment:
 UNMATCHED_PENALTY = 100
 
 
-def first_key(d: dict, condition: Callable, default):
-    try:
-        return next(key for key, value in d.items() if condition(value))
-    except StopIteration:
-        return default
 def score_result(result: MaxFlowResult) -> Tuple[Alignment, int]:
     alignment, cost, flow = result
     num_unmatched = len(alignment) - flow

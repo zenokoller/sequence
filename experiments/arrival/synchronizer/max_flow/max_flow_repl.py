@@ -46,5 +46,3 @@ print(f'Synchronizer: max_flow_synchronizer\n\tsymbol_bits: {symbol_bits}\n\t'
 repl = max_flow_repl()
 while True:
     next(repl)
-
-
