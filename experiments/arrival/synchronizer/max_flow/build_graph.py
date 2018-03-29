@@ -11,7 +11,7 @@ SOURCE_NODE = 'S'
 SINK_NODE = 'T'
 
 DEFAULT_MARGIN = 3
-DEFAULT_SHIFT_RANGE = (-3, 4)
+DEFAULT_SHIFT_RANGE = (-5, 6)
 
 
 def build_graph(sig: List[int],
