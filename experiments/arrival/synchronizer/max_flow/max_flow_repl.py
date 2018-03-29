@@ -15,7 +15,7 @@ symbol_bits = 4
 
 
 def sample_signal_lengths():
-    return sample_uniform(5, 20), 30
+    return sample_uniform(10, 20), 30
 
 
 policies = predefined_policies['medium']
@@ -30,7 +30,7 @@ def debug_print_events(test_signal: TestSignal, alignment: Alignment):
     sig, ref, ground_truth = test_signal
     print_events(sig, ref, alignment, ground_truth=ground_truth, symbol_bits=symbol_bits)
     input('\nPress Enter to run again...\n')
-    # TODO: Make printing work for more symbol_bits
+
 
 k = 3
 synchronizer = partial(max_flow_synchronzier, build_graph=default_build_graph, k=k)

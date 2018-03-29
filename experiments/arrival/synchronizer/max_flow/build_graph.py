@@ -4,6 +4,8 @@ from typing import List, Tuple
 import networkx as nx
 
 from utils.range import matching_ranges, tuple_to_range
+SOURCE_NODE = 'S'
+SINK_NODE = 'T'
 
 DEFAULT_MARGIN = 3
 DEFAULT_DISPLACEMENT_RANGE = (-3, 4)

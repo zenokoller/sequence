@@ -1,14 +1,12 @@
 from functools import partial
 from operator import itemgetter
-from typing import List, Callable, Tuple, Iterable, Optional
+from typing import List, Callable, Tuple, Iterable, NamedTuple
 
 import networkx as nx
 
 from estimator.print_events import print_events
 from synchronizer.alignment import Alignment
-from synchronizer.max_flow.build_graph import default_build_graph
-
-NONE_PENALTY = 100
+from synchronizer.max_flow.build_graph import default_build_graph, SOURCE_NODE, SINK_NODE
 
 
 def max_flow_synchronzier(sig: List[int],
@@ -26,21 +24,26 @@ def max_flow_synchronzier(sig: List[int],
 
 
 def top_k_offsets(sig: List[int], ref: List[int], k: int = None) -> List[int]:
+    """Returns the k offsets of `sig` in `ref` that have the highest number of matching symbols."""
     exact_matches = (sum(s == r for s, r in zip(sig, ref[offset:]))
                      for offset in range(0, len(ref) - len(sig) + 1))
     return [offset for offset, _ in sorted(enumerate(exact_matches), key=itemgetter(1))[-k:]]
 
 
+MaxFlowResult = NamedTuple('MaxFlowResult', [
+    ('alignment', Alignment),
+    ('cost', int),
+    ('flow', int)])
+
+
 def _synchronize(sig: List[int],
                  ref: List[int],
                  build_graph: Callable,
-                 offset: int) -> Tuple[Alignment, int]:
+                 offset: int) -> MaxFlowResult:
     """Returns the the alignment and the cost of it."""
     graph = build_graph(sig, ref, offset)
-    min_cost_flow = nx.max_flow_min_cost(graph, 'S', 'T')
+    min_cost_flow = nx.max_flow_min_cost(graph, SOURCE_NODE, SINK_NODE)
     cost = nx.cost_of_flow(graph, min_cost_flow)
-    indices = _alignment_indices(min_cost_flow, length=len(sig))
-    return Alignment(offset=offset, indices=indices), cost
 
 
 def _alignment_indices(flow: dict, length: int = None) -> List[Optional[int]]:
@@ -48,17 +51,19 @@ def _alignment_indices(flow: dict, length: int = None) -> List[Optional[int]]:
                    for src, values in flow.items()}
     alignment_nodes = [connections.get(f's{i}', None) for i in range(length)]
     return [int(node[1:]) if node is not None else None for node in alignment_nodes]
+    flow = sum(min_cost_flow[SOURCE_NODE].values())
+    alignment = Alignment.from_flow(min_cost_flow,
+                                    sig_length=len(sig),
+                                    offset=offset)
+    return MaxFlowResult(alignment=alignment, cost=cost, flow=flow)
 
 
-def choose_best(alignments_costs: Iterable[Tuple[Alignment, int]]) -> Alignment:
-    alignments_costs = ((alignment, cost + nones_penalty(alignment))
-                        for alignment, cost in alignments_costs)
-    (best_offset, best_alignment), _ = sorted(alignments_costs, key=itemgetter(1))[0]
-    return best_offset, best_alignment
+def choose_best(results: Iterable[MaxFlowResult]) -> Alignment:
+    scored_alignments = (score_result(result) for result in results)
+    return sorted(scored_alignments, key=itemgetter(1))[0][0]
 
 
-def nones_penalty(alignment: Alignment) -> int:
-    return sum(NONE_PENALTY for i in alignment.indices if i is None)
+UNMATCHED_PENALTY = 100
 
 
 def first_key(d: dict, condition: Callable, default):
@@ -66,6 +71,10 @@ def first_key(d: dict, condition: Callable, default):
         return next(key for key, value in d.items() if condition(value))
     except StopIteration:
         return default
+def score_result(result: MaxFlowResult) -> Tuple[Alignment, int]:
+    alignment, cost, flow = result
+    num_unmatched = len(alignment) - flow
+    return alignment, cost + UNMATCHED_PENALTY * num_unmatched
 
 
 default_max_flow_synchronizer = partial(max_flow_synchronzier,
