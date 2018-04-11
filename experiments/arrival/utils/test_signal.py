@@ -10,6 +10,7 @@ from utils import consume
 class TestSignal(NamedTuple):
     signal: List[int]
     reference: List[int]
+    offset: int
     ground_truth: GroundTruth
 
     @classmethod
@@ -29,7 +30,8 @@ class TestSignal(NamedTuple):
         while must_contain_events and ground_truth.number_of_events == 0:
             signal, ground_truth = simulator(sent_signal, policies, offset=offset)
 
-        return TestSignal(signal=signal, reference=reference, ground_truth=ground_truth)
+        return TestSignal(signal=signal, reference=reference, offset=offset,
+                          ground_truth=ground_truth)
 
     @staticmethod
     def _sample_offset(sent_packets: int, reference_length: int) -> int:
