@@ -11,7 +11,7 @@ from utils.eval_loop import eval_loop
 from utils.sample import sample_uniform
 from utils.test_signal import TestSignal
 
-symbol_bits = 4
+symbol_bits = 3
 
 
 def sample_signal_lengths():
@@ -23,7 +23,8 @@ policies = predefined_policies['medium']
 generate_random_test_signal = partial(TestSignal.generate,
                                       generator=generate_random_sequence(symbol_bits),
                                       policies=policies,
-                                      sample_signal_lengths=sample_signal_lengths)
+                                      sample_signal_lengths=sample_signal_lengths,
+                                      must_contain_events=True)
 
 
 def debug_print_events(test_signal: TestSignal, alignment: Alignment):

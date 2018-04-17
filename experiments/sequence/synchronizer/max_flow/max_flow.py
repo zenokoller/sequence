@@ -70,8 +70,9 @@ default_max_flow_synchronizer = partial(max_flow_synchronzier,
                                         k=3)
 
 if __name__ == '__main__':
-    signal = [0, 1, 1, 2, 2, 3]
-    reference = [3, 0, 1, 2, 1, 2, 2, 3, 4]
+    signal = [3, 6, 4, 10, 13, 7, 8, 15, 0, 4, 10, 12, 1, 4]
+    reference = [13, 8, 13, 14, 6, 6, 0, 7, 1, 14, 6, 14, 8, 15, 14, 14, 3, 6, 4, 10, 13, 7, 8, 15,
+                 0, 4, 10, 12, 1, 4]
 
     alignment = max_flow_synchronzier(signal, reference, default_build_graph, k=3)
-    print_events(signal, reference, alignment)
+    print_events(signal, reference, alignment, symbol_bits=4)
