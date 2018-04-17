@@ -4,7 +4,7 @@ from typing import List, Tuple
 from simulator.policy import Policy
 from synchronizer.range_matcher.base_synchronizer import Synchronizer
 from synchronizer.range_matcher.estimator import Estimator
-from utils.test_signal import TestSignal
+from signal_utils.test_signal import TestSignal
 
 
 def run_synch_estim_pair(synchronizer: Synchronizer,

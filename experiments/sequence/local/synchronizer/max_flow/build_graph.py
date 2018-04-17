@@ -4,8 +4,8 @@ from typing import List, Tuple, Callable
 import networkx as nx
 
 from synchronizer.max_flow.energy import edge_energy, default_edge_energy
-from utils.range import tuple_to_range
-from utils.common_subsequences import common_subsequences
+from signal_utils.range import tuple_to_range
+from signal_utils.common_subsequences import common_subsequences
 
 SOURCE_NODE = 'S'
 SINK_NODE = 'T'

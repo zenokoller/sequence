@@ -4,7 +4,7 @@ from typing import List, NamedTuple, Iterable, Callable, Tuple
 from simulator.ground_truth.ground_truth import GroundTruth
 from simulator.ground_truth.simulator import simulator
 from simulator.policy import Policy
-from utils import consume
+from signal_utils import consume
 
 
 class TestSignal(NamedTuple):

@@ -7,9 +7,9 @@ from simulator.policy import policies_str
 from synchronizer.alignment import Alignment
 from synchronizer.max_flow.build_graph import default_build_graph
 from synchronizer.max_flow.max_flow import max_flow_synchronzier
-from utils.eval_loop import eval_loop
-from utils.sample import sample_uniform
-from utils.test_signal import TestSignal
+from signal_utils.eval_loop import eval_loop
+from signal_utils.sample import sample_uniform
+from signal_utils.test_signal import TestSignal
 
 symbol_bits = 3
 

@@ -3,7 +3,7 @@ from typing import Iterable, List, Tuple
 from simulator.ground_truth.ground_truth import GroundTruth
 from simulator.ground_truth.packet import reference_to_packets, packets_to_signal
 from simulator.policy import Policy
-from utils import consume_all
+from signal_utils import consume_all
 
 
 def simulator(sequence: Iterable,

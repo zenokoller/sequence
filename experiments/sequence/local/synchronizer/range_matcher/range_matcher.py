@@ -2,7 +2,7 @@ from functools import partial
 from typing import Iterable, Callable, List, Tuple
 
 from synchronizer.range_matcher.base_synchronizer import base_synchronizer
-from utils import consume_all
+from signal_utils import consume_all
 from synchronizer.range_matcher.base_synchronizer import Synchronizer
 from synchronizer.range_matcher.match import Match
 from synchronizer.range_matcher.range import get_range_list

@@ -3,7 +3,7 @@ from typing import NamedTuple, Tuple, List
 
 import pandas as pd
 
-from experiments.utils.tcp_flags import is_fin_set
+from .tcp_flags import is_fin_set
 from .rtt import RTT
 
 

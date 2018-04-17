@@ -1,7 +1,7 @@
 from typing import Callable, List, Iterable, Any
 
 from synchronizer.alignment import Alignment
-from utils.test_signal import TestSignal
+from signal_utils.test_signal import TestSignal
 
 
 def eval_loop(generate_test_signal: Callable[[], TestSignal] = None,

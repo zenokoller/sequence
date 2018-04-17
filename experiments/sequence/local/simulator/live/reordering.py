@@ -1,4 +1,3 @@
-from functools import partial
 from random import Random
 from typing import Deque, Iterable, Callable, Tuple
 
