@@ -4,6 +4,9 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/experiments/utils" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/experiments/arrival" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/experiments/arrival/docker" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/experiments/arrival/docker/client" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/experiments/arrival/docker/build" />
       <excludeFolder url="file://$MODULE_DIR$/lib" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.6.3 virtualenv at ~/.pyenv/versions/scion" jdkType="Python SDK" />
