@@ -15,5 +15,4 @@ print(f'Sniffing on interface: {args.in_uri}')
 filter_ = libtrace.filter('udp')  # TODO: Is this even working?
 with managed_trace(args.in_uri) as trace:
     trace.conf_filter(filter_)
-    raise NotImplementedError('Start state machine here')
-    # acquire_synch(trace)
+    raise NotImplementedError('demux_trace here')
