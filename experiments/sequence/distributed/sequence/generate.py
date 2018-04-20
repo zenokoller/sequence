@@ -1,16 +1,16 @@
+from functools import partial
 from random import Random
-from typing import Iterable, Callable
+from typing import Iterable
 
 
-def generate_sequence(get_next_bits: Callable[[int], int], symbol_bits: int) -> Iterable[int]:
+def generate_random_sequence(symbol_bits: int, period: int, seed: str) -> Iterable[
+    int]:
     while True:
-        yield get_next_bits(symbol_bits)
+        r = Random(seed or 0)
+        counter = 0
+        while counter < period:
+            counter += 1
+            yield r.getrandbits(symbol_bits)
 
 
-def generate_random_sequence(symbol_bits: int, seed: int = None) -> Iterable[int]:
-    r = Random(seed)
-    return generate_sequence(lambda k: r.getrandbits(k), symbol_bits)
-
-# Generate a sequence:
-#   gen = generate_random_sequence(8, seed=42)
-#   print([next(gen) for _ in range(10)])
+default_gen_sequence = partial(generate_random_sequence, 2, 2**16)

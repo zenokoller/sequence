@@ -3,17 +3,17 @@ from functools import partial
 from typing import Tuple, Callable, Iterable
 
 from utils.call_repeatedly import call_repeatedly
-from sequence.generate import generate_random_sequence
+from sequence.generate import default_gen_sequence
 
 
 def send_sequence(sock: socket.socket,
                   dest: Tuple[str, int],
-                  sequence_fn: Callable[[int], Iterable[int]] = None,
-                  seed: int = None,
+                  get_sequence: Callable[[int], Iterable[int]] = None,
+                  seed: str = None,
                   sending_rate: int = None) -> Callable:
     """Sends symbols from a sequence on `socket` at `sending_rate` to `dest`. The sequence is
      derived as `sequence_fn(seed).`"""
-    sequence = sequence_fn(seed)
+    sequence = get_sequence(seed)
     it = iter(sequence)
 
     def send_symbol():
@@ -24,5 +24,4 @@ def send_sequence(sock: socket.socket,
     return stop
 
 
-random_sequence = partial(generate_random_sequence, 2)
-send_random_sequence = partial(send_sequence, sequence_fn=random_sequence)
+send_default_sequence = partial(send_sequence, get_sequence=default_gen_sequence)

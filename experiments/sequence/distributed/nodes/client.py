@@ -1,8 +1,9 @@
 from argparse import ArgumentParser
+from contextlib import closing
 from time import sleep
 
 from sequence.seed import seed_from_flow_id
-from sequence.send import send_random_sequence
+from sequence.send import send_default_sequence
 from utils.create_socket import create_socket
 from utils.ip import get_my_ip
 
@@ -19,16 +20,15 @@ args = parser.parse_args()
 src_ip = get_my_ip()
 print(f'Client: Sending on {src_ip}:{args.src_port} -> {args.dst_ip}:{args.dst_port}')
 
-sock = create_socket(src_port=args.src_port)
-dest = args.dst_ip, args.dst_port
-seed = seed_from_flow_id(src_ip, args.src_port, args.dst_ip, args.dst_port)
-stop = send_random_sequence(sock, dest, seed=seed, sending_rate=args.rate)
+with closing(create_socket(src_port=args.src_port)) as sock:
+    dest = args.dst_ip, args.dst_port
+    seed = seed_from_flow_id(src_ip, args.src_port, args.dst_ip, args.dst_port)
+    stop_sending = send_default_sequence(sock, dest, seed=seed, sending_rate=args.rate)
 
-while True:
-    try:
-        sleep(0.1)
-    except KeyboardInterrupt:
-        print('Stopping client...')
-
-stop()
-sock.close()
+    while True:
+        try:
+            sleep(0.1)
+        except KeyboardInterrupt:
+            print('Stopping client...')
+            break
+    stop_sending()
