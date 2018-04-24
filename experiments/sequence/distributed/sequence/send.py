@@ -1,19 +1,20 @@
 import socket
 from functools import partial
-from typing import Tuple, Callable, Sequence
+from typing import Tuple, Callable
 
-from sequence.sequence import get_default_sequence
+from sequence.sequence import DefaultSequence
 from utils.call_repeatedly import call_repeatedly
 
 
 def send_sequence(sock: socket.socket,
                   dest: Tuple[str, int],
-                  get_sequence: Callable[[str], Sequence] = None,
-                  seed: str = None,
-                  sending_rate: int = None) -> Callable:
+                  sequence_cls: type = None,
+                  seed=None,
+                  sending_rate: int = None,
+                  offset: int = None) -> Callable:
     """Sends symbols from a sequence on `socket` at `sending_rate` to `dest`. The sequence is
      derived as `sequence_fn(seed).`"""
-    sequence = get_sequence(seed)
+    sequence = sequence_cls(seed, offset=offset)
 
     def send_symbol():
         sock.sendto(bytes([next(sequence)]), dest)
@@ -23,4 +24,4 @@ def send_sequence(sock: socket.socket,
     return stop
 
 
-send_default_sequence = partial(send_sequence, get_sequence=get_default_sequence)
+send_default_sequence = partial(send_sequence, sequence_cls=DefaultSequence)

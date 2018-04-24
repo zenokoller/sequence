@@ -14,7 +14,9 @@ parser.add_argument('src_port', help='source port', type=int)
 parser.add_argument('dst_ip', help='destination IP address')
 parser.add_argument('dst_port', help='destination port', type=int)
 parser.add_argument('-r', '--rate', dest='rate', default=DEFAULT_SENDING_RATE, type=int,
-                    help=f'sending rate in packets. Default: {DEFAULT_SENDING_RATE}')
+                    help=f'Sending rate in packets. Default: {DEFAULT_SENDING_RATE}')
+parser.add_argument('-o', '--offset', dest='offset', default=0, type=int,
+                    help=f'Start offset of sequence. Default: 0')
 args = parser.parse_args()
 
 src_ip = get_my_ip()
@@ -23,7 +25,11 @@ print(f'Client: Sending on {src_ip}:{args.src_port} -> {args.dst_ip}:{args.dst_p
 with closing(create_socket(src_port=args.src_port)) as sock:
     dest = args.dst_ip, args.dst_port
     seed = seed_from_flow_id(src_ip, args.src_port, args.dst_ip, args.dst_port)
-    stop_sending = send_default_sequence(sock, dest, seed=seed, sending_rate=args.rate)
+    stop_sending = send_default_sequence(sock,
+                                         dest,
+                                         seed=seed,
+                                         sending_rate=args.rate,
+                                         offset=args.offset)
 
     while True:
         try:

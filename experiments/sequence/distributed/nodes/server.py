@@ -1,28 +1,66 @@
 from argparse import ArgumentParser
-from contextlib import closing
+from asyncio import get_event_loop, Queue, ensure_future
 from functools import partial
+from typing import Dict
 
-from process_flows.split_flows import default_split_flows_with_socket
-from sequence.seed import seed_from_flow_id
-from utils.create_socket import create_socket
+from sequence.seed import seed_from_addresses
+from synchronizer.synchronizer import DefaultSynchronizer
 from utils.ip import get_my_ip
+from utils.types import Address
 
 parser = ArgumentParser()
-parser.add_argument('port', help='port to bind to', type=int)
+parser.add_argument('local_port', type=int)
+parser.add_argument('-e', '--echo', action='store_true')
 args = parser.parse_args()
 
-dst_addr, dst_port = get_my_ip(), args.port
+local_ip, local_port = get_my_ip(), args.local_port
+
+get_seed = partial(seed_from_addresses, recv_addr=(local_ip, local_port))
+
+Synchronizer = DefaultSynchronizer
 
 
-def seed_from_addr_port(src_addr: str, src_port: int) -> str:
-    return seed_from_flow_id(src_addr, src_port, dst_addr, dst_port)
+class SequenceServerProtocol:
+    def __init__(self, echo=False):
+        self.echo = echo
+        self.transport = None
+        self.queues: Dict[Address: Queue] = {}
+
+    def connection_made(self, transport):
+        self.transport = transport
+
+    def datagram_received(self, data, addr):
+        queue = self.queues.get(addr, None)
+        if queue is None:
+            queue = self.new_synchronizer(addr)
+            self.queues[addr] = queue
+
+        queue.put_nowait(self.decode_symbol(data))
+
+        if self.echo:
+            self.transport.sendto(data, addr)
+
+    def decode_symbol(self, data) -> int:
+        return int.from_bytes(data, byteorder='little')
+
+    def new_synchronizer(self, addr) -> Queue:
+        print(f'Started observing flow: {addr}')
+        queue = Queue()
+        synchronizer = Synchronizer(get_seed(addr), queue)
+        _ = ensure_future(synchronizer.synchronize())
+        return queue
 
 
-split_flows = partial(default_split_flows_with_socket, seed_from_addr_port=seed_from_addr_port)
+loop = get_event_loop()
+print(f'Starting UDP server, listening on {local_ip}:{local_port}')
+listen = loop.create_datagram_endpoint(
+    SequenceServerProtocol, local_addr=(local_ip, local_port))
+transport, protocol = loop.run_until_complete(listen)
 
-print(f'Server: Listening on {dst_addr}:{dst_port}')
-with closing(create_socket(dst_port)) as sock:
-    try:
-        split_flows(sock)
-    except KeyboardInterrupt:
-        print('Stopping server...')
+try:
+    loop.run_forever()
+except KeyboardInterrupt:
+    pass
+
+transport.close()
+loop.close()
