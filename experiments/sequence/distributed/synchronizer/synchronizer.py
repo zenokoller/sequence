@@ -10,8 +10,8 @@ from utils.symbol_buffer import ByteBuffer
 
 class Synchronizer:
     def __init__(self,
-                 seed,
-                 queue,
+                 seed: int,
+                 queue: Queue,
                  sequence_cls: Callable = None,
                  search: Callable = None,
                  buffer_cls: type = None):

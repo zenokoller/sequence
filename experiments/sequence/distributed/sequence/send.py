@@ -9,7 +9,7 @@ from utils.call_repeatedly import call_repeatedly
 def send_sequence(sock: socket.socket,
                   dest: Tuple[str, int],
                   sequence_cls: type = None,
-                  seed=None,
+                  seed: int = None,
                   sending_rate: int = None,
                   offset: int = None) -> Callable:
     """Sends symbols from a sequence on `socket` at `sending_rate` to `dest`. The sequence is

@@ -1,3 +1,4 @@
+from asyncio import Queue
 from difflib import Match, SequenceMatcher
 from functools import partial
 from itertools import islice
@@ -8,8 +9,8 @@ from utils.as_bytes import as_bytes
 from .exceptions import SynchronizationError
 
 
-async def search(seed,
-                 queue,
+async def search(seed: int,
+                 queue: Queue,
                  previous_matches: List[Match] = None,
                  batch_size: int = None,
                  min_match_size: int = None,
@@ -35,7 +36,7 @@ async def search(seed,
             return match.b + batch_size, matches
 
 
-def get_longest_match_fn(seed,
+def get_longest_match_fn(seed: int,
                          batch_size: int,
                          sequence_cls: type,
                          preprocess: Coroutine) -> Callable[[List[int]], Match]:
@@ -50,7 +51,7 @@ def get_longest_match_fn(seed,
     return get_longest_match
 
 
-def consume_sequence(seed, sequence_cls: Callable, preprocess: Coroutine) -> List[int]:
+def consume_sequence(seed: int, sequence_cls: Callable, preprocess: Coroutine) -> List[int]:
     sequence = sequence_cls(seed)
     if preprocess is not None:
         pre_cr = preprocess()

@@ -5,9 +5,10 @@ from typing import Iterable, Callable, List
 
 
 class Sequence:
-    __slots__ = ('it', 'pos', 'period')
-
-    def __init__(self, seed: str, offset: int = None, period: int = None,
+    def __init__(self,
+                 seed: int,
+                 offset: int = None,
+                 period: int = None,
                  generate_sequence: Callable[[str], Iterable[int]] = None):
         gen = generate_sequence(seed)
         if offset is not None:
@@ -17,6 +18,8 @@ class Sequence:
             self.pos = -1
         self.it = iter(gen)
         self.period = period
+
+    __slots__ = ('it', 'pos', 'period')
 
     def matches_next(self, symbol: int) -> bool:
         self.pos = (self.pos + 1) % self.period
@@ -34,7 +37,7 @@ class Sequence:
         return next(self.it)
 
 
-def generate_random_sequence(symbol_bits: int, period: int, seed: str) -> Iterable[int]:
+def generate_random_sequence(symbol_bits: int, period: int, seed: int) -> Iterable[int]:
     while True:
         r = Random(seed or 0)
         counter = 0
