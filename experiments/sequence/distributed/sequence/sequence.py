@@ -1,3 +1,4 @@
+from array import array
 from functools import partial
 from itertools import islice
 from random import Random
@@ -5,50 +6,53 @@ from typing import Iterable, Callable, List
 
 
 class Sequence:
+    __slots__ = ('_sequence', 'offset', 'period')
+
     def __init__(self,
                  seed: int,
                  offset: int = None,
                  period: int = None,
-                 generate_sequence: Callable[[str], Iterable[int]] = None):
-        gen = generate_sequence(seed)
-        if offset is not None:
-            gen = islice(gen, offset + 1, None)
-            self.pos = offset
-        else:
-            self.pos = -1
-        self.it = iter(gen)
+                 generate: Callable[[int], Iterable[int]] = None,
+                 typecode: str = None):
         self.period = period
-
-    __slots__ = ('it', 'pos', 'period')
+        self.offset = offset or -1
+        self._sequence = array(typecode, (x for x in islice(generate(seed), None, period)))
 
     def matches_next(self, symbol: int) -> bool:
-        self.pos = (self.pos + 1) % self.period
-        expected = next(self.it)
+        self.offset = (self.offset + 1) % self.period
+        expected = self._sequence[self.offset]
         return symbol == expected
 
     def matches_next_bunch(self, symbols: List[int]) -> bool:
-        self.pos = (self.pos + len(symbols)) % self.period
-        return all(symbol == expected for symbol, expected in zip(symbols, self.it))
+        prev_offset = self.offset
+        self.offset = (self.offset + len(symbols)) % self.period
+        return all(symbol == expected for symbol, expected
+                   in zip(symbols, self._sequence[prev_offset:self.offset]))
+
+    def set_offset(self, offset: int):
+        self.offset = offset % self.period
+
+    def as_list(self):
+        return list(self._sequence)
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        return next(self.it)
+        self.offset = (self.offset + 1) % self.period
+        return self._sequence[self.offset]
 
 
-def generate_random_sequence(symbol_bits: int, period: int, seed: int) -> Iterable[int]:
+def generate_random(symbol_bits: int, seed: int) -> Iterable[int]:
+    r = Random(seed or 0)
     while True:
-        r = Random(seed or 0)
-        counter = 0
-        while counter < period:
-            counter += 1
-            yield r.getrandbits(symbol_bits)
+        yield r.getrandbits(symbol_bits)
 
 
 default_symbol_bits = 2
 default_period = 2 ** 16
-default_generate_sequence = partial(generate_random_sequence, default_symbol_bits, default_period)
+default_generate_sequence = partial(generate_random, default_symbol_bits)
 DefaultSequence = partial(Sequence,
                           period=default_period,
-                          generate_sequence=default_generate_sequence)
+                          generate=default_generate_sequence,
+                          typecode='B')

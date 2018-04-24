@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Coroutine, List
+from typing import Coroutine, List, Callable
 
 import numpy as np
 
@@ -13,14 +13,14 @@ class SymbolBuffer:
     def __init__(self,
                  size: int = DEFAULT_BUFFER_SIZE,
                  dtype: np.dtype = DEFAULT_DTYPE,
-                 preprocess: Coroutine = None):
+                 preprocess: Callable = None):
         self.is_full = False
         self.size = size
         self.pre_cr = preprocess() if preprocess is not None else None
         self._buffer = np.zeros(self.size, dtype=dtype)
         self._index = -1
 
-    def add_next(self, symbol: int):
+    def append(self, symbol: int):
         if self.pre_cr is not None:
             symbol = self.pre_cr.send(symbol)
         if symbol is not None:
