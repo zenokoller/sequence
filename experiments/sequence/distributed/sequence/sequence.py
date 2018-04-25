@@ -15,19 +15,19 @@ class Sequence:
                  generate: Callable[[int], Iterable[int]] = None,
                  typecode: str = None):
         self.period = period
-        self.offset = offset or -1
+        self.offset = offset or 0
         self._sequence = array(typecode, (x for x in islice(generate(seed), None, period)))
 
     def matches_next(self, symbol: int) -> bool:
-        self.offset = (self.offset + 1) % self.period
         expected = self._sequence[self.offset]
+        self.offset = (self.offset + 1) % self.period
         return symbol == expected
 
     def matches_next_bunch(self, symbols: List[int]) -> bool:
         prev_offset = self.offset
         self.offset = (self.offset + len(symbols)) % self.period
         return all(symbol == expected for symbol, expected
-                   in zip(symbols, self._sequence[prev_offset:self.offset]))
+                   in zip(symbols, self._sequence[prev_offset:self.offset + 1]))
 
     def set_offset(self, offset: int):
         self.offset = offset % self.period
