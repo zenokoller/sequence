@@ -20,4 +20,4 @@ def configure_logging(log_path: str = None,
 
     add_handler(logging.StreamHandler(sys.stdout), stream_level)
     if log_path is not None:
-        add_handler(logging.FileHandler(log_path), file_level)
+        add_handler(logging.FileHandler(log_path, mode='w'), file_level)
