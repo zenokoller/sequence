@@ -1,13 +1,15 @@
+import logging
 import socket
 from functools import partial
-from typing import Tuple, Callable
+from typing import Callable
 
 from sequence.sequence import DefaultSequence
 from utils.call_repeatedly import call_repeatedly
+from utils.types import Address
 
 
 def send_sequence(sock: socket.socket,
-                  dest: Tuple[str, int],
+                  dest: Address,
                   sequence_cls: type = None,
                   seed: int = None,
                   sending_rate: int = None,
@@ -17,6 +19,9 @@ def send_sequence(sock: socket.socket,
     sequence = sequence_cls(seed, offset=offset)
 
     def send_symbol():
+        offset = sequence.offset
+        symbol = next(sequence)
+        logging.debug(f'send_symbol: ({offset}, {symbol})')
         sock.sendto(bytes([next(sequence)]), dest)
 
     stop = call_repeatedly(1 / sending_rate, send_symbol)

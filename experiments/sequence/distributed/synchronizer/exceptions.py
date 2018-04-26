@@ -1,2 +1,2 @@
-class SynchronizationError(Exception):
+class SearchError(Exception):
     pass

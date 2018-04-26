@@ -1,3 +1,4 @@
+import logging
 from asyncio import Queue
 from difflib import Match, SequenceMatcher
 from functools import partial
@@ -5,7 +6,7 @@ from typing import Tuple, Callable, List
 
 from sequence.sequence import Sequence
 from utils.as_bytes import as_bytes
-from .exceptions import SynchronizationError
+from .exceptions import SearchError
 
 
 async def search(queue: Queue,
@@ -23,10 +24,12 @@ async def search(queue: Queue,
         batch = await queue.get()
         batch = apply_coroutine(batch, preprocess)
         match = get_longest_match(batch)
+        logging.debug(f'search: Got {match}')
         if match.size < min_match_size:
             non_matched_count += 1
             if non_matched_count > backoff_thresh:
-                raise SynchronizationError
+                logging.warning('search: Reached maximum number of search trials; aborting.')
+                raise SearchError
             continue
 
         matches.append(match)

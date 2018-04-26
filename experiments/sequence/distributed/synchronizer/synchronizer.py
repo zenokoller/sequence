@@ -1,3 +1,4 @@
+import logging
 from asyncio import Queue, ensure_future
 from collections import Callable
 from difflib import Match
@@ -5,7 +6,7 @@ from functools import partial
 from typing import List
 
 from sequence.sequence import DefaultSequence
-from synchronizer.exceptions import SynchronizationError
+from synchronizer.exceptions import SearchError
 from synchronizer.search import default_search
 from utils.symbol_buffer import SymbolBuffer
 
@@ -31,12 +32,15 @@ class Synchronizer:
         while True:
             symbol = await self.in_queue.get()
             if self.searching:
-                await self.continue_search(symbol)
+                try:
+                    await self.continue_search(symbol)
+                except SearchError:
+                    return
             elif not self.sequence.matches_next(symbol):
-                print(f'start search: {self.sequence.offset}')
                 self.start_search(first_symbol=symbol)
 
     def start_search(self, first_symbol: int = None, previous_matches: List[Match] = None):
+        logging.info(f'start_search: at {self.sequence.offset - 1}; {first_symbol}')
         self.searching = True
         self.out_queue = self.out_queue if self.out_queue is not None else Queue()
         self.buffer = self.buffer if self.buffer is not None else self.buffer_cls()
@@ -52,13 +56,9 @@ class Synchronizer:
             self.stop_search()
 
     def stop_search(self):
-        try:
-            found_offset, matches = self.search_task.result()
-        except SynchronizationError:
-            print('SynchronizationError, stopping synchronizer.')
-            return
+        found_offset, matches = self.search_task.result()
         self.sequence.set_offset(found_offset)
-        print(f'found offset: {self.sequence.offset}')
+        logging.info(f'stop_search: found offset: {self.sequence.offset}')
 
         if self.sequence.matches_next_bunch(self.buffer.last_batch()):
             self.searching = False
@@ -66,7 +66,7 @@ class Synchronizer:
             self.out_queue = None
             self.buffer = None
         else:
-            print(f'restart search: {self.sequence.offset}')
+            logging.info(f'stop_search: {self.sequence.offset}')
             self.start_search(previous_matches=matches)
 
 

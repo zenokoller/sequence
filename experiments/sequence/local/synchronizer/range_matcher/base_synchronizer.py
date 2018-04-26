@@ -1,6 +1,6 @@
 from typing import Callable, Tuple, List, Optional, Iterable
 
-from synchronizer.exceptions import SynchronizationError
+from synchronizer.exceptions import SearchError
 from synchronizer.range_matcher.match import Match
 
 """A synchronizer takes a signal and a reference and upon successful synchronization,
@@ -16,4 +16,4 @@ def base_synchronizer(reference: Iterable,
     if accept(matches):
         return list(matches)
     else:
-        raise SynchronizationError('Could not synchronize reference ranges')
+        raise SearchError('Could not synchronize reference ranges')
