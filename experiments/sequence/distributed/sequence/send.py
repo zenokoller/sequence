@@ -21,7 +21,7 @@ def send_sequence(sock: socket.socket,
     def send_symbol():
         offset = sequence.offset
         symbol = next(sequence)
-        logging.debug(f'send_symbol: ({offset}, {symbol})')
+        logging.debug(f'send_symbol: offset={offset}, symbol={symbol}')
         sock.sendto(bytes([symbol]), dest)
 
     stop = call_repeatedly(1 / sending_rate, send_symbol)

@@ -23,3 +23,9 @@ class SymbolBuffer:
 
     def last_batch(self) -> List[int]:
         return list(self._buffer[-self.batch_size:])
+
+    def partial_batch(self) -> List[int]:
+        if self._batch_index == 0:
+            return []
+        else:
+            return list(self._buffer[-self._batch_index:])

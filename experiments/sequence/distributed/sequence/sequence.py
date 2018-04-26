@@ -21,14 +21,14 @@ class Sequence:
 
     def matches_next(self, symbol: int) -> bool:
         expected = self._sequence[self.offset]
-        logging.debug(f'matches_next: ({self.offset}, {expected}, {symbol})')
+        logging.debug(f'matches_next: offset={self.offset}, expected={expected}, actual={symbol}')
         self.offset = (self.offset + 1) % self.period
         return symbol == expected
 
     def matches_next_bunch(self, symbols: List[int]) -> bool:
         prev_offset = self.offset
         self.offset = (self.offset + len(symbols)) % self.period
-        logging.debug(f'matches_next_bunch: ([{prev_offset},{self.offset}], TBD add symbols...)')
+        logging.debug('matches_next_bunch')
         return all(symbol == expected for symbol, expected
                    in zip(symbols, self._sequence[prev_offset:self.offset + 1]))
 

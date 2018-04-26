@@ -40,7 +40,8 @@ class Synchronizer:
                 self.start_search(first_symbol=symbol)
 
     def start_search(self, first_symbol: int = None, previous_matches: List[Match] = None):
-        logging.info(f'start_search: at {self.sequence.offset - 1}; {first_symbol}')
+        logging.info(f'start_search: offset={self.sequence.offset}, first_symbol='
+                     f'{first_symbol}')
         self.searching = True
         self.out_queue = self.out_queue if self.out_queue is not None else Queue()
         self.buffer = self.buffer if self.buffer is not None else self.buffer_cls()
@@ -58,15 +59,15 @@ class Synchronizer:
     def stop_search(self):
         found_offset, matches = self.search_task.result()
         self.sequence.set_offset(found_offset)
-        logging.info(f'stop_search: found offset: {self.sequence.offset}')
+        logging.info(f'stop_search: found_offset={self.sequence.offset}')
 
-        if self.sequence.matches_next_bunch(self.buffer.last_batch()):
+        if self.sequence.matches_next_bunch(self.buffer.partial_batch()):
             self.searching = False
             self.search_task = False
             self.out_queue = None
             self.buffer = None
         else:
-            logging.info(f'stop_search: {self.sequence.offset}')
+            logging.info(f'stop_search: restart search; offset={self.sequence.offset}')
             self.start_search(previous_matches=matches)
 
 
