@@ -1,11 +1,10 @@
 from argparse import ArgumentParser
-from asyncio import get_event_loop, Queue, ensure_future
 from functools import partial
 from typing import Dict
 
+from config.env import get_server_ip
 from sequence.seed import seed_from_addresses
 from synchronizer.synchronizer import DefaultSynchronizer
-from utils.ip import get_my_ip
 from utils.types import Address
 
 parser = ArgumentParser()
@@ -13,10 +12,11 @@ parser.add_argument('local_port', type=int)
 parser.add_argument('-e', '--echo', action='store_true')
 args = parser.parse_args()
 
-local_ip, local_port = get_my_ip(), args.local_port
+
+local_ip = get_server_ip()
+local_port = args.local_port
 
 get_seed = partial(seed_from_addresses, recv_addr=(local_ip, local_port))
-
 Synchronizer = DefaultSynchronizer
 
 
@@ -44,15 +44,11 @@ class SequenceServerProtocol:
         return int.from_bytes(data, byteorder='little')
 
     def new_synchronizer(self, addr) -> Queue:
-        print(f'Started observing flow: {addr}')
         queue = Queue()
         synchronizer = Synchronizer(get_seed(addr), queue)
-        _ = ensure_future(synchronizer.synchronize())
         return queue
 
 
-loop = get_event_loop()
-print(f'Starting UDP server, listening on {local_ip}:{local_port}')
 listen = loop.create_datagram_endpoint(
     SequenceServerProtocol, local_addr=(local_ip, local_port))
 transport, protocol = loop.run_until_complete(listen)
@@ -60,7 +56,4 @@ transport, protocol = loop.run_until_complete(listen)
 try:
     loop.run_forever()
 except KeyboardInterrupt:
-    pass
-
-transport.close()
 loop.close()
