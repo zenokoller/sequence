@@ -1,4 +1,5 @@
 import array
+import logging
 from typing import List, Callable
 
 DEFAULT_BATCH_SIZE = 50
@@ -21,4 +22,4 @@ class SymbolBuffer:
         return self._batch_index == 0
 
     def last_batch(self) -> List[int]:
-        return list(self._buffer[-self._batch_index:])
+        return list(self._buffer[-self.batch_size:])
