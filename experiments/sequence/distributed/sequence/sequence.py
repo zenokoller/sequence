@@ -3,7 +3,7 @@ from array import array
 from functools import partial
 from itertools import islice
 from random import Random
-from typing import Iterable, Callable, List
+from typing import Iterable, Callable, List, Tuple
 
 
 class Sequence:
@@ -41,9 +41,11 @@ class Sequence:
     def __iter__(self):
         return self
 
-    def __next__(self):
+    def __next__(self) -> Tuple[int, int]:
+        """Returns next (symbol, offset) of the sequence."""
+        prev_offset = self.offset
         self.offset = (self.offset + 1) % self.period
-        return self._sequence[self.offset]
+        return self._sequence[prev_offset], prev_offset
 
 
 def generate_random(symbol_bits: int, seed: int) -> Iterable[int]:

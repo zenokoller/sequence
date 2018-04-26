@@ -1,4 +1,3 @@
-import logging
 import socket
 from functools import partial
 from typing import Callable
@@ -19,10 +18,10 @@ def send_sequence(sock: socket.socket,
     sequence = sequence_cls(seed, offset=offset)
 
     def send_symbol():
-        offset = sequence.offset
-        symbol = next(sequence)
-        logging.debug(f'send_symbol: offset={offset}, symbol={symbol}')
-        sock.sendto(bytes([symbol]), dest)
+        symbol, _offset = next(sequence)
+        # TODO: Add encode / decode payload methods, include offset
+        payload = bytes([symbol])
+        sock.sendto(payload, dest)
 
     stop = call_repeatedly(1 / sending_rate, send_symbol)
 
