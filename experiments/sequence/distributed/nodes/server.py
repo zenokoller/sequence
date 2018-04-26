@@ -56,8 +56,10 @@ class SequenceServerProtocol:
 
     def new_synchronizer(self, addr) -> Queue:
         logging.info(f'Start observing flow: {addr}')
+        seed = get_seed(addr)
+        logging.debug(f'Seed: {seed}')
         queue = Queue()
-        synchronizer = Synchronizer(get_seed(addr), queue)
+        synchronizer = Synchronizer(seed, queue)
         _ = asyncio.ensure_future(synchronizer.synchronize())
         return queue
 

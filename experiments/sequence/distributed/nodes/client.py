@@ -31,6 +31,7 @@ logging.info(f'Client: Sending on {local_ip}:{local_port} -> {remote_ip}:{remote
 
 with closing(create_socket(local_port=local_port)) as sock:
     seed = seed_from_flow_id(local_ip, local_port, remote_ip, remote_port)
+    logging.debug(f'Seed: {seed}')
     stop_sending = send_default_sequence(sock, (remote_ip, remote_port), seed=seed,
                                          sending_rate=args.rate, offset=args.offset)
 
