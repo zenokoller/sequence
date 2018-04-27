@@ -6,7 +6,7 @@ from time import sleep
 from config.env import get_client_ip, get_server_ip
 from sequence.seed import seed_from_flow_id
 from sequence.send import send_default_sequence
-from config.logging import configure_logging
+from config.logging import setup_logger
 from utils.create_socket import create_socket
 
 DEFAULT_SENDING_RATE = 100  # Packets per second
@@ -18,11 +18,11 @@ parser.add_argument('-r', '--rate', dest='rate', default=DEFAULT_SENDING_RATE, t
                     help=f'Sending rate in packets. Default: {DEFAULT_SENDING_RATE}')
 parser.add_argument('-o', '--offset', dest='offset', default=0, type=int,
                     help=f'Start offset of sequence. Default: 0')
-parser.add_argument('-l', '--log_path', dest='log_path', default=None, type=str,
-                    help=f'Path to log file. Default: None')
+parser.add_argument('-l', '--log_dir', dest='log_dir', default=None, type=str,
+                    help=f'Path to log directory. Default: None')
 args = parser.parse_args()
 
-configure_logging(log_path=args.log_path)
+setup_logger(log_dir=args.log_dir)
 
 local_ip, remote_ip = get_client_ip(), get_server_ip()
 local_port, remote_port = args.local_port, args.remote_port
