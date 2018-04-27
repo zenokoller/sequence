@@ -1,4 +1,3 @@
-import logging
 from array import array
 from functools import partial
 from itertools import islice
@@ -19,25 +18,6 @@ class Sequence:
         self.offset = offset or 0
         self._sequence = array(typecode, (x for x in islice(generate(seed), None, period)))
 
-    def matches_next(self, symbol: int) -> bool:
-        expected = self._sequence[self.offset]
-        logging.debug(f'matches_next: offset={self.offset}, expected={expected}, actual={symbol}')
-        self.offset = (self.offset + 1) % self.period
-        return symbol == expected
-
-    def matches_next_bunch(self, symbols: List[int]) -> bool:
-        prev_offset = self.offset
-        self.offset = (self.offset + len(symbols)) % self.period
-        logging.debug('matches_next_bunch')
-        return all(symbol == expected for symbol, expected
-                   in zip(symbols, self._sequence[prev_offset:self.offset + 1]))
-
-    def set_offset(self, offset: int):
-        self.offset = offset % self.period
-
-    def as_list(self):
-        return list(self._sequence)
-
     def __iter__(self):
         return self
 
@@ -46,6 +26,12 @@ class Sequence:
         prev_offset = self.offset
         self.offset = (self.offset + 1) % self.period
         return self._sequence[prev_offset], prev_offset
+
+    def set_offset(self, offset: int):
+        self.offset = offset % self.period
+
+    def as_list(self) -> List[int]:
+        return list(self._sequence)
 
 
 def generate_random(symbol_bits: int, seed: int) -> Iterable[int]:

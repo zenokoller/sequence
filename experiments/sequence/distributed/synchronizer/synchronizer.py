@@ -31,12 +31,14 @@ class Synchronizer:
     async def synchronize(self):
         while True:
             symbol = await self.in_queue.get()
+            expected, _ = next(self.sequence)
             if self.searching:
                 try:
                     await self.continue_search(symbol)
-                except SearchError:
+                except SearchError as error:
+                    logging.warning(f'SearchError: {error}; aborting.')
                     return
-            elif not self.sequence.matches_next(symbol):
+            elif symbol != expected:
                 self.start_search(first_symbol=symbol)
 
     def start_search(self, first_symbol: int = None, previous_matches: List[Match] = None):
@@ -61,7 +63,7 @@ class Synchronizer:
         self.sequence.set_offset(found_offset)
         logging.info(f'stop_search: found_offset={self.sequence.offset}')
 
-        if self.sequence.matches_next_bunch(self.buffer.batch):
+        if self.partial_batch_matches_sequence:
             self.searching = False
             self.search_task = False
             self.out_queue = None
@@ -69,6 +71,12 @@ class Synchronizer:
         else:
             logging.info(f'stop_search: restart search; offset={self.sequence.offset}')
             self.start_search(previous_matches=matches)
+
+    @property
+    def partial_batch_matches_sequence(self) -> bool:
+        print(len(self.buffer.batch))
+        return all(
+            symbol == expected for symbol, (expected, _) in zip(self.buffer.batch, self.sequence))
 
 
 DefaultSynchronizer = partial(Synchronizer,

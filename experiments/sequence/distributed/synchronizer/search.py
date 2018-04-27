@@ -28,8 +28,7 @@ async def search(queue: Queue,
         if match.size < min_match_size:
             non_matched_count += 1
             if non_matched_count > backoff_thresh:
-                logging.warning('search: Reached maximum number of search trials; aborting.')
-                raise SearchError
+                raise SearchError('reached maximum number of search attempts')
         else:
             matches.append(match)
             matched_at_end = match.a + match.size == len(batch)
