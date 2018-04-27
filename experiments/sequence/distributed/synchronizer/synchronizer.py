@@ -50,9 +50,9 @@ class Synchronizer:
         self.search_task = ensure_future(self.search(self.out_queue, previous_matches))
 
     async def continue_search(self, symbol: int):
-        batch_full = self.buffer.append(symbol)
-        if batch_full:
-            await self.out_queue.put(self.buffer.last_batch())
+        self.buffer.append(symbol)
+        if self.buffer.batch_full:
+            await self.out_queue.put(self.buffer.batch)
         if self.search_task.done():
             self.stop_search()
 
@@ -61,7 +61,7 @@ class Synchronizer:
         self.sequence.set_offset(found_offset)
         logging.info(f'stop_search: found_offset={self.sequence.offset}')
 
-        if self.sequence.matches_next_bunch(self.buffer.partial_batch()):
+        if self.sequence.matches_next_bunch(self.buffer.batch):
             self.searching = False
             self.search_task = False
             self.out_queue = None

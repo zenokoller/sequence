@@ -1,31 +1,29 @@
 import array
 import logging
-from typing import List, Callable
+from typing import List, Callable, Optional
 
 DEFAULT_BATCH_SIZE = 50
 DEFAULT_TYPECODE = 'B'
 
 
 class SymbolBuffer:
-    __slots__ = ('_batch_index', 'batch_size', '_buffer')
+    """Stores up to `batch_size` symbols in `batch` and periodically flushes them into `buffer`."""
+    __slots__ = ('batch_size', 'batch', 'buffer')
 
     def __init__(self,
                  batch_size: int = DEFAULT_BATCH_SIZE,
                  typecode: str = DEFAULT_TYPECODE):
-        self._batch_index = 0
+        self.batch = []
         self.batch_size = batch_size
-        self._buffer = array.array(typecode)
+        self.buffer = array.array(typecode)
 
-    def append(self, symbol: int) -> bool:
-        self._buffer.append(symbol)
-        self._batch_index = (self._batch_index + 1) % self.batch_size
-        return self._batch_index == 0
-
-    def last_batch(self) -> List[int]:
-        return list(self._buffer[-self.batch_size:])
-
-    def partial_batch(self) -> List[int]:
-        if self._batch_index == 0:
-            return []
+    def append(self, symbol: int):
+        if self.batch_full:
+            self.buffer.extend(self.batch)
+            self.batch = [symbol]
         else:
-            return list(self._buffer[-self._batch_index:])
+            self.batch.append(symbol)
+
+    @property
+    def batch_full(self) -> bool:
+        return len(self.batch) == self.batch_size
