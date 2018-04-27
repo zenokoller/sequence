@@ -4,6 +4,7 @@ from typing import Callable
 
 from sequence.sequence import DefaultSequence
 from utils.call_repeatedly import call_repeatedly
+from utils.integer_codec import encode_symbol_with_offset
 from utils.types import Address
 
 
@@ -18,9 +19,7 @@ def send_sequence(sock: socket.socket,
     sequence = sequence_cls(seed, offset=offset)
 
     def send_symbol():
-        symbol, _offset = next(sequence)
-        # TODO: Add encode / decode payload methods, include offset
-        payload = bytes([symbol])
+        payload = encode_symbol_with_offset(next(sequence))
         sock.sendto(payload, dest)
 
     stop = call_repeatedly(1 / sending_rate, send_symbol)

@@ -9,6 +9,7 @@ from config.env import get_server_ip
 from sequence.seed import seed_from_addresses
 from synchronizer.synchronizer import DefaultSynchronizer
 from config.logging import setup_logger
+from utils.integer_codec import decode_symbol_with_offset
 from utils.types import Address
 
 parser = ArgumentParser()
@@ -47,13 +48,12 @@ class SequenceServerProtocol:
             queue = self.new_synchronizer(addr)
             self.queues[addr] = queue
 
-        queue.put_nowait(self.decode_symbol(data))
+        symbol, offset = decode_symbol_with_offset(data)
+        queue.put_nowait(symbol)
+        recv_logger.debug(f'{offset}; {symbol}')
 
         if self.echo:
             self.transport.sendto(data, addr)
-
-    def decode_symbol(self, data) -> int:
-        return int.from_bytes(data, byteorder='little')
 
     def new_synchronizer(self, addr) -> Queue:
         seed = get_seed(addr)
