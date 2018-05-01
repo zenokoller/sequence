@@ -9,12 +9,14 @@ from synchronizer.search import full_search, recovery_search
 from utils.symbol_buffer import SymbolBuffer
 
 
-async def synchronize(seed: int, queue: Queue, sequence_cls: Callable = None):
+async def synchronize(seed: int, symbol_queue: Queue, event_queue: Queue, sequence_cls: Callable):
     state = Initial(sequence_cls(seed))
     while True:
-        symbol = await queue.get()
-        state = await state.next(symbol)
-        # TODO: Send singals to `derive_events`. Could do with decorator on some next functions
+        symbol = await symbol_queue.get()
+        state, event = await state.next(symbol)
+        if event is not None:
+            await event_queue.put(event)
+        # TODO: Can we use a decorator?
 
 
 class State:
@@ -86,7 +88,6 @@ class AbstractSearchingState(State):
         raise NotImplementedError
 
 
-# TODO: Add global config
 RECOVERY_BATCH_SIZE = 25
 RECOVERY_RANGE_LENGTH = 50
 

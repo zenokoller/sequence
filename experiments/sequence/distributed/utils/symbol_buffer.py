@@ -1,4 +1,5 @@
-import array
+from array import array
+from typing import List
 
 DEFAULT_TYPECODE = 'B'
 
@@ -10,10 +11,10 @@ class SymbolBuffer:
     def __init__(self,
                  batch_size: int,
                  typecode: str = DEFAULT_TYPECODE,
-                 prev_array: array.array = None):
+                 prev_array: array = None):
         self.batch = []
         self.batch_size = batch_size
-        self.array = prev_array or array.array(typecode)
+        self.array = prev_array or array(typecode)
 
     def append(self, symbol: int):
         if self.batch_full:
@@ -21,6 +22,9 @@ class SymbolBuffer:
             self.batch = [symbol]
         else:
             self.batch.append(symbol)
+
+    def as_batches(self) -> List[array]:
+        raise NotImplementedError
 
     @property
     def batch_full(self) -> bool:

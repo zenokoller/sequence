@@ -7,9 +7,10 @@ from typing import Dict
 
 from config.env import get_server_ip
 from config.logging import setup_logger
+from detector.detector import detector
 from sequence.seed import seed_from_addresses
 from sequence.sequence import DefaultSequence
-from synchronizer.synchronize import synchronize
+from synchronizer.synchronizer import synchronize
 from utils.integer_codec import decode_symbol_with_offset
 from utils.types import Address
 
@@ -29,6 +30,7 @@ local_port = args.local_port
 get_seed = partial(seed_from_addresses, recv_addr=(local_ip, local_port))
 
 sequence_cls = DefaultSequence
+report = lambda events: print(events)
 
 
 class SequenceServerProtocol:
@@ -47,7 +49,7 @@ class SequenceServerProtocol:
     def datagram_received(self, data, addr):
         queue = self.queues.get(addr, None)
         if queue is None:
-            queue = self.start_synch(addr)
+            queue = self.start_sync_and_detector(addr)
             self.queues[addr] = queue
 
         symbol, offset = decode_symbol_with_offset(data)
@@ -57,12 +59,13 @@ class SequenceServerProtocol:
         if self.echo:
             self.transport.sendto(data, addr)
 
-    def start_synch(self, addr) -> Queue:
+    def start_sync_and_detector(self, addr) -> Queue:
         seed = get_seed(addr)
         logging.info(f'Start observing flow; addr={addr}; seed={seed}')
-        queue = Queue()
-        _ = asyncio.ensure_future(synchronize(seed, queue, sequence_cls=sequence_cls))
-        return queue
+        symbol_queue, event_queue = Queue(), Queue()
+        _ = asyncio.ensure_future(synchronize(seed, symbol_queue, event_queue, sequence_cls))
+        _ = asyncio.ensure_future(detector(seed, event_queue, sequence_cls, report))
+        return symbol_queue
 
 
 loop = asyncio.get_event_loop()
