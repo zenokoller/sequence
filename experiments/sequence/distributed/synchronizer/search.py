@@ -5,26 +5,28 @@ from functools import partial
 from typing import Tuple, Callable, List
 
 from sequence.sequence import Sequence
+from synchronizer.exceptions import SearchError
 from utils.as_bytes import as_bytes
-from .exceptions import SearchError
 
 
 async def search(queue: Queue,
-                 previous_matches: List[Match] = None,
-                 batch_size: int = None,
+                 prev_matches: List[Match] = None,
                  min_match_size: int = None,
                  backoff_thresh: int = None,
                  sequence: Sequence = None,
-                 preprocess: Callable = None) -> Tuple[int, List[Match]]:
-    matches = previous_matches or []
+                 preprocess: Callable = None,
+                 range_: Tuple[int, int] = None) -> Tuple[int, List[Match]]:
+    matches = prev_matches or []
     non_matched_count = 0
-    get_longest_match = get_longest_match_fn(sequence, preprocess)
+    get_longest_match = get_longest_match_fn(sequence, preprocess, range_)
 
     while True:
         batch = await queue.get()
+        original_batch_size = len(batch)
         batch = apply_coroutine(batch, preprocess)
+        processing_offset = original_batch_size - len(batch)
+
         match = get_longest_match(batch)
-        logging.debug(f'search: Got {match}')
         if match.size < min_match_size:
             non_matched_count += 1
             if non_matched_count > backoff_thresh:
@@ -33,12 +35,15 @@ async def search(queue: Queue,
             matches.append(match)
             matched_at_end = match.a + match.size == len(batch)
             if matched_at_end and queue.empty():
-                return match.b + batch_size, matches
+                start_recovery = range_[0] if range_ is not None else 0
+                found_offset = start_recovery + match.b + match.size + processing_offset
+                return found_offset, matches
 
 
 def get_longest_match_fn(sequence: Sequence,
-                         preprocess: Callable) -> Callable[[List[int]], Match]:
-    seq2 = sequence.as_list()
+                         preprocess: Callable,
+                         search_range: Tuple[int, int]) -> Callable[[List[int]], Match]:
+    seq2 = sequence.as_list(search_range)
     seq2 = apply_coroutine(seq2, preprocess)
     sequence_matcher = SequenceMatcher()
     sequence_matcher.set_seq2(seq2)
@@ -57,12 +62,20 @@ def apply_coroutine(items: list, coroutine: Callable) -> list:
     return [res for res in (cr.send(item) for item in items) if res is not None]
 
 
-DEFAULT_BATCH_SIZE = 50
-DEFAULT_MIN_MATCH_SIZE = 20
-DEFAULT_BACKOFF_THRESH = 10
+full_search_config = {
+    'min_match_size': 20,
+    'backoff_thresh': 10
+}
+full_search = partial(search,
+                      min_match_size=full_search_config['min_match_size'],
+                      backoff_thresh=full_search_config['backoff_thresh'],
+                      preprocess=as_bytes)
 
-default_search = partial(search,
-                         batch_size=DEFAULT_BATCH_SIZE,
-                         min_match_size=DEFAULT_MIN_MATCH_SIZE,
-                         backoff_thresh=DEFAULT_BACKOFF_THRESH,
-                         preprocess=as_bytes)
+recovery_config = {
+    'min_match_size': 10,
+    'backoff_thresh': 3
+}
+recovery_search = partial(search,
+                          min_match_size=recovery_config['min_match_size'],
+                          backoff_thresh=recovery_config['backoff_thresh'],
+                          preprocess=as_bytes)

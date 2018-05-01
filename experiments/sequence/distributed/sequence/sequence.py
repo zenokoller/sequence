@@ -22,7 +22,7 @@ class Sequence:
         return self
 
     def __next__(self) -> Tuple[int, int]:
-        """Returns next (symbol, offset) of the sequence."""
+        """Returns next (symbol, offset) of the sequence, advancing the offset by 1."""
         prev_offset = self.offset
         self.offset = (self.offset + 1) % self.period
         return self._sequence[prev_offset], prev_offset
@@ -30,8 +30,12 @@ class Sequence:
     def set_offset(self, offset: int):
         self.offset = offset % self.period
 
-    def as_list(self) -> List[int]:
-        return list(self._sequence)
+    def as_list(self, range: int = None) -> List[int]:
+        if range is not None:
+            i, j = range
+            return list(self._sequence[i:j])
+        else:
+            return list(self._sequence)
 
 
 def generate_random(symbol_bits: int, seed: int) -> Iterable[int]:

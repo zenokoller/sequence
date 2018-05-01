@@ -6,9 +6,10 @@ from functools import partial
 from typing import Dict
 
 from config.env import get_server_ip
-from sequence.seed import seed_from_addresses
-from synchronizer.synchronizer import DefaultSynchronizer
 from config.logging import setup_logger
+from sequence.seed import seed_from_addresses
+from sequence.sequence import DefaultSequence
+from synchronizer.synchronize import synchronize
 from utils.integer_codec import decode_symbol_with_offset
 from utils.types import Address
 
@@ -26,7 +27,8 @@ local_ip = get_server_ip()
 local_port = args.local_port
 
 get_seed = partial(seed_from_addresses, recv_addr=(local_ip, local_port))
-Synchronizer = DefaultSynchronizer
+
+sequence_cls = DefaultSequence
 
 
 class SequenceServerProtocol:
@@ -45,7 +47,7 @@ class SequenceServerProtocol:
     def datagram_received(self, data, addr):
         queue = self.queues.get(addr, None)
         if queue is None:
-            queue = self.new_synchronizer(addr)
+            queue = self.start_synch(addr)
             self.queues[addr] = queue
 
         symbol, offset = decode_symbol_with_offset(data)
@@ -55,12 +57,11 @@ class SequenceServerProtocol:
         if self.echo:
             self.transport.sendto(data, addr)
 
-    def new_synchronizer(self, addr) -> Queue:
+    def start_synch(self, addr) -> Queue:
         seed = get_seed(addr)
         logging.info(f'Start observing flow; addr={addr}; seed={seed}')
         queue = Queue()
-        synchronizer = Synchronizer(seed, queue)
-        _ = asyncio.ensure_future(synchronizer.synchronize())
+        _ = asyncio.ensure_future(synchronize(seed, queue, sequence_cls=sequence_cls))
         return queue
 
 
