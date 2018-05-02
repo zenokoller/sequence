@@ -1,4 +1,3 @@
-import logging
 from asyncio import Queue
 from difflib import Match, SequenceMatcher
 from functools import partial
@@ -22,9 +21,8 @@ async def search(queue: Queue,
 
     while True:
         batch = await queue.get()
-        original_batch_size = len(batch)
+        original_batch_length = len(batch)
         batch = apply_coroutine(batch, preprocess)
-        processing_offset = original_batch_size - len(batch)
 
         match = get_longest_match(batch)
         if match.size < min_match_size:
@@ -33,10 +31,9 @@ async def search(queue: Queue,
                 raise SearchError('reached maximum number of search attempts')
         else:
             matches.append(match)
-            matched_at_end = match.a + match.size == len(batch)
+            matched_at_end = match.a + match.size == original_batch_length
             if matched_at_end and queue.empty():
-                start_recovery = range_[0] if range_ is not None else 0
-                found_offset = start_recovery + match.b + match.size + processing_offset
+                found_offset = match.b + match.size
                 return found_offset, matches
 
 
@@ -44,13 +41,21 @@ def get_longest_match_fn(sequence: Sequence,
                          preprocess: Callable,
                          search_range: Tuple[int, int]) -> Callable[[List[int]], Match]:
     seq2 = sequence.as_list(search_range)
+    original_seq2_len = len(seq2)
     seq2 = apply_coroutine(seq2, preprocess)
     sequence_matcher = SequenceMatcher()
     sequence_matcher.set_seq2(seq2)
 
+    processing_offset = original_seq2_len - len(seq2)
+    lower = search_range[0] if search_range is not None else 0
+
+    def adapt_match(match: Match) -> Match:
+        return Match(a=match.a, b=match.b + lower, size=match.size + processing_offset)
+
     def get_longest_match(seq1: List[int]) -> Match:
         sequence_matcher.set_seq1(seq1)
-        return sequence_matcher.find_longest_match(0, len(seq1), 0, len(seq2))
+        match = sequence_matcher.find_longest_match(0, len(seq1), 0, len(seq2))
+        return adapt_match(match)
 
     return get_longest_match
 
