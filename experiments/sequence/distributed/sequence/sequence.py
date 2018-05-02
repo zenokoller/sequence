@@ -27,10 +27,13 @@ class Sequence:
         self.offset = (self.offset + 1) % self.period
         return self._sequence[prev_offset], prev_offset
 
+    def __getitem__(self, key):
+        return self._sequence[key]
+
     def set_offset(self, offset: int):
         self.offset = offset % self.period
 
-    def as_list(self, range: int = None) -> List[int]:
+    def as_list(self, range: Tuple[int, int] = None) -> List[int]:
         if range is not None:
             i, j = range
             return list(self._sequence[i:j])

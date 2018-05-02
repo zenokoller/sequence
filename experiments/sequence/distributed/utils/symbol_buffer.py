@@ -1,5 +1,7 @@
 from array import array
-from typing import List
+from typing import Iterable
+
+from utils.iteration import as_batches
 
 DEFAULT_TYPECODE = 'B'
 
@@ -23,8 +25,8 @@ class SymbolBuffer:
         else:
             self.batch.append(symbol)
 
-    def as_batches(self) -> List[array]:
-        raise NotImplementedError
+    def as_batches(self) -> Iterable[array]:
+        return as_batches(self.array, self.batch_size)
 
     @property
     def batch_full(self) -> bool:

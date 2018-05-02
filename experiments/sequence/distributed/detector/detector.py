@@ -1,3 +1,4 @@
+import logging
 from array import array
 from asyncio import Queue
 from collections import deque
@@ -5,9 +6,9 @@ from functools import partial
 from itertools import chain
 from typing import Callable, Iterable, Tuple, Sequence
 
-from estimator.events import Events
+from detector.events import Events
 from synchronizer.sync_event import SyncEvent
-from utils.pairwise import pairwise
+from utils.iteration import pairwise
 
 MISSING_MAXLEN = 10
 Missing = array
@@ -30,13 +31,24 @@ def sync_event_to_actual_expected(sync_event: SyncEvent, sequence: Sequence = No
     # TODO: Define return type (we also need timing information)
     lost_index, buffer, matches = sync_event
     actual_indices = chain.from_iterable(
-        [[0], *((m.a, m.a + m.size) for m in matches[:-1]), matches[-1].a])
+        [[0], *((m.a, m.a + m.size) for m in matches[:-1]), [matches[-1].a]])
     expected_indices = chain.from_iterable(
-        [[lost_index], *((m.b, m.b + m.size) for m in matches[-1]), matches[-1].b])
-    actuals = (batch[i:j] for batch, (i, j) in zip(buffer, pairwise(actual_indices)))
+        [[lost_index], *((m.b, m.b + m.size) for m in matches[:-1]), [matches[-1].b]])
+
+    actual_indices = [x for x in actual_indices]
+    expected_indices = [x for x in expected_indices]
+    logging.info(f'sync_event_to_actual_expected\nmatches={sync_event.matches}\n'
+                 f'actual_indices={actual_indices}\nexpected_indices={expected_indices}')
+
+
+    actuals = (batch[i:j] for batch, (i, j) in zip(buffer.as_batches(), pairwise(actual_indices)))
     expecteds = (sequence[i:j] for i, j in pairwise(expected_indices))
     return zip(actuals, expecteds)
 
 
-def detect_events(actual, expected, missing) -> Tuple[Events, Missing]:
-    raise NotImplementedError
+def detect_events(actual: array, expected: array, missing) -> Tuple[Events, Missing]:
+    logging.info('detect_events called:')
+    logging.info(f'actual={actual}')
+    logging.info(f'expected={expected}')
+    # TODO: Implement
+    return None, None
