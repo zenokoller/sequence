@@ -7,7 +7,7 @@ def encode_integer(int_: int, length: int = None) -> bytes:
     return int_.to_bytes(length, byteorder='little')
 
 
-def decode_integer(data: bytes) -> int:
+def decode_integer(data) -> int:
     return int.from_bytes(data, byteorder='little')
 
 
@@ -15,7 +15,7 @@ def encode_integers(xs: Iterable[int], lengths: Iterable[int] = None) -> bytes:
     return b''.join((x.to_bytes(length, byteorder='little') for x, length in zip(xs, lengths)))
 
 
-def decode_integers(data: bytes, lengths: Iterable[int] = None) -> tuple:
+def decode_integers(data, lengths: Iterable[int] = None) -> tuple:
     acc = list(accumulate([0] + list(lengths)))
     return tuple(int.from_bytes(data[a:b], byteorder='little') for a, b in zip(acc[:-1], acc[1:]))
 
