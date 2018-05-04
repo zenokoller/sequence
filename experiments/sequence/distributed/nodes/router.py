@@ -62,7 +62,7 @@ async def demultiplex_flows(in_queue: aioprocessing.Queue):
 
 
 sequence_cls = DefaultSequence
-report = lambda events: event_logger.info(events)
+report = lambda event: event_logger.info(event)
 
 
 def start_sync_and_detector(flow_id) -> asyncio.Queue:

@@ -44,7 +44,7 @@ def get_longest_match_fn(sequence: Sequence,
     original_seq2_len = len(seq2)
     seq2 = apply_coroutine(seq2, preprocess)
     sequence_matcher = SequenceMatcher()
-    sequence_matcher.set_seq2(seq2)
+    sequence_matcher.set_seq2(seq2)  # SequenceMatcher caches information about the second sequence
 
     processing_offset = original_seq2_len - len(seq2)
     lower = search_range[0] if search_range is not None else 0

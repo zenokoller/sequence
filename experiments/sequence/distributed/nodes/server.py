@@ -31,7 +31,7 @@ local_port = args.local_port
 get_seed = partial(seed_from_addresses, recv_addr=(local_ip, local_port))
 
 sequence_cls = DefaultSequence
-report = lambda events: event_logger.info(events)
+report = lambda event: event_logger.info(event)
 
 
 class SequenceServerProtocol:
