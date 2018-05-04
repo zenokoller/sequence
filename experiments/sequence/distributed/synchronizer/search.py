@@ -25,12 +25,12 @@ async def search(queue: Queue,
         batch = apply_coroutine(batch, preprocess)
 
         match = get_longest_match(batch)
+        matches.append(match)
         if match.size < min_match_size:
             non_matched_count += 1
             if non_matched_count > backoff_thresh:
                 raise SearchError('reached maximum number of search attempts')
         else:
-            matches.append(match)
             matched_at_end = match.a + match.size == original_batch_length
             if matched_at_end and queue.empty():
                 found_offset = match.b + match.size

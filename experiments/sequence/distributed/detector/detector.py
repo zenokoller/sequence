@@ -23,32 +23,30 @@ async def detector(seed: int, queue: Queue, sequence_cls: Callable, report: Call
         sync_event = await queue.get()
         for actual, expected in get_actual_expected(sync_event):
             events, new_missing = detect_events(actual, expected, missing)
-            missing.append(new_missing)
+            missing.extend(new_missing)
             report(events)
 
 
-def sync_event_to_actual_expected(sync_event: SyncEvent, sequence: Sequence = None) -> Iterable:
-    # TODO: Define return type (we also need timing information)
-    lost_index, buffer, matches = sync_event
+def sync_event_to_actual_expected(sync_event: SyncEvent, sequence: Sequence = None) \
+        -> Iterable[Tuple[array, Tuple[int, array]]]:
+    (lost_offset, found_offset), buffer, matches = sync_event
+    bs = buffer.batch_size
     actual_indices = chain.from_iterable(
-        [[0], *((m.a, m.a + m.size) for m in matches[:-1]), [matches[-1].a]])
+        [[0],
+         *((i * bs + m.a, i * bs + m.a + m.size) for i, m in enumerate(matches)),
+         [len(buffer)]])
     expected_indices = chain.from_iterable(
-        [[lost_index], *((m.b, m.b + m.size) for m in matches[:-1]), [matches[-1].b]])
+        [[lost_offset], *((m.b, m.b + m.size) for m in matches), [found_offset]])
 
-    actual_indices = [x for x in actual_indices]
-    expected_indices = [x for x in expected_indices]
-    logging.info(f'sync_event_to_actual_expected\nmatches={sync_event.matches}\n'
-                 f'actual_indices={actual_indices}\nexpected_indices={expected_indices}')
-
-
-    actuals = (batch[i:j] for batch, (i, j) in zip(buffer.as_batches(), pairwise(actual_indices)))
-    expecteds = (sequence[i:j] for i, j in pairwise(expected_indices))
-    return zip(actuals, expecteds)
+    actuals = (buffer[i:j] for i, j in pairwise(actual_indices))
+    expecteds = ((i, sequence[i:j]) for i, j in pairwise(expected_indices))
+    return ((act, (off, exp)) for act, (off, exp) in zip(actuals, expecteds) if not len(act) == len(
+        exp) == 0)
 
 
-def detect_events(actual: array, expected: array, missing) -> Tuple[Events, Missing]:
+def detect_events(actual: array, expected: Tuple[int, array], missing) -> Tuple[Events, Missing]:
+    """Signature subject to change, need to add timing information for expected symbols."""
     logging.info('detect_events called:')
     logging.info(f'actual={actual}')
     logging.info(f'expected={expected}')
-    # TODO: Implement
-    return None, None
+    return None, []

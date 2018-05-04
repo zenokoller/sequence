@@ -85,10 +85,10 @@ class AbstractSearchingState(State):
         else:
             return self, None
 
-    def get_sync_event(self, matches: List[Match]) -> SyncEvent:
+    def get_sync_event(self, found_offset: int, matches: List[Match]) -> SyncEvent:
         """Returns None if lost_offset is None (initial synch acquisition)"""
-        return SyncEvent(self.lost_offset, self.buffer, matches) if self.lost_offset is not None \
-            else None
+        return SyncEvent((self.lost_offset, found_offset), self.buffer, matches) if \
+            self.lost_offset is not None else None
 
     @property
     def partial_batch_matches_sequence(self) -> bool:
@@ -121,7 +121,7 @@ class Recovery(AbstractSearchingState):
 
         self.sequence.set_offset(found_offset)
         if self.partial_batch_matches_sequence:
-            return Synchronized(self.sequence), self.get_sync_event(matches)
+            return Synchronized(self.sequence), self.get_sync_event(found_offset, matches)
         else:
             return Searching.from_recovery(self, prev_matches=matches), None
 
@@ -152,6 +152,6 @@ class Searching(AbstractSearchingState):
         found_offset, matches = self.search_task.result()
         self.sequence.set_offset(found_offset)
         if self.partial_batch_matches_sequence:
-            return Synchronized(self.sequence), self.get_sync_event(matches)
+            return Synchronized(self.sequence), self.get_sync_event(found_offset, matches)
         else:
             return Searching.from_searching(self, prev_matches=matches), None

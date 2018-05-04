@@ -18,6 +18,12 @@ class SymbolBuffer:
         self.batch_size = batch_size
         self.array = prev_array or array(typecode)
 
+    def __len__(self):
+        return len(self.array)
+
+    def __getitem__(self, key):
+        return self.array[key]
+
     def append(self, symbol: int):
         if self.batch_full:
             self.array.extend(self.batch)
