@@ -15,6 +15,7 @@ def setup_logger(name: str = None,
                  format: str = DEFAULT_FORMAT):
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
+    logger.propagate = False
 
     def add_handler(handler, level):
         handler.setLevel(level)
