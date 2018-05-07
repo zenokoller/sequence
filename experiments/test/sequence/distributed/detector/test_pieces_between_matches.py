@@ -3,7 +3,7 @@ from difflib import Match
 from typing import List, Tuple
 from unittest import TestCase
 
-from detector.detector import _pieces_between_matches
+from detector.detector import _pieces_between_matching_blocks
 from sequence.sequence import DefaultSequence
 from synchronizer.sync_event import SyncEvent
 from utils.symbol_buffer import SymbolBuffer
@@ -23,7 +23,7 @@ class TestPiecesBetweenMatches(TestCase):
     def run_test(self, sync_event: SyncEvent, expected_pairs: List[Tuple[int, List[int],
                                                                          List[int]]]):
         actual_pairs = [(off, list(act), list(exp)) for off, act, exp
-                        in _pieces_between_matches(sync_event, test_sequence)]
+                        in _pieces_between_matching_blocks(sync_event, test_sequence)]
 
         def pairs_match(expected_pair, actual_pair) -> bool:
             return expected_pair == actual_pair

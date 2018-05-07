@@ -1,7 +1,6 @@
 import logging
 from asyncio import Queue, ensure_future
-from difflib import Match
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, Optional, Tuple
 
 from sequence.sequence import Sequence
 from synchronizer.exceptions import SearchError
@@ -85,9 +84,9 @@ class AbstractSearchingState(State):
         else:
             return self, None
 
-    def get_sync_event(self, found_offset: int, matches: List[Match]) -> SyncEvent:
+    def get_sync_event(self, found_offset: int) -> SyncEvent:
         """Returns None if lost_offset is None (initial synch acquisition)"""
-        return SyncEvent((self.lost_offset, found_offset), self.buffer, matches) if \
+        return SyncEvent((self.lost_offset, found_offset), self.buffer) if \
             self.lost_offset is not None else None
 
     @property
@@ -109,21 +108,21 @@ class Recovery(AbstractSearchingState):
         logging.info(f'Synchronized -> Recovery at {sequence.offset}')
         buffer = SymbolBuffer(batch_size=RECOVERY_BATCH_SIZE)
         buffer.append(first_symbol)
-        search_args = {'range_': (sequence.offset, sequence.offset + RECOVERY_RANGE_LENGTH)}
+        search_args = {'search_range': (sequence.offset, sequence.offset + RECOVERY_RANGE_LENGTH)}
         return cls(sequence, buffer, recovery_search, search_args=search_args,
                    lost_offset=sequence.offset - 1)
 
     def handle_search_done(self) -> StateWithEvent:
         try:
-            found_offset, matches = self.search_task.result()
+            found_offset = self.search_task.result()
         except SearchError:
             return Searching.from_recovery(self), None
 
         self.sequence.set_offset(found_offset)
         if self.partial_batch_matches_sequence:
-            return Synchronized(self.sequence), self.get_sync_event(found_offset, matches)
+            return Synchronized(self.sequence), self.get_sync_event(found_offset)
         else:
-            return Searching.from_recovery(self, prev_matches=matches), None
+            return Searching.from_recovery(self), None
 
 
 SEARCHING_BATCH_SIZE = 50
@@ -136,22 +135,20 @@ class Searching(AbstractSearchingState):
         return cls(sequence, SymbolBuffer(SEARCHING_BATCH_SIZE), full_search, lost_offset=None)
 
     @classmethod
-    def from_recovery(cls, state: Recovery, prev_matches: List[Match] = None):
+    def from_recovery(cls, state: Recovery):
         logging.info('Recovery -> Searching')
         buffer = SymbolBuffer.from_previous(state.buffer, SEARCHING_BATCH_SIZE)
-        return cls(state.sequence, buffer, full_search, lost_offset=state.lost_offset,
-                   search_args={'prev_matches': prev_matches})
+        return cls(state.sequence, buffer, full_search, lost_offset=state.lost_offset)
 
     @classmethod
-    def from_searching(cls, state: 'Searching', prev_matches: List[Match] = None):
+    def from_searching(cls, state: 'Searching'):
         logging.info('Searching -> Searching')
-        return cls(state.sequence, state.buffer, full_search, lost_offset=state.lost_offset,
-                   search_args={'prev_matches': prev_matches})
+        return cls(state.sequence, state.buffer, full_search, lost_offset=state.lost_offset)
 
     def handle_search_done(self) -> StateWithEvent:
-        found_offset, matches = self.search_task.result()
+        found_offset = self.search_task.result()
         self.sequence.set_offset(found_offset)
         if self.partial_batch_matches_sequence:
-            return Synchronized(self.sequence), self.get_sync_event(found_offset, matches)
+            return Synchronized(self.sequence), self.get_sync_event(found_offset)
         else:
-            return Searching.from_searching(self, prev_matches=matches), None
+            return Searching.from_searching(self), None

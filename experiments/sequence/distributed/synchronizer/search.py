@@ -9,23 +9,19 @@ from utils.as_bytes import as_bytes
 
 
 async def search(queue: Queue,
-                 prev_matches: List[Match] = None,
                  min_match_size: int = None,
                  backoff_thresh: int = None,
                  sequence: Sequence = None,
                  preprocess: Callable = None,
-                 range_: Tuple[int, int] = None) -> Tuple[int, List[Match]]:
-    matches = prev_matches or []
+                 search_range: Tuple[int, int] = None) -> Tuple[int]:
     non_matched_count = 0
-    get_longest_match = get_longest_match_fn(sequence, preprocess, range_)
+    get_longest_match = get_longest_match_fn(sequence, preprocess, search_range)
 
     while True:
         batch = await queue.get()
         original_batch_length = len(batch)
         batch = apply_coroutine(batch, preprocess)
-
         match = get_longest_match(batch)
-        matches.append(match)
         if match.size < min_match_size:
             non_matched_count += 1
             if non_matched_count > backoff_thresh:
@@ -34,7 +30,7 @@ async def search(queue: Queue,
             matched_at_end = match.a + match.size == original_batch_length
             if matched_at_end and queue.empty():
                 found_offset = match.b + match.size
-                return found_offset, matches
+                return found_offset
 
 
 def get_longest_match_fn(sequence: Sequence,
@@ -46,8 +42,8 @@ def get_longest_match_fn(sequence: Sequence,
     sequence_matcher = SequenceMatcher()
     sequence_matcher.set_seq2(seq2)  # SequenceMatcher caches information about the second sequence
 
-    processing_offset = original_seq2_len - len(seq2)
     lower = search_range[0] if search_range is not None else 0
+    processing_offset = original_seq2_len - len(seq2)
 
     def adapt_match(match: Match) -> Match:
         return Match(a=match.a, b=match.b + lower, size=match.size + processing_offset)
