@@ -12,7 +12,7 @@ from utils.iteration import pairwise
 
 async def detector(seed: int, queue: Queue, sequence_cls: Callable, report: Callable):
     sequence = sequence_cls(seed)
-    pieces_between_matches = partial(_pieces_between_matches, sequence=sequence)
+    pieces_between_matches = partial(_pieces_between_matching_blocks, sequence=sequence)
 
     while True:
         sync_event = await queue.get()
@@ -21,7 +21,7 @@ async def detector(seed: int, queue: Queue, sequence_cls: Callable, report: Call
                 report(event)
 
 
-def _pieces_between_matches(sync_event: SyncEvent, sequence: Sequence = None) -> \
+def _pieces_between_matching_blocks(sync_event: SyncEvent, sequence: Sequence = None) -> \
         Iterable[DetectInput]:
     (lost_offset, found_offset), buffer = sync_event
 
