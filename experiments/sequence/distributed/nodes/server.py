@@ -22,8 +22,8 @@ parser.add_argument('-l', '--log_dir', dest='log_dir', default=None, type=str,
 args = parser.parse_args()
 
 setup_logger(log_dir=args.log_dir, file_level=logging.INFO)
-recv_logger = setup_logger('received', log_dir=args.log_dir, format='%(message)s')
-event_logger = setup_logger('events', log_dir=args.log_dir)
+recv_logger = setup_logger('received', log_dir=args.log_dir, format='%(asctime)s; %(message)s')
+loss_logger = setup_logger('losses', log_dir=args.log_dir, format='%(asctime)s; %(message)s')
 
 local_ip = get_server_ip()
 local_port = args.local_port
@@ -31,7 +31,7 @@ local_port = args.local_port
 get_seed = partial(seed_from_addresses, recv_addr=(local_ip, local_port))
 
 sequence_cls = DefaultSequence
-report = lambda event: event_logger.info(event)
+report = lambda loss: loss_logger.info(f'{loss.offset}; {loss.size} ')
 
 
 class SequenceServerProtocol:
