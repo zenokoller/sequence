@@ -29,3 +29,8 @@ def setup_logger(name: str = None,
         add_handler(logging.FileHandler(file_path, mode='w'), file_level)
 
     return logger
+
+
+def disable_logging(name: str = None):
+    logger = logging.getLogger(name)
+    logger.disabled = True

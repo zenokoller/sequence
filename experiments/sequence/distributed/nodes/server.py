@@ -6,7 +6,7 @@ from functools import partial
 from typing import Dict
 
 from config.env import get_server_ip
-from config.logging import setup_logger
+from config.logging import setup_logger, disable_logging
 from detector.detector import detector
 from sequence.seed import seed_from_addresses
 from sequence.sequence import DefaultSequence
@@ -17,13 +17,15 @@ from utils.types import Address
 parser = ArgumentParser()
 parser.add_argument('local_port', type=int)
 parser.add_argument('-e', '--echo', action='store_true')
+parser.add_argument('-n', '--nolog', action='store_true')
 parser.add_argument('-l', '--log_dir', dest='log_dir', default=None, type=str,
                     help=f'Path to log directory. Default: None')
 args = parser.parse_args()
 
-setup_logger(log_dir=args.log_dir, file_level=logging.INFO)
-recv_logger = setup_logger('received', log_dir=args.log_dir, format='%(asctime)s; %(message)s')
-loss_logger = setup_logger('losses', log_dir=args.log_dir, format='%(asctime)s; %(message)s')
+if args.nolog:
+    disable_logging()
+else:
+    setup_logger(log_dir=args.log_dir, file_level=logging.INFO)
 
 local_ip = get_server_ip()
 local_port = args.local_port
@@ -31,7 +33,7 @@ local_port = args.local_port
 get_seed = partial(seed_from_addresses, recv_addr=(local_ip, local_port))
 
 sequence_cls = DefaultSequence
-report = lambda loss: loss_logger.info(f'{loss.offset}; {loss.size} ')
+report = lambda loss: print(f'{loss.offset}; {loss.size} ')
 
 
 class SequenceServerProtocol:
@@ -55,7 +57,6 @@ class SequenceServerProtocol:
 
         symbol, offset = decode_symbol_with_offset(data)
         queue.put_nowait(symbol)
-        recv_logger.debug(f'{offset}; {symbol}')
 
         if self.echo:
             self.transport.sendto(data, addr)

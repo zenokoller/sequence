@@ -6,7 +6,7 @@ from typing import Dict
 
 import aioprocessing
 
-from config.logging import setup_logger
+from config.logging import setup_logger, disable_logging
 from detector.detector import detector
 from sequence.seed import seed_from_flow_id
 from sequence.sequence import DefaultSequence
@@ -20,13 +20,16 @@ DEFAULT_IN_URI = 'int:eth0'
 parser = ArgumentParser()
 parser.add_argument('-i', '--in_uri', help='libtrace URI of interface to observe',
                     default=DEFAULT_IN_URI)
+parser.add_argument('-n', '--nolog', action='store_true')
 parser.add_argument('-l', '--log_dir', dest='log_dir', default=None, type=str,
                     help=f'Path to log directory. Default: None')
 args = parser.parse_args()
 
-setup_logger(log_dir=args.log_dir, file_level=logging.INFO)
-# recv_logger = setup_logger('received', log_dir=args.log_dir, format='%(message)s')
-event_logger = setup_logger('events', log_dir=args.log_dir)
+if args.nolog:
+    disable_logging()
+else:
+    setup_logger(log_dir=args.log_dir, file_level=logging.INFO)
+    event_logger = setup_logger('events', log_dir=args.log_dir)
 
 
 def run_libtrace(queue: aioprocessing.Queue):
