@@ -8,8 +8,9 @@ from typing import Dict
 from config.env import get_server_ip
 from config.logging import setup_logger, disable_logging
 from detector.detector import detector
+from reporter.json_reporter import JsonReporter
 from sequence.seed import seed_from_addresses
-from sequence.sequence import DefaultSequence
+from sequence.sequence import DefaultSequence, default_period
 from synchronizer.synchronizer import synchronize
 from utils.integer_codec import decode_symbol_with_offset
 from utils.types import Address
@@ -33,7 +34,7 @@ local_port = args.local_port
 get_seed = partial(seed_from_addresses, recv_addr=(local_ip, local_port))
 
 sequence_cls = DefaultSequence
-report = lambda loss: print(f'{loss.offset}; {loss.size} ')
+reporter = JsonReporter(local_ip, default_period)
 
 
 class SequenceServerProtocol:
@@ -66,11 +67,16 @@ class SequenceServerProtocol:
         logging.info(f'Start observing flow; addr={addr}; seed={seed}')
         symbol_queue, event_queue = Queue(), Queue()
         _ = asyncio.ensure_future(synchronize(seed, symbol_queue, event_queue, sequence_cls))
-        _ = asyncio.ensure_future(detector(seed, event_queue, sequence_cls, report))
+        _ = asyncio.ensure_future(detector(seed, event_queue, sequence_cls, reporter))
         return symbol_queue
 
 
 loop = asyncio.get_event_loop()
+
+#  Start reporter
+loop.run_until_complete(reporter.start())
+
+# Start server
 logging.info(f'Starting UDP server, listening on {local_ip}:{local_port}')
 listen = loop.create_datagram_endpoint(
     SequenceServerProtocol, local_addr=(local_ip, local_port))
@@ -82,6 +88,7 @@ except KeyboardInterrupt:
     logging.info('Stopping server...')
 finally:
     transport.close()
+    reporter.stop()
     pending = asyncio.Task.all_tasks()
     try:
         loop.run_until_complete(asyncio.gather(*pending))

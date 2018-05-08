@@ -6,11 +6,12 @@ from itertools import chain
 from typing import Callable, Iterable, Sequence, List, Match
 
 from detector.detect_events import detect_losses, DetectInput
+from reporter.reporter import Reporter
 from synchronizer.sync_event import SyncEvent
 from utils.iteration import pairwise
 
 
-async def detector(seed: int, queue: Queue, sequence_cls: Callable, report: Callable):
+async def detector(seed: int, queue: Queue, sequence_cls: Callable, reporter: Reporter):
     sequence = sequence_cls(seed)
     pieces_between_matches = partial(_pieces_between_matching_blocks, sequence=sequence)
 
@@ -18,7 +19,7 @@ async def detector(seed: int, queue: Queue, sequence_cls: Callable, report: Call
         sync_event = await queue.get()
         for offset, actual, expected in pieces_between_matches(sync_event):
             for event in detect_losses(offset, actual, expected):
-                report(event)
+                await reporter.send(event)
 
 
 def _pieces_between_matching_blocks(sync_event: SyncEvent, sequence: Sequence = None) -> \
