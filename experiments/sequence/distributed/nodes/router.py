@@ -9,6 +9,7 @@ import yaml
 
 from reporter.get_reporter import get_reporter
 from sequence.sequence import get_sequence_cls
+from utils.asyncio import cancel_pending_tasks
 from utils.logging import setup_logger, disable_logging
 from detector.detector import detector
 from sequence.seed import seed_from_flow_id, seed_functions
@@ -102,10 +103,9 @@ except KeyboardInterrupt:
     logging.info('Stopping observer...')
 finally:
     reporter.stop()
+    loop.run_until_complete(reporter.stop())
     pending = asyncio.Task.all_tasks()
-    try:
-        loop.run_until_complete(asyncio.gather(*pending))
-    except:
-        pass
+    cancel_pending_tasks()
+
 loop.close()
 lt_process.coro_join()

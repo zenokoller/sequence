@@ -12,6 +12,7 @@ from reporter.get_reporter import get_reporter
 from sequence.seed import seed_from_addresses, seed_functions
 from sequence.sequence import get_sequence_cls
 from synchronizer.synchronizer import synchronize
+from utils.asyncio import cancel_pending_tasks
 from utils.env import get_server_ip
 from utils.integer_codec import decode_symbol_with_offset
 from utils.logging import setup_logger, disable_logging
@@ -98,10 +99,7 @@ except KeyboardInterrupt:
     logging.info('Stopping server...')
 finally:
     transport.close()
-    reporter.stop()
-    pending = asyncio.Task.all_tasks()
-    try:
-        loop.run_until_complete(asyncio.gather(*pending))
-    except:
-        pass
+    loop.run_until_complete(reporter.stop())
+    cancel_pending_tasks()
+
 loop.close()
