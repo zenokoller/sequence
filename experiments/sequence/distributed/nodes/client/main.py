@@ -1,4 +1,5 @@
 import logging
+import os
 from argparse import ArgumentParser
 from contextlib import closing
 from functools import partial
@@ -15,7 +16,7 @@ from utils.logging import setup_logger, disable_logging
 
 DEFAULT_SENDING_RATE = 100  # Packets per second
 DEFAULT_OFFSET = 0
-DEFAULT_CONFIG_PATH = 'config/client/default.yml'
+DEFAULT_CONFIG = 'default'
 
 parser = ArgumentParser()
 parser.add_argument('local_port', type=int)
@@ -25,8 +26,8 @@ parser.add_argument('-o', '--offset', type=int, help=f'Start offset of sequence.
 parser.add_argument('-n', '--nolog', action='store_true')
 parser.add_argument('-l', '--log_dir', dest='log_dir', default=None, type=str,
                     help=f'Path to log directory. Default: None')
-parser.add_argument('-c', '--config_path', default=DEFAULT_CONFIG_PATH, type=str,
-                    help=f'Path of config file. Default: {DEFAULT_CONFIG_PATH}')
+parser.add_argument('-c', '--config', default=DEFAULT_CONFIG, type=str,
+                    help=f'Name of config file. Default: {DEFAULT_CONFIG}')
 args = parser.parse_args()
 
 # Configure logging
@@ -39,7 +40,8 @@ else:
 local_ip, remote_ip = get_client_ip(), get_server_ip()
 local_port, remote_port = args.local_port, args.remote_port
 
-with open(args.config_path, 'r') as config_file:
+config_path = os.path.join(os.path.dirname(__file__), f'config/{args.config}.yml')
+with open(config_path, 'r') as config_file:
     config = yaml.load(config_file)
 seed_fn = seed_functions[config['seed_fn']]
 sending_rate = args.rate or config['sending_rate'] or DEFAULT_SENDING_RATE

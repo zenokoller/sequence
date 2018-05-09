@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 from argparse import ArgumentParser
 
 import aioprocessing
@@ -14,6 +15,7 @@ from utils.asyncio import cancel_pending_tasks
 from utils.logging import setup_logger, disable_logging
 
 DEFAULT_IN_URI = 'int:eth0'
+DEFAULT_CONFIG = 'default'
 
 parser = ArgumentParser()
 parser.add_argument('-i', '--in_uri', help='libtrace URI of interface to observe',
@@ -21,8 +23,8 @@ parser.add_argument('-i', '--in_uri', help='libtrace URI of interface to observe
 parser.add_argument('-n', '--nolog', action='store_true')
 parser.add_argument('-l', '--log_dir', dest='log_dir', default=None, type=str,
                     help=f'Path to log directory. Default: None')
-parser.add_argument('-c', '--config_path', default='config/router/default.yml', type=str,
-                    help='Path of config file.')
+parser.add_argument('-c', '--config', default=DEFAULT_CONFIG, type=str,
+                    help=f'Name of config file. Default: {DEFAULT_CONFIG}')
 args = parser.parse_args()
 
 # Configure logging
@@ -32,7 +34,8 @@ else:
     setup_logger(log_dir=args.log_dir, file_level=logging.INFO)
 
 # Configure observer
-with open(args.config_path, 'r') as config_file:
+config_path = os.path.join(os.path.dirname(__file__), f'config/{args.config}.yml')
+with open(config_path, 'r') as config_file:
     config = yaml.load(config_file)
 seed_from_flow_id = seed_functions[config['seed_fn']]
 sequence_cls = get_sequence_cls(**config['sequence'])
