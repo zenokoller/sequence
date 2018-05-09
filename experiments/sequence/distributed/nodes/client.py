@@ -1,43 +1,58 @@
 import logging
 from argparse import ArgumentParser
 from contextlib import closing
+from functools import partial
 from time import sleep
 
-from config.env import get_client_ip, get_server_ip
-from sequence.seed import seed_from_flow_id
-from sequence.send import send_default_sequence
-from config.logging import setup_logger, disable_logging
+import yaml
+
+from sequence.seed import seed_functions
+from sequence.send import send_sequence
+from sequence.sequence import get_sequence_cls
 from utils.create_socket import create_socket
+from utils.env import get_client_ip, get_server_ip
+from utils.logging import setup_logger, disable_logging
 
 DEFAULT_SENDING_RATE = 100  # Packets per second
+DEFAULT_OFFSET = 0
+DEFAULT_CONFIG_PATH = 'config/client/default.yml'
 
 parser = ArgumentParser()
 parser.add_argument('local_port', type=int)
 parser.add_argument('remote_port', type=int)
-parser.add_argument('-r', '--rate', dest='rate', default=DEFAULT_SENDING_RATE, type=int,
-                    help=f'Sending rate in packets. Default: {DEFAULT_SENDING_RATE}')
-parser.add_argument('-o', '--offset', dest='offset', default=0, type=int,
-                    help=f'Start offset of sequence. Default: 0')
+parser.add_argument('-r', '--rate', type=int, help=f'Sending rate in packets.')
+parser.add_argument('-o', '--offset', type=int, help=f'Start offset of sequence.')
 parser.add_argument('-n', '--nolog', action='store_true')
 parser.add_argument('-l', '--log_dir', dest='log_dir', default=None, type=str,
                     help=f'Path to log directory. Default: None')
+parser.add_argument('-c', '--config_path', default=DEFAULT_CONFIG_PATH, type=str,
+                    help=f'Path of config file. Default: {DEFAULT_CONFIG_PATH}')
 args = parser.parse_args()
 
+# Configure logging
 if args.nolog:
     disable_logging()
 else:
     setup_logger(log_dir=args.log_dir)
 
+# Configure client
 local_ip, remote_ip = get_client_ip(), get_server_ip()
 local_port, remote_port = args.local_port, args.remote_port
 
-logging.info(f'Client: Sending on {local_ip}:{local_port} -> {remote_ip}:{remote_port}')
+with open(args.config_path, 'r') as config_file:
+    config = yaml.load(config_file)
+seed_fn = seed_functions[config['seed_fn']]
+sending_rate = args.rate or config['sending_rate'] or DEFAULT_SENDING_RATE
+offset = args.offset or config['offset'] or DEFAULT_OFFSET
+send_sequence = partial(send_sequence, sequence_cls=get_sequence_cls(**config['sequence']))
 
+# Start client
+logging.info(f'Client: Sending on {local_ip}:{local_port} -> {remote_ip}:{remote_port}')
 with closing(create_socket(local_port=local_port)) as sock:
-    seed = seed_from_flow_id(local_ip, local_port, remote_ip, remote_port)
+    seed = seed_fn(local_ip, local_port, remote_ip, remote_port)
     logging.debug(f'Seed: {seed}')
-    stop_sending = send_default_sequence(sock, (remote_ip, remote_port), seed=seed,
-                                         sending_rate=args.rate, offset=args.offset)
+    stop_sending = send_sequence(sock, (remote_ip, remote_port), seed=seed,
+                                 sending_rate=sending_rate, offset=offset)
 
     while True:
         try:

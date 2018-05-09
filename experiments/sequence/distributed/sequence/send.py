@@ -1,8 +1,6 @@
 import socket
-from functools import partial
 from typing import Callable
 
-from sequence.sequence import DefaultSequence
 from utils.call_repeatedly import call_repeatedly
 from utils.integer_codec import encode_symbol_with_offset
 from utils.types import Address
@@ -25,6 +23,3 @@ def send_sequence(sock: socket.socket,
     stop = call_repeatedly(1 / sending_rate, send_symbol)
 
     return stop
-
-
-send_default_sequence = partial(send_sequence, sequence_cls=DefaultSequence)

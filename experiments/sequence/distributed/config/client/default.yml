@@ -1,0 +1,8 @@
+seed_fn: default
+sending_rate: 100
+offset: 0
+sequence:
+  symbol_bits: 2
+  period: 65536
+  generate_fn: random
+  typecode: B

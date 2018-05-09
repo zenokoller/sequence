@@ -5,11 +5,13 @@ from argparse import ArgumentParser
 from typing import Dict
 
 import aioprocessing
+import yaml
 
-from config.logging import setup_logger, disable_logging
+from reporter.get_reporter import get_reporter
+from sequence.sequence import get_sequence_cls
+from utils.logging import setup_logger, disable_logging
 from detector.detector import detector
-from sequence.seed import seed_from_flow_id
-from sequence.sequence import DefaultSequence
+from sequence.seed import seed_from_flow_id, seed_functions
 from synchronizer.synchronizer import synchronize
 from utils.integer_codec import decode_symbol_with_offset
 from utils.managed_trace import managed_trace
@@ -23,18 +25,27 @@ parser.add_argument('-i', '--in_uri', help='libtrace URI of interface to observe
 parser.add_argument('-n', '--nolog', action='store_true')
 parser.add_argument('-l', '--log_dir', dest='log_dir', default=None, type=str,
                     help=f'Path to log directory. Default: None')
+parser.add_argument('-c', '--config_path', default='config/router/default.yml', type=str,
+                    help='Path of config file.')
 args = parser.parse_args()
 
+# Configure logging
 if args.nolog:
     disable_logging()
 else:
     setup_logger(log_dir=args.log_dir, file_level=logging.INFO)
-    event_logger = setup_logger('events', log_dir=args.log_dir)
+
+# Configure observer
+with open(args.config_path, 'r') as config_file:
+    config = yaml.load(config_file)
+seed_fn = seed_functions[config['seed_fn']]
+sequence_cls = get_sequence_cls(**config['sequence'])
+reporter = get_reporter(config['reporter']['name'], *config['reporter']['args'])
 
 
 def run_libtrace(queue: aioprocessing.Queue):
     print(f'Sniffing on interface: {args.in_uri}')
-    filter_ = libtrace.filter('udp')  # TODO: Is this even working?
+    filter_ = libtrace.filter('udp')
     with managed_trace(args.in_uri) as trace:
         trace.conf_filter(filter_)
         for packet in trace:
@@ -64,16 +75,12 @@ async def demultiplex_flows(in_queue: aioprocessing.Queue):
         await out_queue.put(symbol)
 
 
-sequence_cls = DefaultSequence
-report = lambda event: event_logger.info(event)
-
-
 def start_sync_and_detector(flow_id) -> asyncio.Queue:
-    seed = seed_from_flow_id(*flow_id)
+    seed = seed_fn(*flow_id)
     logging.info(f'Start observing flow; flow_id={flow_id}; seed={seed}')
     symbol_queue, event_queue = asyncio.Queue(), asyncio.Queue()
     _ = asyncio.ensure_future(synchronize(seed, symbol_queue, event_queue, sequence_cls))
-    _ = asyncio.ensure_future(detector(seed, event_queue, sequence_cls, report))
+    _ = asyncio.ensure_future(detector(seed, event_queue, sequence_cls, reporter))
     return symbol_queue
 
 
@@ -84,6 +91,9 @@ queue = aioprocessing.AioQueue()
 lt_process = aioprocessing.AioProcess(target=run_libtrace, args=(queue,))
 lt_process.start()
 
+#  Start reporter
+loop.run_until_complete(reporter.start())
+
 # Start observing flows
 logging.info('Starting UDP observer')
 try:
@@ -91,6 +101,7 @@ try:
 except KeyboardInterrupt:
     logging.info('Stopping observer...')
 finally:
+    reporter.stop()
     pending = asyncio.Task.all_tasks()
     try:
         loop.run_until_complete(asyncio.gather(*pending))

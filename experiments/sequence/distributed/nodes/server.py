@@ -5,36 +5,47 @@ from asyncio import Queue
 from functools import partial
 from typing import Dict
 
-from config.env import get_server_ip
-from config.logging import setup_logger, disable_logging
+import yaml
+
 from detector.detector import detector
-from reporter.json_reporter import JsonReporter
-from sequence.seed import seed_from_addresses
-from sequence.sequence import DefaultSequence, default_period
+from reporter.get_reporter import get_reporter
+from sequence.seed import seed_from_addresses, seed_functions
+from sequence.sequence import get_sequence_cls
 from synchronizer.synchronizer import synchronize
+from utils.env import get_server_ip
 from utils.integer_codec import decode_symbol_with_offset
+from utils.logging import setup_logger, disable_logging
 from utils.types import Address
+
+DEFAULT_CONFIG_PATH = 'config/server/default.yml'
 
 parser = ArgumentParser()
 parser.add_argument('local_port', type=int)
+
 parser.add_argument('-e', '--echo', action='store_true')
 parser.add_argument('-n', '--nolog', action='store_true')
 parser.add_argument('-l', '--log_dir', dest='log_dir', default=None, type=str,
                     help=f'Path to log directory. Default: None')
+parser.add_argument('-c', '--config_path', default=DEFAULT_CONFIG_PATH, type=str,
+                    help=f'Path to config file. Default: {DEFAULT_CONFIG_PATH}')
 args = parser.parse_args()
 
+# Configure logging
 if args.nolog:
     disable_logging()
 else:
     setup_logger(log_dir=args.log_dir, file_level=logging.INFO)
 
+# Configure server
 local_ip = get_server_ip()
 local_port = args.local_port
 
-get_seed = partial(seed_from_addresses, recv_addr=(local_ip, local_port))
-
-sequence_cls = DefaultSequence
-reporter = JsonReporter(local_ip, default_period)
+with open(args.config_path, 'r') as config_file:
+    config = yaml.load(config_file)
+seed_fn = seed_functions[config['seed_fn']]
+get_seed = partial(seed_from_addresses, seed_fn, recv_addr=(local_ip, local_port))
+sequence_cls = get_sequence_cls(**config['sequence'])
+reporter = get_reporter(config['reporter']['name'], *config['reporter']['args'])
 
 
 class SequenceServerProtocol:
@@ -78,8 +89,7 @@ loop.run_until_complete(reporter.start())
 
 # Start server
 logging.info(f'Starting UDP server, listening on {local_ip}:{local_port}')
-listen = loop.create_datagram_endpoint(
-    SequenceServerProtocol, local_addr=(local_ip, local_port))
+listen = loop.create_datagram_endpoint(SequenceServerProtocol, local_addr=(local_ip, local_port))
 transport, protocol = loop.run_until_complete(listen)
 
 try:

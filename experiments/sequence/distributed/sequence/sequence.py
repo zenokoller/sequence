@@ -47,10 +47,21 @@ def generate_random(symbol_bits: int, seed: int) -> Iterable[int]:
         yield r.getrandbits(symbol_bits)
 
 
-default_symbol_bits = 2
-default_period = 2 ** 16
-default_generate_sequence = partial(generate_random, default_symbol_bits)
-DefaultSequence = partial(Sequence,
-                          period=default_period,
-                          generate=default_generate_sequence,
-                          typecode='B')
+DEFAULT_SYMBOL_BITS = 2
+DEFAULT_PERIOD = 2 ** 16
+DEFAULT_GENERATE_FN = 'random'
+DEFAULT_TYPECODE = 'B'
+generate_functions = {
+    'random': generate_random
+}
+
+
+def get_sequence_cls(symbol_bits: int = DEFAULT_SYMBOL_BITS,
+                     period: int = DEFAULT_PERIOD,
+                     generate_fn: str = DEFAULT_GENERATE_FN,
+                     typecode: str = DEFAULT_TYPECODE):
+    generate_fn = generate_functions[generate_fn]
+    return partial(Sequence,
+                   period=period,
+                   generate=partial(generate_fn, symbol_bits),
+                   typecode=typecode)

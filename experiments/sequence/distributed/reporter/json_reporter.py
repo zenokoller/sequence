@@ -8,14 +8,12 @@ from reporter.reporter import Reporter
 JSON_REPORTER_PORT = 9090
 
 
-# TODO: Generalize
 class JsonReporter(Reporter):
     """Simple reporter that collects packet and loss counts and exposes them as JSON on an
     endpoint."""
 
-    def __init__(self, host: str, period: int):
+    def __init__(self, period: int):
         logging.getLogger('aiohttp.access').setLevel(logging.WARNING)
-        self.host = host
         self.period = period
         self.packets = 0
         self.losses = 0
