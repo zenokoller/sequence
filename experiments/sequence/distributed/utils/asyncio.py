@@ -1,9 +1,8 @@
 import asyncio
 
-from nodes.server import loop
-
 
 def cancel_pending_tasks():
+    loop = asyncio.get_event_loop()
     pending = asyncio.Task.all_tasks()
     try:
         for task in pending:
