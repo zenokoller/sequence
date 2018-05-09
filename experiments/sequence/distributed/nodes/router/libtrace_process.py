@@ -7,6 +7,13 @@ from utils.integer_codec import decode_symbol_with_offset
 from utils.managed_trace import managed_trace
 
 
+def try_run_libtrace(in_uri: str, queue: aioprocessing.Queue):
+    try:
+        run_libtrace(in_uri, queue)
+    except KeyboardInterrupt:
+        pass
+
+
 def run_libtrace(in_uri: str, queue: aioprocessing.Queue):
     """Run librace using interface `in_uri`, sending `(flow_id, symbol, packet_clock)` triples to
     the given queue."""

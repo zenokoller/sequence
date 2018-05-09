@@ -6,7 +6,7 @@ import aioprocessing
 import yaml
 
 from nodes.router.demultiplex_flows import get_demultiplex_flow_fn
-from nodes.router.libtrace_process import run_libtrace
+from nodes.router.libtrace_process import try_run_libtrace
 from reporter.get_reporter import get_reporter
 from sequence.seed import seed_functions
 from sequence.sequence import get_sequence_cls
@@ -42,7 +42,7 @@ demultiplex_flows = get_demultiplex_flow_fn(seed_from_flow_id, sequence_cls, rep
 
 # Start libtrace process
 queue = aioprocessing.AioQueue()
-lt_process = aioprocessing.AioProcess(target=run_libtrace, args=(args.in_uri, queue))
+lt_process = aioprocessing.AioProcess(target=try_run_libtrace, args=(args.in_uri, queue))
 lt_process.start()
 
 #  Start reporter
@@ -56,10 +56,9 @@ try:
 except KeyboardInterrupt:
     logging.info('Stopping observer...')
 finally:
-    reporter.stop()
     loop.run_until_complete(reporter.stop())
     pending = asyncio.Task.all_tasks()
     cancel_pending_tasks()
 
+loop.run_until_complete(lt_process.coro_join())
 loop.close()
-lt_process.coro_join()
