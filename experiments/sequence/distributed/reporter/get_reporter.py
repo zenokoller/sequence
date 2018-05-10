@@ -1,8 +1,11 @@
 from reporter.http_reporter import HttpReporter
+from reporter.influx_reporter import InfluxReporter
 from reporter.reporter import Reporter
+
 
 reporters = {
     'http': HttpReporter,
+    'influx': InfluxReporter
 }
 
 

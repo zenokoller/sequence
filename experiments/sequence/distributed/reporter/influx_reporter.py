@@ -1,0 +1,49 @@
+import asyncio
+
+import aiohttp
+
+from detector.event import Loss
+from reporter.reporter import Reporter
+
+
+class InfluxReporterError(Exception):
+    pass
+
+
+class InfluxReporter(Reporter):
+    """Sends events to InfluxDB via a POST request."""
+
+    def __init__(self,
+                 host: str = 'influxdb',
+                 port: int = 8086,
+                 db: str = 'telegraf'):
+        """Reporter that sends all loss offsets to InfluxDB."""
+        self._url = f'http://{host}:{port}/write?db={db}'
+
+    async def start(self):
+        self._session = aiohttp.ClientSession()
+
+    async def send(self, event: asyncio.Event):
+        data = self._event_to_line(event)
+        async with self._session.post(self._url, data=data) as resp:
+            if resp.status == 204:
+                return True
+            else:
+                raise InfluxReporterError(resp)
+
+    def _event_to_line(self, event: asyncio.Event) -> bytes:
+        """Converts an event to InfluxDB's line protocol."""
+        if isinstance(event, Loss):
+            offset, size = event
+            if size == 1:
+                return f'loss offset={offset}'.encode('utf-8')
+            else:
+                offsets = range(offset, offset + size)
+                return b'\n'.join([f'loss offset={o}'.encode('utf-8') for o in offsets])
+        else:
+            raise NotImplementedError
+
+    async def stop(self):
+        if self._session:
+            await self._session.close()
+            self._session = None
