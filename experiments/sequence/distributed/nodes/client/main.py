@@ -49,7 +49,7 @@ offset = args.offset or config['offset'] or DEFAULT_OFFSET
 send_sequence = partial(send_sequence, sequence_cls=get_sequence_cls(**config['sequence']))
 
 # Start client
-logging.info(f'Client: Sending on {local_ip}:{local_port} -> {remote_ip}:{remote_port}')
+logging.info(f'Started client, sending on {local_ip}:{local_port} -> {remote_ip}:{remote_port}')
 with closing(create_socket(local_port=local_port)) as sock:
     seed = seed_fn(local_ip, local_port, remote_ip, remote_port)
     logging.debug(f'Seed: {seed}')

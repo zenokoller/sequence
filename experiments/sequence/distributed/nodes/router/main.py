@@ -53,7 +53,7 @@ loop = asyncio.get_event_loop()
 loop.run_until_complete(reporter.start())
 
 # Start observing flows
-logging.info('Starting UDP observer')
+logging.info('Starting UDP observer.')
 try:
     loop.run_until_complete(demultiplex_flows(queue))
 except KeyboardInterrupt:
