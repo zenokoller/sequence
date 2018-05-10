@@ -5,6 +5,6 @@ sequence:
   generate_fn: random
   typecode: B
 reporter:
-  name: json
+  name: http
   args:
     - 65536

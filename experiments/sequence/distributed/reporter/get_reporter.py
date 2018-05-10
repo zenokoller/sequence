@@ -1,8 +1,8 @@
-from reporter.json_reporter import JsonReporter
+from reporter.http_reporter import HttpReporter
 from reporter.reporter import Reporter
 
 reporters = {
-    'json': JsonReporter
+    'http': HttpReporter,
 }
 
 

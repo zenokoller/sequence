@@ -8,8 +8,8 @@ from reporter.reporter import Reporter
 JSON_REPORTER_PORT = 9090
 
 
-class JsonReporter(Reporter):
-    """Simple reporter that collects packet and loss counts and exposes them as JSON on an
+class HttpReporter(Reporter):
+    """Simple reporter that collects packet and loss counts and exposes them as JSON on an HTTP
     endpoint."""
 
     def __init__(self, period: int):
