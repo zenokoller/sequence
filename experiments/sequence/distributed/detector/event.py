@@ -1,9 +1,10 @@
-from typing import List, Tuple, Union, NamedTuple
+from typing import List, Union, NamedTuple
+
+Receive = NamedTuple('Receive', [('offset', int)])
 
 Loss = NamedTuple('Loss', [('offset', int), ('size', int)])
 Delay = NamedTuple('Delay', [('offset', int), ('deyay', int)])
 Duplicate = NamedTuple('Duplicate', [('offset', int)])
-# TODO: Add timing information
 
-Event = Union[Loss, Delay, Duplicate]
+Event = Union[Receive, Loss, Delay, Duplicate]
 Events = List[Event]

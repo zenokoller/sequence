@@ -5,20 +5,19 @@ from typing import Callable, Dict
 import aioprocessing
 
 from detector.detector import detector
-from reporter.reporter import Reporter
 from synchronizer.synchronizer import synchronize
 from utils.types import FlowId
 
 
 def get_demultiplex_flow_fn(seed_from_flow_id: Callable,
                             sequence_cls: Callable,
-                            reporter: Reporter) -> Callable:
+                            reporter_queue: asyncio.Queue) -> Callable:
     def start_sync_and_detector(flow_id) -> asyncio.Queue:
         seed = seed_from_flow_id(*flow_id)
         logging.info(f'Start observing flow; flow_id={flow_id}; seed={seed}')
         symbol_queue, event_queue = asyncio.Queue(), asyncio.Queue()
         _ = asyncio.ensure_future(synchronize(seed, symbol_queue, event_queue, sequence_cls))
-        _ = asyncio.ensure_future(detector(seed, event_queue, sequence_cls, reporter))
+        _ = asyncio.ensure_future(detector(seed, event_queue, reporter_queue, sequence_cls))
         return symbol_queue
 
     async def demultiplex_flows(in_queue: aioprocessing.Queue):

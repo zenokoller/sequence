@@ -11,15 +11,15 @@ from synchronizer.sync_event import SyncEvent
 from utils.iteration import pairwise
 
 
-async def detector(seed: int, queue: Queue, sequence_cls: Callable, reporter: Reporter):
+async def detector(seed: int, sync_queue: Queue, reporter_queue: Queue, sequence_cls: Callable):
     sequence = sequence_cls(seed)
     pieces_between_matches = partial(_pieces_between_matching_blocks, sequence=sequence)
 
     while True:
-        sync_event = await queue.get()
+        sync_event = await sync_queue.get()
         for offset, actual, expected in pieces_between_matches(sync_event):
             for event in detect_losses(offset, actual, expected):
-                await reporter.send(event)
+                await reporter_queue.put(event)
 
 
 def _pieces_between_matching_blocks(sync_event: SyncEvent, sequence: Sequence = None) -> \

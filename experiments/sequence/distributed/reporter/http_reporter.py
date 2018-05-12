@@ -23,15 +23,18 @@ class HttpReporter(Reporter):
         app.add_routes([web.get('/', self.handle_request)])
         self.runner = web.AppRunner(app)
 
-    async def start(self):
+    async def setup(self):
         await self.runner.setup()
         site = web.TCPSite(self.runner, port=JSON_REPORTER_PORT)
         await site.start()
 
-    async def stop(self):
+    async def cleanup(self):
         await self.runner.cleanup()
 
-    async def send(self, loss: Loss):
+    async def handle_event(self, loss: Loss):
+        if not isinstance(loss, Loss):
+            return
+
         offset, size = loss
 
         self.packets += (offset - self._last_offset) % self.period

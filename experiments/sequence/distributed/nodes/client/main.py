@@ -28,6 +28,8 @@ parser.add_argument('-l', '--log_dir', dest='log_dir', default=None, type=str,
                     help=f'Path to log directory. Default: None')
 parser.add_argument('-c', '--config', default=DEFAULT_CONFIG, type=str,
                     help=f'Name of config file. Default: {DEFAULT_CONFIG}')
+parser.add_argument('-s', '--symbol_bits', type=int, help=f'Number of bits for each symbol, '
+                                                          f'supersedes value from config.')
 args = parser.parse_args()
 
 # Configure logging
@@ -43,10 +45,17 @@ local_port, remote_port = args.local_port, args.remote_port
 config_path = os.path.join(os.path.dirname(__file__), f'config/{args.config}.yml')
 with open(config_path, 'r') as config_file:
     config = yaml.load(config_file)
+
 seed_fn = seed_functions[config['seed_fn']]
+
+sequence_args = config['sequence']
+if args.symbol_bits is not None:
+    sequence_args['symbol_bits'] = args.symbol_bits
+sequence_cls = get_sequence_cls(**sequence_args)
+
+send_sequence = partial(send_sequence, sequence_cls=sequence_cls)
 sending_rate = args.rate or config['sending_rate'] or DEFAULT_SENDING_RATE
 offset = args.offset or config['offset'] or DEFAULT_OFFSET
-send_sequence = partial(send_sequence, sequence_cls=get_sequence_cls(**config['sequence']))
 
 # Start client
 logging.info(f'Started client, sending on {local_ip}:{local_port} -> {remote_ip}:{remote_port}')

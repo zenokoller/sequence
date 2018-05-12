@@ -4,13 +4,16 @@ from asyncio import Queue
 from typing import Callable, Dict
 
 from detector.detector import detector
-from reporter.reporter import Reporter
+from detector.event import Receive
 from synchronizer.synchronizer import synchronize
 from utils.integer_codec import decode_symbol_with_offset
 from utils.types import Address
 
 
-def get_server_protocol(seed_from_addr: Callable, sequence_cls: Callable, reporter: Reporter):
+def get_server_protocol(seed_from_addr: Callable,
+                        sequence_cls: Callable,
+                        reporter_queue: Queue,
+                        report_received: bool = False):
     class SequenceServerProtocol:
         def __init__(self, echo=False):
             self.echo = echo
@@ -33,6 +36,9 @@ def get_server_protocol(seed_from_addr: Callable, sequence_cls: Callable, report
             symbol, offset = decode_symbol_with_offset(data)
             queue.put_nowait(symbol)
 
+            if report_received:
+                reporter_queue.put_nowait(Receive(offset))
+
             if self.echo:
                 self.transport.sendto(data, addr)
 
@@ -41,7 +47,7 @@ def get_server_protocol(seed_from_addr: Callable, sequence_cls: Callable, report
             logging.info(f'Start observing flow; addr={addr}; seed={seed}')
             symbol_queue, event_queue = Queue(), Queue()
             _ = asyncio.ensure_future(synchronize(seed, symbol_queue, event_queue, sequence_cls))
-            _ = asyncio.ensure_future(detector(seed, event_queue, sequence_cls, reporter))
+            _ = asyncio.ensure_future(detector(seed, event_queue, reporter_queue, sequence_cls))
             return symbol_queue
 
     return SequenceServerProtocol

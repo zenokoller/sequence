@@ -2,7 +2,7 @@ import asyncio
 
 import aiohttp
 
-from detector.event import Loss
+from detector.event import Loss, Receive, Event
 from reporter.reporter import Reporter
 
 
@@ -20,10 +20,10 @@ class InfluxReporter(Reporter):
         """Reporter that sends all loss offsets to InfluxDB."""
         self._url = f'http://{host}:{port}/write?db={db}'
 
-    async def start(self):
+    async def setup(self):
         self._session = aiohttp.ClientSession()
 
-    async def send(self, event: asyncio.Event):
+    async def handle_event(self, event: asyncio.Event):
         data = self._event_to_line(event)
         async with self._session.post(self._url, data=data) as resp:
             if resp.status == 204:
@@ -31,9 +31,11 @@ class InfluxReporter(Reporter):
             else:
                 raise InfluxReporterError(resp)
 
-    def _event_to_line(self, event: asyncio.Event) -> bytes:
+    def _event_to_line(self, event: Event) -> bytes:
         """Converts an event to InfluxDB's line protocol."""
-        if isinstance(event, Loss):
+        if isinstance(event, Receive):
+            return f'receive offset={event.offset}'.encode('utf-8')
+        elif isinstance(event, Loss):
             offset, size = event
             if size == 1:
                 return f'loss offset={offset}'.encode('utf-8')
@@ -41,9 +43,10 @@ class InfluxReporter(Reporter):
                 offsets = range(offset, offset + size)
                 return b'\n'.join([f'loss offset={o}'.encode('utf-8') for o in offsets])
         else:
+            # Reordering and duplicates yet to be implemented
             raise NotImplementedError
 
-    async def stop(self):
+    async def cleanup(self):
         if self._session:
             await self._session.close()
             self._session = None
