@@ -26,9 +26,8 @@ parser.add_argument('-l', '--log_dir', dest='log_dir', default=None, type=str,
                     help=f'Path to log directory. Default: None')
 parser.add_argument('-c', '--config', default=DEFAULT_CONFIG, type=str,
                     help=f'Name of config file. Default: {DEFAULT_CONFIG}')
-parser.add_argument('-s', '--symbol_bits', type=int, help=f'Number of bits for each symbol, '
-                                                          f'supersedes value from config.')
-
+parser.add_argument('-s', '--symbol_bits', type=int, default=None,
+                    help=f'Number of bits for each symbol, supersedes value from config.')
 args = parser.parse_args()
 
 # Configure logging
