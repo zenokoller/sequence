@@ -6,7 +6,7 @@ from typing import Iterable
 from influxdb import InfluxDBClient
 from influxdb.resultset import ResultSet
 
-"""Evaluates precision/recall experiment."""
+"""Collects actual and predicted losses from InfluxDB after one experiment run."""
 
 try:
     start_time, end_time = sys.argv[1], sys.argv[2]
@@ -38,7 +38,6 @@ actual_losses = set([i for i in range(lower, upper) if not i in received])
 true_positive_count = len(actual_losses.intersection(detected_losses))
 precision = true_positive_count / len(detected_losses)
 recall = true_positive_count / len(actual_losses)
-
 
 with open(out_path, 'a+') as out_file:
     out_file.write(f'{symbol_bits},{precision},{recall}\n')
