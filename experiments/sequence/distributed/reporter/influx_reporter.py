@@ -36,12 +36,13 @@ class InfluxReporter(Reporter):
         if isinstance(event, Receive):
             return f'receive offset={event.offset}'.encode('utf-8')
         elif isinstance(event, Loss):
-            offset, size = event
+            offset, size, found_offset = event
             if size == 1:
-                return f'loss offset={offset}'.encode('utf-8')
+                return f'loss offset={offset},found_offset={found_offset}'.encode('utf-8')
             else:
                 offsets = range(offset, offset + size)
-                return b'\n'.join([f'loss offset={o}'.encode('utf-8') for o in offsets])
+                return b'\n'.join([f'loss offset={o},found_offset={found_offset}'.encode('utf-8')
+                                   for o in offsets])
         else:
             # Reordering and duplicates yet to be implemented
             raise NotImplementedError
