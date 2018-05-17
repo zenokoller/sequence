@@ -14,7 +14,7 @@ class InfluxReporterError(Exception):
 
 DEFAULT_BATCH_SIZE = 1000
 
-RECEIVE_LINE = 'receive offset={}'
+RECEIVE_LINE = 'receive offset={} {}'
 LOSS_LINE = 'loss offset={},found_offset={} {}'
 
 
