@@ -1,5 +1,5 @@
 seed_fn: default
-sending_rate: 100
+sending_rate: 500
 offset: 0
 sequence:
   symbol_bits: 2

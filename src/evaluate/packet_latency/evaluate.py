@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-"""Computes detection latencies for losses in number of packets after one experiment run."""
 import sys
 
 from influxdb import DataFrameClient
+
+"""Computes detection latencies for losses in number of packets after one experiment run."""
 
 try:
     start_time, end_time = sys.argv[1], sys.argv[2]
