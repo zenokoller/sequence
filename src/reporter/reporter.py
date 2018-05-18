@@ -17,11 +17,3 @@ class Reporter:
 
     async def cleanup(self):
         raise NotImplementedError
-
-
-def start_reporter(reporter: Reporter) -> asyncio.Queue:
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(reporter.setup())
-    reporter_queue = asyncio.Queue()
-    _ = asyncio.ensure_future(reporter.run(reporter_queue))
-    return reporter_queue
