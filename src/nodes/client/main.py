@@ -1,15 +1,12 @@
 import logging
-import os
 from argparse import ArgumentParser
 from contextlib import closing
 from functools import partial
 from time import sleep
 
-import yaml
-
-from sequence.seed import seed_functions
+from sequence.seed import seed_from_flow_id
 from sequence.send import send_sequence
-from sequence.sequence import get_sequence_cls
+from sequence.sequence import get_sequence_cls, override_sequence_args
 from utils.create_socket import create_socket
 from utils.env import get_client_ip, get_server_ip
 from utils.logging import setup_logger, disable_logging
@@ -21,15 +18,13 @@ DEFAULT_CONFIG = 'default'
 parser = ArgumentParser()
 parser.add_argument('local_port', type=int)
 parser.add_argument('remote_port', type=int)
-parser.add_argument('-r', '--rate', type=int, help=f'Sending rate in packets.')
-parser.add_argument('-o', '--offset', type=int, help=f'Start offset of sequence.')
-parser.add_argument('-n', '--nolog', action='store_true')
 parser.add_argument('-l', '--log_dir', dest='log_dir', default=None, type=str,
-                    help=f'Path to log directory. Default: None')
-parser.add_argument('-c', '--config', default=DEFAULT_CONFIG, type=str,
-                    help=f'Name of config file. Default: {DEFAULT_CONFIG}')
-parser.add_argument('-s', '--symbol_bits', type=int, default=None,
-                    help=f'Number of bits for each symbol, supersedes value from config.')
+                    help=f'path to log directory; default: None')
+parser.add_argument('-n', '--nolog', action='store_true')
+parser.add_argument('-o', '--offset', type=int, help='start offset of sequence')
+parser.add_argument('-p', '--period', type=int, help='sequence period')
+parser.add_argument('-r', '--rate', type=int, help='sending rate in pps')
+parser.add_argument('-s', '--symbol_bits', type=int, help='number of bits for each symbol')
 args = parser.parse_args()
 
 # Configure logging
@@ -42,20 +37,14 @@ else:
 local_ip, remote_ip = get_client_ip(), get_server_ip()
 local_port, remote_port = args.local_port, args.remote_port
 
-config_path = os.path.join(os.path.dirname(__file__), f'config/{args.config}.yml')
-with open(config_path, 'r') as config_file:
-    config = yaml.load(config_file)
+seed_fn = seed_from_flow_id
 
-seed_fn = seed_functions[config['seed_fn']]
-
-sequence_args = config['sequence']
-if args.symbol_bits is not None:
-    sequence_args['symbol_bits'] = args.symbol_bits
+sequence_args = override_sequence_args(vars(args))
 sequence_cls = get_sequence_cls(**sequence_args)
 
 send_sequence = partial(send_sequence, sequence_cls=sequence_cls)
-sending_rate = args.rate or config['sending_rate'] or DEFAULT_SENDING_RATE
-offset = args.offset or config['offset'] or DEFAULT_OFFSET
+sending_rate = args.rate or DEFAULT_SENDING_RATE
+offset = args.offset or DEFAULT_OFFSET
 
 # Start client
 logging.info(f'Started client, sending on {local_ip}:{local_port} -> {remote_ip}:{remote_port}')

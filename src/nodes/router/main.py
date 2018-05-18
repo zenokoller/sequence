@@ -1,17 +1,14 @@
 import asyncio
 import logging
-import os
 from argparse import ArgumentParser
 
 import aioprocessing
-import yaml
 
 from nodes.router.demultiplex_flows import get_demultiplex_flow_fn
 from nodes.router.libtrace_process import try_run_libtrace
-from reporter.get_reporter import get_reporter
-from reporter.reporter import start_reporter
-from sequence.seed import seed_functions
-from sequence.sequence import get_sequence_cls
+from reporter.utils import create_reporter, start_reporter
+from sequence.seed import seed_from_flow_id
+from sequence.sequence import get_sequence_cls, override_sequence_args
 from utils.asyncio import cancel_pending_tasks
 from utils.logging import setup_logger, disable_logging
 
@@ -21,13 +18,14 @@ DEFAULT_CONFIG = 'default'
 parser = ArgumentParser()
 parser.add_argument('-i', '--in_uri', help='libtrace URI of interface to observe',
                     default=DEFAULT_IN_URI)
+parser.add_argument('-l', '--log_dir', dest='log_dir', type=str,
+                    help='path to log directory; default: None')
 parser.add_argument('-n', '--nolog', action='store_true')
-parser.add_argument('-l', '--log_dir', dest='log_dir', default=None, type=str,
-                    help=f'Path to log directory. Default: None')
-parser.add_argument('-c', '--config', default=DEFAULT_CONFIG, type=str,
-                    help=f'Name of config file. Default: {DEFAULT_CONFIG}')
-parser.add_argument('-s', '--symbol_bits', type=int, default=None,
-                    help=f'Number of bits for each symbol, supersedes value from config.')
+parser.add_argument('-p', '--period', type=int, help='sequence period')
+parser.add_argument('-s', '--symbol_bits', type=int, help='number of bits for each symbol')
+parser.add_argument('--reporter_name', type=str, help='reporter name, see reporter.utils')
+parser.add_argument('--reporter_args', type=str, default='',
+                    help='space-separated reporter args in quotes')
 args = parser.parse_args()
 
 # Configure logging
@@ -37,21 +35,15 @@ else:
     setup_logger(log_dir=args.log_dir, file_level=logging.INFO)
 
 # Configure observer
-config_path = os.path.join(os.path.dirname(__file__), f'config/{args.config}.yml')
-with open(config_path, 'r') as config_file:
-    config = yaml.load(config_file)
+seed_fn = seed_from_flow_id
 
-seed_from_flow_id = seed_functions[config['seed_fn']]
-
-sequence_args = config['sequence']
-if args.symbol_bits is not None:
-    sequence_args['symbol_bits'] = args.symbol_bits
+sequence_args = override_sequence_args(vars(args))
 sequence_cls = get_sequence_cls(**sequence_args)
 
-reporter = get_reporter(config['reporter']['name'], *config['reporter']['args'])
+reporter = create_reporter(args.reporter_name, args.reporter_args.split())
 reporter_queue = start_reporter(reporter)
 
-demultiplex_flows = get_demultiplex_flow_fn(seed_from_flow_id, sequence_cls, reporter_queue)
+demultiplex_flows = get_demultiplex_flow_fn(seed_fn, sequence_cls, reporter_queue)
 
 # Start libtrace process
 queue = aioprocessing.AioQueue()

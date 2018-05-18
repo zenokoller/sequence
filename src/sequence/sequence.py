@@ -47,19 +47,28 @@ def generate_random(symbol_bits: int, seed: int) -> Iterable[int]:
         yield r.getrandbits(symbol_bits)
 
 
-DEFAULT_SYMBOL_BITS = 2
-DEFAULT_PERIOD = 2 ** 16
-DEFAULT_GENERATE_FN = 'random'
-DEFAULT_TYPECODE = 'B'
 generate_functions = {
     'random': generate_random
 }
 
+default_sequence_args = {
+    'symbol_bits': 2,
+    'period': 2 ** 16,
+    'generate_fn': 'random',
+    'typecode': 'B'
+}
 
-def get_sequence_cls(symbol_bits: int = DEFAULT_SYMBOL_BITS,
-                     period: int = DEFAULT_PERIOD,
-                     generate_fn: str = DEFAULT_GENERATE_FN,
-                     typecode: str = DEFAULT_TYPECODE):
+
+def override_sequence_args(overrides: dict) -> dict:
+    args = default_sequence_args.copy()
+    args.update(
+        {k: v for k, v in overrides.items() if k in default_sequence_args.keys() and v is not None}
+    )
+    return args
+
+
+def get_sequence_cls(symbol_bits: int = None, period: int = None, generate_fn: str = None,
+                     typecode: str = None):
     generate_fn = generate_functions[generate_fn]
     return partial(Sequence,
                    period=period,

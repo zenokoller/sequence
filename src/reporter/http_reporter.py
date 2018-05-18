@@ -12,9 +12,9 @@ class HttpReporter(Reporter):
     """Simple reporter that collects packet and loss counts and exposes them as JSON on an HTTP
     endpoint."""
 
-    def __init__(self, period: int):
+    def __init__(self, period):
         logging.getLogger('aiohttp.access').setLevel(logging.WARNING)
-        self.period = period
+        self.period = int(period)
         self.packets = 0
         self.losses = 0
         self._last_offset = 0
