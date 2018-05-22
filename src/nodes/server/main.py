@@ -15,7 +15,6 @@ DEFAULT_CONFIG = 'default'
 
 parser = ArgumentParser()
 parser.add_argument('local_port', type=int)
-
 parser.add_argument('-e', '--echo', action='store_true')
 parser.add_argument('-n', '--nolog', action='store_true')
 parser.add_argument('-l', '--log_dir', dest='log_dir', default=None, type=str,
@@ -44,7 +43,7 @@ get_seed = partial(seed_from_addresses, seed_fn, recv_addr=(local_ip, local_port
 sequence_args = override_sequence_args(vars(args))
 sequence_cls = get_sequence_cls(**sequence_args)
 
-reporter = create_reporter(args.reporter_name, args.reporter_args.split())
+reporter = create_reporter(args.reporter_name, *args.reporter_args.split())
 reporter_queue = start_reporter(reporter)
 
 server_protocol = get_server_protocol(get_seed, sequence_cls, reporter_queue,

@@ -1,0 +1,20 @@
+name: packet_latency
+running_time: 20
+repeats: 10
+
+settings:
+  all:
+    symbol_bits: 2
+  client: {}
+  server:
+    reporter_name: influx
+
+override_settings:
+  - all:
+      symbol_bits: 2
+  - all:
+      symbol_bits: 4
+  - all:
+      symbol_bits: 6
+  - all:
+      symbol_bits: 8

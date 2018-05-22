@@ -1,12 +1,14 @@
 import time
 from typing import Tuple, List
 
+from utils.nanotime import nanosecond_timestamp
+
 
 class Event:
     __slots__ = ('timestamp',)
 
     def __init__(self, *args, **kwargs):
-        self.timestamp = int(time.time() * 1e09)  # [ns] UNIX time
+        self.timestamp = nanosecond_timestamp()
         values = args if args else kwargs.values()
         for slot, value in zip(self.__slots__[1:], values):
             setattr(self, slot, value)

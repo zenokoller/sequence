@@ -14,7 +14,7 @@ reporters = {
 
 def create_reporter(name: str, *args, **kwargs) -> Reporter:
     reporter_cls = reporters.get(name, SilentReporter)
-    return reporter_cls(*args, **kwargs)
+    return reporter_cls(*args, **kwargs) if len(args) > 0 else reporter_cls(**kwargs)
 
 
 def start_reporter(reporter: Reporter) -> asyncio.Queue:

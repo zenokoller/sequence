@@ -43,7 +43,7 @@ class InfluxReporter(Reporter):
         data = f'\n'.join(self._event_to_line(event) for event in self._batch).encode('utf-8')
         self._batch = []
         async with self._session.post(self._url, data=data) as resp:
-            if resp.status == 204:
+            if resp.status != 204:
                 raise InfluxReporterError(resp)
 
     def _event_to_line(self, event: Event) -> str:
