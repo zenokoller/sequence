@@ -56,9 +56,11 @@ class ClientServerTestbed:
     def start(self):
         os.chdir(self.testbed_path)
 
+        print(f'>>> Starting Testbed. Outputs at {self.out_path}\n')
         self.check_containers()
         self.create_out_dir()
         self.create_node_logs()
+
         self.configure_netem()
 
         repeats = self.config.get('repeats', 1)
@@ -94,7 +96,7 @@ class ClientServerTestbed:
             self.node_logs[nodename] = log_files
 
     def configure_netem(self):
-        print('TODO: configure_netem\n')
+        print('>>> [TODO] configure_netem\n')
 
     def run(self, node_settings: dict, running_time: int):
         start_time = nanosecond_timestamp()
@@ -146,11 +148,6 @@ def main(testbed_cls, config_file: str = None):
     config_path = os.path.join(os.path.dirname(__file__), config_file or args.config_path)
     with open(config_path, 'r') as config_file:
         config = yaml.load(config_file)
-
-    print(f'>>> Starting experiment:\n'
-          f'        config={config_path};\n'
-          f'        out_dir={args.out_dir};\n'
-          f'        testbed_path={args.testbed_path}\n')
 
     experiment = testbed_cls(config, args.out_dir, args.testbed_path)
     experiment.start()

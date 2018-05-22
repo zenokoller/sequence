@@ -43,15 +43,21 @@ get_seed = partial(seed_from_addresses, seed_fn, recv_addr=(local_ip, local_port
 sequence_args = override_sequence_args(vars(args))
 sequence_cls = get_sequence_cls(**sequence_args)
 
-reporter = create_reporter(args.reporter_name, *args.reporter_args.split())
+reporter_args = args.reporter_args.split()
+reporter = create_reporter(args.reporter_name, *reporter_args)
 reporter_queue = start_reporter(reporter)
 
 server_protocol = get_server_protocol(get_seed, sequence_cls, reporter_queue,
                                       report_received=args.report_received)
 
+# Print settings
+logging.info(f'Starting UDP server, listening on {local_ip}:{local_port}')
+logging.info(f'sequence_args={sequence_args}')
+logging.info(f'reporter={args.reporter_name} {reporter_args}')
+logging.info(f'report_received={args.report_received}')
+
 # Start server
 loop = asyncio.get_event_loop()
-logging.info(f'Starting UDP server, listening on {local_ip}:{local_port}')
 listen = loop.create_datagram_endpoint(server_protocol, local_addr=(local_ip, local_port))
 transport, protocol = loop.run_until_complete(listen)
 

@@ -46,8 +46,13 @@ send_sequence = partial(send_sequence, sequence_cls=sequence_cls)
 sending_rate = args.rate or DEFAULT_SENDING_RATE
 offset = args.offset or DEFAULT_OFFSET
 
-# Start client
+# Print settings
 logging.info(f'Started client, sending on {local_ip}:{local_port} -> {remote_ip}:{remote_port}')
+logging.info(f'sequence_args={sequence_args}')
+logging.info(f'sending_rate={sending_rate}')
+logging.info(f'offset={offset}')
+
+# Start client
 with closing(create_socket(local_port=local_port)) as sock:
     seed = seed_fn(local_ip, local_port, remote_ip, remote_port)
     logging.debug(f'Seed: {seed}')

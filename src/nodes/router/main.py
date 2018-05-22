@@ -40,10 +40,16 @@ seed_fn = seed_from_flow_id
 sequence_args = override_sequence_args(vars(args))
 sequence_cls = get_sequence_cls(**sequence_args)
 
-reporter = create_reporter(args.reporter_name, args.reporter_args.split())
+reporter_args = args.reporter_args.split()
+reporter = create_reporter(args.reporter_name, *reporter_args)
 reporter_queue = start_reporter(reporter)
 
 demultiplex_flows = get_demultiplex_flow_fn(seed_fn, sequence_cls, reporter_queue)
+
+# Print settings
+logging.info('Starting UDP observer...')
+logging.info(f'sequence_args={sequence_args}')
+logging.info(f'reporter={args.reporter_name} {reporter_args}')
 
 # Start libtrace process
 queue = aioprocessing.AioQueue()
@@ -52,7 +58,6 @@ lt_process.setup()
 
 # Start observing flows
 loop = asyncio.get_event_loop()
-logging.info('Starting UDP observer.')
 try:
     loop.run_until_complete(demultiplex_flows(queue))
 except KeyboardInterrupt:
