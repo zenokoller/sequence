@@ -59,14 +59,6 @@ default_sequence_args = {
 }
 
 
-def override_sequence_args(overrides: dict) -> dict:
-    args = default_sequence_args.copy()
-    args.update(
-        {k: v for k, v in overrides.items() if k in default_sequence_args.keys() and v is not None}
-    )
-    return args
-
-
 def get_sequence_cls(symbol_bits: int = None, period: int = None, generate_fn: str = None,
                      typecode: str = None):
     generate_fn = generate_functions[generate_fn]

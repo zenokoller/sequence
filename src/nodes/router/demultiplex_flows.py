@@ -5,12 +5,12 @@ from typing import Callable, Dict
 import aioprocessing
 
 from detector.detector import detector
-from synchronizer.synchronizer import synchronize
 from utils.types import FlowId
 
 
 def get_demultiplex_flow_fn(seed_from_flow_id: Callable,
                             sequence_cls: Callable,
+                            synchronize: Callable,
                             reporter_queue: asyncio.Queue) -> Callable:
     def start_sync_and_detector(flow_id) -> asyncio.Queue:
         seed = seed_from_flow_id(*flow_id)

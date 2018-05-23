@@ -6,10 +6,11 @@ from time import sleep
 
 from sequence.seed import seed_from_flow_id
 from sequence.send import send_sequence
-from sequence.sequence import get_sequence_cls, override_sequence_args
+from sequence.sequence import get_sequence_cls, default_sequence_args
 from utils.create_socket import create_socket
 from utils.env import get_client_ip, get_server_ip
 from utils.logging import setup_logger, disable_logging
+from utils.override_defaults import override_defaults
 
 DEFAULT_SENDING_RATE = 100  # Packets per second
 DEFAULT_OFFSET = 0
@@ -39,7 +40,7 @@ local_port, remote_port = args.local_port, args.remote_port
 
 seed_fn = seed_from_flow_id
 
-sequence_args = override_sequence_args(vars(args))
+sequence_args = override_defaults(default_sequence_args, vars(args))
 sequence_cls = get_sequence_cls(**sequence_args)
 
 send_sequence = partial(send_sequence, sequence_cls=sequence_cls)

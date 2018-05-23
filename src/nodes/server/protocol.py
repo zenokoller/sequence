@@ -5,13 +5,13 @@ from typing import Callable, Dict
 
 from detector.detector import detector
 from detector.event import Receive
-from synchronizer.synchronizer import synchronize
 from utils.integer_codec import decode_symbol_with_offset
 from utils.types import Address
 
 
 def get_server_protocol(seed_from_addr: Callable,
                         sequence_cls: Callable,
+                        synchronize: Callable,
                         reporter_queue: Queue,
                         report_received: bool = False):
     class SequenceServerProtocol:
