@@ -17,16 +17,18 @@ def evaluate(start_time: int, end_time: int, csv_path: str, _: dict):
         f'from "telegraf"."autogen"."httpjson_netem" '
         f'where time > {start_time} and time < {end_time};')['httpjson_netem']
 
-    # bucketize data and compute loss rates
+    # bucketize data
     sequence_df = sequence_df.diff()
-    sequence_df['rate'] = (sequence_df['losses'] / sequence_df['packets']).fillna(0)
-    sequence_df = sequence_df.filter(items=['rate'])
 
     diff_df = netem_df.diff()
-    diff_df[diff_df < 0] = netem_df[diff_df < 0]  # netemd values are temporarily reset
+    diff_df[diff_df < 0] = netem_df[diff_df < 0]  # netemd values are regularly reset
     netem_df = diff_df
-    netem_df['rate'] = (netem_df['losses'] / netem_df['packets']).fillna(0)
-    netem_df = netem_df.filter(items=['rate'])
 
+    # compute loss rates
     joined_df = sequence_df.join(netem_df, lsuffix="_sequence", rsuffix="_netem")
+    joined_df['rate_sequence'] = (
+            joined_df['losses_sequence'] / joined_df['packets_netem']  # shortcut to get packet rate
+    ).fillna(0)
+    joined_df['rate_netem'] = (joined_df['losses_netem'] / joined_df['packets_netem']).fillna(0)
+
     joined_df.to_csv(csv_path)
