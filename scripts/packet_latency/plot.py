@@ -19,7 +19,11 @@ def plot(csv_path: str, title: str):
         'packet_latency': ['mean', 'std']})
 
     fig, ax = plt.subplots()
-    agg_df.packet_latency['mean'].plot(yerr=agg_df.packet_latency['std'], marker='o', ax=ax)
+    agg_df.packet_latency['mean'].plot(yerr=agg_df.packet_latency['std'], marker='o',
+                                       fontsize=10, ax=ax)
+    xticklabels = [x for x in zip(*agg_df.index.levels)]
+    ax.set_xticks(range(len(xticklabels)))
+    ax.set_xticklabels(xticklabels)
 
     plt.title(title, fontsize=14)
 
