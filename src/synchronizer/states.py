@@ -21,7 +21,9 @@ class State:
 def configure_states(initial_sync_confidence: int = None,
                      recovery_batch_size: int = None,
                      recovery_range_length: int = None,
-                     searching_batch_size: int = None) -> Type[State]:
+                     recovery_min_match_size: int = None,
+                     searching_batch_size: int = None,
+                     searching_min_match_size: int = None) -> Type[State]:
     class Initial(State):
         __slots__ = 'matched_count'
 
@@ -55,8 +57,8 @@ def configure_states(initial_sync_confidence: int = None,
     class AbstractSearchingState(State):
         __slots__ = 'buffer', 'out_queue', 'search_task', 'lost_offset'
 
-        def __init__(self, sequence: Sequence, buffer: SymbolBuffer,
-                     search_fn: Callable, search_args: dict = None, lost_offset: int = None):
+        def __init__(self, sequence: Sequence, buffer: SymbolBuffer, search_fn: Callable,
+                     search_args: dict = None, lost_offset: int = None):
             self.sequence = sequence
             self.buffer = buffer
             self.lost_offset = lost_offset
@@ -94,7 +96,9 @@ def configure_states(initial_sync_confidence: int = None,
             buffer = SymbolBuffer(batch_size=recovery_batch_size)
             buffer.append(first_symbol)
             search_args = {
-                'search_range': (sequence.offset, sequence.offset + recovery_range_length)}
+                'min_match_size': recovery_min_match_size,
+                'search_range': (sequence.offset, sequence.offset + recovery_range_length)
+            }
             return cls(sequence, buffer, recovery_search, search_args=search_args,
                        lost_offset=sequence.offset - 1)
 
@@ -114,18 +118,24 @@ def configure_states(initial_sync_confidence: int = None,
         @classmethod
         def from_initial(cls, sequence: Sequence):
             logging.info('Initial -> Searching')
-            return cls(sequence, SymbolBuffer(searching_batch_size), full_search, lost_offset=None)
+            search_args = {'min_match_size': searching_min_match_size}
+            return cls(sequence, SymbolBuffer(searching_batch_size), full_search,
+                       search_args=search_args, lost_offset=None)
 
         @classmethod
         def from_recovery(cls, state: Recovery):
             logging.info('Recovery -> Searching')
             buffer = SymbolBuffer.from_previous(state.buffer, searching_batch_size)
-            return cls(state.sequence, buffer, full_search, lost_offset=state.lost_offset)
+            search_args = {'min_match_size': searching_min_match_size}
+            return cls(state.sequence, buffer, full_search, search_args=search_args,
+                       lost_offset=state.lost_offset)
 
         @classmethod
         def from_searching(cls, state: 'Searching'):
             logging.info('Searching -> Searching')
-            return cls(state.sequence, state.buffer, full_search, lost_offset=state.lost_offset)
+            search_args = {'min_match_size': searching_min_match_size}
+            return cls(state.sequence, state.buffer, full_search, search_args=search_args,
+                       lost_offset=state.lost_offset)
 
         def handle_search_done(self) -> StateWithEvent:
             found_offset = self.search_task.result()

@@ -23,5 +23,7 @@ default_synchronize_args = {
     'initial_sync_confidence': 10,
     'recovery_batch_size': 25,
     'recovery_range_length': 75,
-    'searching_batch_size': 50
+    'recovery_min_match_size': 20,
+    'searching_batch_size': 50,
+    'searching_min_match_size': 30
 }

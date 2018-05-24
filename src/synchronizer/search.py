@@ -63,20 +63,12 @@ def apply_coroutine(items: list, coroutine: Callable) -> list:
     return [res for res in (cr.send(item) for item in items) if res is not None]
 
 
-full_search_config = {
-    'min_match_size': 20,
-    'backoff_thresh': 10
-}
+full_search_backoff_thresh = 10
 full_search = partial(search,
-                      min_match_size=full_search_config['min_match_size'],
-                      backoff_thresh=full_search_config['backoff_thresh'],
+                      backoff_thresh=full_search_backoff_thresh,
                       preprocess=as_bytes)
 
-recovery_config = {
-    'min_match_size': 10,
-    'backoff_thresh': 3
-}
+recovery_backoff_thresh = 3
 recovery_search = partial(search,
-                          min_match_size=recovery_config['min_match_size'],
-                          backoff_thresh=recovery_config['backoff_thresh'],
+                          backoff_thresh=recovery_backoff_thresh,
                           preprocess=as_bytes)

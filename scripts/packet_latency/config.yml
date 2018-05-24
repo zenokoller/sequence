@@ -13,19 +13,25 @@ settings:
 override_settings:
   - server:
       recovery_batch_size: 5
+      recovery_min_match_size: 3
       recovery_range_length: 15
   - server:
       recovery_batch_size: 10
+      recovery_min_match_size: 7
       recovery_range_length: 30
   - server:
       recovery_batch_size: 15
+      recovery_min_match_size: 11
       recovery_range_length: 45
   - server:
       recovery_batch_size: 20
+      recovery_min_match_size: 15
       recovery_range_length: 60
   - server:
       recovery_batch_size: 25
+      recovery_min_match_size: 20
       recovery_range_length: 75
   - server:
       recovery_batch_size: 30
+      recovery_min_match_size: 20
       recovery_range_length: 90

@@ -13,9 +13,9 @@ import pandas as pd
 
 def plot(csv_path: str, title: str):
     df = pd.read_csv(csv_path,
-                     names=['recovery_batch_size', 'recovery_range_length', 'packet_latency'],
+                     names=['batch_size', 'min_match_size', 'range_length', 'packet_latency'],
                      index_col=0)
-    agg_df = df.groupby(['recovery_batch_size', 'recovery_range_length']).aggregate({
+    agg_df = df.groupby(['batch_size', 'min_match_size', 'range_length']).aggregate({
         'packet_latency': ['mean', 'std']})
 
     fig, ax = plt.subplots()
