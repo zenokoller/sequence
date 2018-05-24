@@ -9,7 +9,7 @@ from sequence.seed import seed_from_addresses, seed_from_flow_id
 from sequence.sequence import get_sequence_cls, default_sequence_args
 from synchronizer.synchronizer import default_synchronize_args, get_synchronize_fn
 from utils.asyncio import cancel_pending_tasks
-from utils.env import get_server_ip
+from utils.env import get_server_host
 from utils.logging import setup_logger, disable_logging
 from utils.override_defaults import override_defaults
 
@@ -38,7 +38,7 @@ else:
     setup_logger(log_dir=args.log_dir, file_level=logging.INFO)
 
 # Configure server
-local_ip = get_server_ip()
+local_ip = get_server_host()
 local_port = args.local_port
 
 seed_fn = seed_from_flow_id
