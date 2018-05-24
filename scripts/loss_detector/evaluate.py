@@ -24,11 +24,14 @@ def evaluate(start_time: int, end_time: int, csv_path: str, _: dict):
     diff_df[diff_df < 0] = netem_df[diff_df < 0]  # netemd values are regularly reset
     netem_df = diff_df
 
-    # compute loss rates
+    def compute_loss_rate(df, losses_name, packets_name):
+        return (df[losses_name] / (df[losses_name] + df[packets_name])).fillna(0)
+
     joined_df = sequence_df.join(netem_df, lsuffix="_sequence", rsuffix="_netem")
-    joined_df['rate_sequence'] = (
-            joined_df['losses_sequence'] / joined_df['packets_netem']  # shortcut to get packet rate
-    ).fillna(0)
-    joined_df['rate_netem'] = (joined_df['losses_netem'] / joined_df['packets_netem']).fillna(0)
+
+    # Use netem packet counts to calculate sequence loss rate as shortcut to getting packet counts
+    # from offsets in each bucket
+    joined_df['rate_sequence'] = compute_loss_rate(joined_df, 'losses_sequence', 'packets_netem')
+    joined_df['rate_netem'] = compute_loss_rate(joined_df, 'losses_netem', 'packets_netem')
 
     joined_df.to_csv(csv_path)
