@@ -1,4 +1,5 @@
 name: packet_latency
+plot_title: Latency in Packets
 running_time: 20
 repeats: 10
 

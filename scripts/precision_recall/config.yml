@@ -1,4 +1,5 @@
 name: precision_recall
+plot_title: Precision/Recall
 running_time: 20
 repeats: 10
 

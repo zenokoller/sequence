@@ -1,4 +1,5 @@
 name: loss_detector
+plot_title: Actual vs. Estimated Loss
 running_time: 100
 repeats: 1
 

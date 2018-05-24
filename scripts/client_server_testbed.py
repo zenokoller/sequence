@@ -113,7 +113,8 @@ class ClientServerTestbed:
 
     def post_experiment(self):
         if self.post_experiment_fn is not None:
-            self.post_experiment_fn(self.csv_path, self.config.get('name', None))
+            plot_title = self.config.get('plot_title', None) or self.config.get('name', None)
+            self.post_experiment_fn(self.csv_path, plot_title)
 
     def get_node_settings(self) -> List[dict]:
         def apply_all(settings: dict) -> dict:
