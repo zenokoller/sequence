@@ -22,7 +22,6 @@ def configure_states(initial_sync_confidence: int = None,
                      recovery_batch_size: int = None,
                      recovery_range_length: int = None,
                      searching_batch_size: int = None) -> Type[State]:
-    """TODO: Document"""
     class Initial(State):
         __slots__ = 'matched_count'
 

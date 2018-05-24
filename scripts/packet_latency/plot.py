@@ -12,8 +12,11 @@ import pandas as pd
 
 
 def plot(csv_path: str, title: str):
-    df = pd.read_csv(csv_path, names=['symbol_bits', 'packet_latency'], index_col=0)
-    agg_df = df.groupby('symbol_bits').aggregate({'packet_latency': ['mean', 'std']})
+    df = pd.read_csv(csv_path,
+                     names=['recovery_batch_size', 'recovery_range_length', 'packet_latency'],
+                     index_col=0)
+    agg_df = df.groupby(['recovery_batch_size', 'recovery_range_length']).aggregate({
+        'packet_latency': ['mean', 'std']})
 
     fig, ax = plt.subplots()
     agg_df.packet_latency['mean'].plot(yerr=agg_df.packet_latency['std'], marker='o', ax=ax)

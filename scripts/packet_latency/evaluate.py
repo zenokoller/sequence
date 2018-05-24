@@ -11,6 +11,9 @@ def evaluate(start_time: int, end_time: int, csv_path: str, settings: dict):
 
     loss_df['packet_latency'] = loss_df['found_offset'] - loss_df['offset']
 
-    symbol_bits = settings['client']['symbol_bits']
+    recovery_batch_size = settings['server']['recovery_batch_size']
+    recovery_range_length = settings['server']['recovery_range_length']
+
     with open(csv_path, 'a+') as out_file:
-        out_file.writelines(f'{symbol_bits},{latency}\n' for latency in loss_df.packet_latency)
+        out_file.writelines(f'{recovery_batch_size},{recovery_range_length},{latency}\n'
+                            for latency in loss_df.packet_latency)
