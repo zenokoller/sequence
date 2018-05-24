@@ -24,6 +24,16 @@ def configure_states(initial_sync_confidence: int = None,
                      recovery_min_match_size: int = None,
                      searching_batch_size: int = None,
                      searching_min_match_size: int = None) -> Type[State]:
+    """
+    Configure the synchronizer's state machine states with the provided parameters.
+    :param initial_sync_confidence correct symbols needed for move from `initial` to `synchronized`
+    :param recovery_batch_size packets are buffered until search attempt is started in `recovery`
+    :param recovery_range_length: how far to search forward from lost offset in recovery state
+    :param recovery_min_match_size: minimum number of symbols for a successful sync in `recovery`
+    :param searching_batch_size packets are buffered until search attempt is started in `searching`
+    :param searching_min_match_size: minimum number of symbols for a successful sync in `searching`
+    :return: The initial state of the state machine
+    """
     class Initial(State):
         __slots__ = 'matched_count'
 
