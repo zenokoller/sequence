@@ -34,7 +34,7 @@ def start_node_command(nodename: str, settings: dict, running_time: int) -> List
     ]
 
 
-class ClientServerTestbed:
+class ClientServerExperiment:
     nodenames = ['client', 'server']
 
     def __init__(self,
@@ -150,4 +150,4 @@ def main(testbed_cls, config_file: str = None):
 
 
 if __name__ == '__main__':
-    main(ClientServerTestbed)
+    main(ClientServerExperiment)
