@@ -61,8 +61,6 @@ class ClientServerTestbed:
         self.create_out_dir()
         self.create_node_logs()
 
-        self.configure_netem()
-
         repeats = self.config.get('repeats', 1)
         running_time = self.config.get('running_time', DEFAULT_RUNNING_TIME)
         node_settings = self.get_node_settings()
@@ -94,9 +92,6 @@ class ClientServerTestbed:
                      for output in ('stdout', 'stderr'))
             log_files = tuple(open(path, 'w') for path in paths)
             self.node_logs[nodename] = log_files
-
-    def configure_netem(self):
-        print('>>> [TODO] configure_netem\n')
 
     def run(self, node_settings: dict, running_time: int):
         start_time = nanosecond_timestamp()
