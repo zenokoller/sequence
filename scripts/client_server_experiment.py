@@ -4,7 +4,7 @@ import subprocess
 import time
 from argparse import ArgumentParser
 from datetime import datetime, timedelta
-from typing import Callable, List
+from typing import Callable, List, TextIO
 
 import yaml
 from tqdm import tqdm
@@ -45,7 +45,7 @@ class ClientServerExperiment:
                  post_experiment_fn: Callable[[str, dict], None] = None):
         self.config = config
         self.node_pids = []
-        self.node_logs = {}
+        self.node_stdouts = {}
         self.out_path = os.path.join(out_base_path, f'{self.config["name"]}',
                                      f'{datetime.now().strftime(DATE_FMT)}')
         self.csv_path = os.path.join(self.out_path, 'results.csv')
@@ -87,11 +87,11 @@ class ClientServerExperiment:
         os.makedirs(self.out_path, exist_ok=True)
 
     def create_node_logs(self):
-        for nodename in self.nodenames:
-            paths = (os.path.join(self.out_path, f'{nodename}_{output}.log')
-                     for output in ('stdout', 'stderr'))
-            log_files = tuple(open(path, 'w') for path in paths)
-            self.node_logs[nodename] = log_files
+        def log_file(nodename: str) -> TextIO:
+            path = os.path.join(self.out_path, f'{nodename}.log')
+            return open(path, 'w')
+
+        self.node_stdouts = {nodename: log_file(nodename) for nodename in self.nodenames}
 
     def run(self, node_settings: dict, running_time: int):
         start_time = nanosecond_timestamp()
@@ -103,8 +103,8 @@ class ClientServerExperiment:
     def start_nodes(self, settings: dict, running_time: int):
         for nodename in self.nodenames:
             args = start_node_command(nodename, settings, running_time)
-            stdout, stderr = self.node_logs[nodename]
-            process = subprocess.Popen(args, stdout=stdout, stderr=stderr)
+            stdout = self.node_stdouts[nodename]
+            process = subprocess.Popen(args, stdout=stdout)
             self.node_pids.append(process.pid)
 
     def post_run(self, start_time: int, end_time: int, node_settings: dict):
@@ -129,7 +129,7 @@ class ClientServerExperiment:
              for nodename in self.nodenames} for override in overrides]
 
     def close_node_logs(self):
-        for stdout, stderr in self.node_logs.values():
+        for stdout, stderr in self.node_stdouts.values():
             stdout.close()
             stderr.close()
 
