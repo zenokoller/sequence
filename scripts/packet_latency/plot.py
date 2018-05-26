@@ -13,18 +13,13 @@ import pandas as pd
 
 def plot(csv_path: str, title: str):
     df = pd.read_csv(csv_path,
-                     names=['batch_size', 'min_match_size', 'range_length', 'packet_latency'],
+                     names=['batch_size', 'packet_latency'],
                      index_col=0)
-    agg_df = df.groupby(['batch_size', 'min_match_size', 'range_length']).aggregate({
-        'packet_latency': ['mean', 'std']})
+    agg_df = df.groupby(['batch_size']).aggregate({'packet_latency': ['mean', 'std']})
 
     fig, ax = plt.subplots()
     agg_df.packet_latency['mean'].plot(yerr=agg_df.packet_latency['std'], marker='o',
                                        fontsize=10, ax=ax)
-    xticklabels = [x for x in zip(*agg_df.index.levels)]
-    ax.set_xticks(range(len(xticklabels)))
-    ax.set_xticklabels(xticklabels)
-
     plt.title(title, fontsize=14)
 
     out_dir, csv_name = os.path.split(csv_path)
