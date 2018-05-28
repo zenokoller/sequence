@@ -1,10 +1,9 @@
 import asyncio
-import logging
 from typing import List
 
 import aiohttp
 
-from detector.event import Loss, Receive, Event
+from detector.types import Loss, Receive, Event
 from reporter.reporter import Reporter
 
 

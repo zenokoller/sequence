@@ -4,7 +4,7 @@ from asyncio import Queue
 from typing import Callable, Dict
 
 from detector.detector import detector
-from detector.event import Receive
+from detector.types import Receive
 from utils.integer_codec import decode_symbol_with_offset
 from utils.types import Address
 

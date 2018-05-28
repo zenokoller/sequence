@@ -1,8 +1,9 @@
-from typing import NamedTuple, List, Match, Tuple
+from typing import NamedTuple
 
 from utils.symbol_buffer import SymbolBuffer
 
 
 class SyncEvent(NamedTuple):
-    offsets: Tuple[int, int]  # (lost_offset, found_offset)
+    lost_offset: int
+    found_offset: int
     buffer: SymbolBuffer

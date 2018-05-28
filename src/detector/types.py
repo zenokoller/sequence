@@ -1,5 +1,5 @@
-import time
-from typing import Tuple, List
+from array import array
+from typing import NamedTuple, Tuple
 
 from utils.nanotime import nanosecond_timestamp
 
@@ -16,16 +16,23 @@ class Event:
     def __iter__(self):
         return iter((getattr(self, slot) for slot in self.__slots__))
 
+    def __repr__(self):
+        attributes = ', '.join(str(getattr(self, slot)) for slot in self.__slots__[1:])
+        return f'{self.__class__.__name__}({attributes})'
+
 
 def make_event_type(typename: str, fields=Tuple[str]):
     slots = Event.__slots__ + fields
     return type(typename, (Event,), {'__slots__': slots})
 
 
-Events = List[Event]
-
 Receive = make_event_type('Receive', ('offset',))
-
 Loss = make_event_type('Loss', ('offset', 'size', 'found_offset'))
-Delay = make_event_type('Delay', ('offset', 'delay'))
-Duplicate = make_event_type('Duplicate', ('offset',))
+Delay = make_event_type('Delay', ('offset', 'amount'))
+
+Symbol = NamedTuple('Symbol', [('symbol', int), ('offset', int)])
+Symbols = NamedTuple('Symbols', [('symbols', array), ('offset', int)])
+ActualExpected = NamedTuple('ActualExpected', [
+    ('actual', Symbols),
+    ('expected', Symbols),
+])

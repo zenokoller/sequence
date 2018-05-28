@@ -87,7 +87,7 @@ def configure_states(initial_sync_confidence: int = None,
 
         def get_sync_event(self, found_offset: int) -> SyncEvent:
             """Returns None if lost_offset is None (initial synch acquisition)"""
-            return SyncEvent((self.lost_offset, found_offset), self.buffer) if \
+            return SyncEvent(self.lost_offset, found_offset, self.buffer) if \
                 self.lost_offset is not None else None
 
         @property
