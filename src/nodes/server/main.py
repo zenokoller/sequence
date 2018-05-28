@@ -26,9 +26,13 @@ parser.add_argument('--reporter_args', type=str, default='',
                     help='space-separated reporter args in quotes')
 parser.add_argument('--report_received', action='store_true')
 parser.add_argument('--recovery_batch_size', type=int,
-                    help='number of packets to accumulate until first recovery attempt')
+                    help='packets are buffered until search attempt is started in `recovery`')
 parser.add_argument('--recovery_range_length', type=int,
-                    help='length of sequence search space in recovery')
+                    help='how far to search forward from lost offset in recovery state')
+parser.add_argument('--recovery_min_match_size', type=int,
+                    help='minimum number of symbols for a successful sync in `recovery`')
+parser.add_argument('--recovery_backoff_thresh', type=int,
+                    help='failed search attempts needed for move `recovery` -> `searching`')
 args = parser.parse_args()
 
 # Configure logging

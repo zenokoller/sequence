@@ -24,6 +24,8 @@ default_synchronize_args = {
     'recovery_batch_size': 25,
     'recovery_range_length': 75,
     'recovery_min_match_size': 20,
+    'recovery_backoff_thresh': 3,
     'searching_batch_size': 50,
-    'searching_min_match_size': 30
+    'searching_min_match_size': 30,
+    'searching_backoff_thresh': 10
 }

@@ -63,12 +63,5 @@ def apply_coroutine(items: list, coroutine: Callable) -> list:
     return [res for res in (cr.send(item) for item in items) if res is not None]
 
 
-full_search_backoff_thresh = 10
-full_search = partial(search,
-                      backoff_thresh=full_search_backoff_thresh,
-                      preprocess=as_bytes)
-
-recovery_backoff_thresh = 3
-recovery_search = partial(search,
-                          backoff_thresh=recovery_backoff_thresh,
-                          preprocess=as_bytes)
+full_search = partial(search, preprocess=as_bytes)
+recovery_search = partial(search, preprocess=as_bytes)

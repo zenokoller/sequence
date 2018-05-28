@@ -22,18 +22,23 @@ def configure_states(initial_sync_confidence: int = None,
                      recovery_batch_size: int = None,
                      recovery_range_length: int = None,
                      recovery_min_match_size: int = None,
+                     recovery_backoff_thresh: int = None,
                      searching_batch_size: int = None,
-                     searching_min_match_size: int = None) -> Type[State]:
+                     searching_min_match_size: int = None,
+                     searching_backoff_thresh: int = None) -> Type[State]:
     """
     Configure the synchronizer's state machine states with the provided parameters.
     :param initial_sync_confidence correct symbols needed for move from `initial` to `synchronized`
     :param recovery_batch_size packets are buffered until search attempt is started in `recovery`
     :param recovery_range_length: how far to search forward from lost offset in recovery state
     :param recovery_min_match_size: minimum number of symbols for a successful sync in `recovery`
+    :param recovery_backoff_thresh failed search attempts needed for move `recovery` -> `searching`
     :param searching_batch_size packets are buffered until search attempt is started in `searching`
     :param searching_min_match_size: minimum number of symbols for a successful sync in `searching`
+    :param searching_backoff_thresh failed search attempts needed to declare failure
     :return: The initial state of the state machine
     """
+
     class Initial(State):
         __slots__ = 'matched_count'
 
@@ -107,7 +112,8 @@ def configure_states(initial_sync_confidence: int = None,
             buffer.append(first_symbol)
             search_args = {
                 'min_match_size': recovery_min_match_size,
-                'search_range': (sequence.offset, sequence.offset + recovery_range_length)
+                'search_range': (sequence.offset, sequence.offset + recovery_range_length),
+                'backoff_thresh': recovery_backoff_thresh
             }
             return cls(sequence, buffer, recovery_search, search_args=search_args,
                        lost_offset=sequence.offset - 1)
@@ -125,26 +131,28 @@ def configure_states(initial_sync_confidence: int = None,
                 return Searching.from_recovery(self), None
 
     class Searching(AbstractSearchingState):
+        _search_args = {
+            'min_match_size': searching_min_match_size,
+            'backoff_thresh': searching_backoff_thresh
+        }
+
         @classmethod
         def from_initial(cls, sequence: Sequence):
             logging.info('Initial -> Searching')
-            search_args = {'min_match_size': searching_min_match_size}
             return cls(sequence, SymbolBuffer(searching_batch_size), full_search,
-                       search_args=search_args, lost_offset=None)
+                       search_args=cls._search_args, lost_offset=None)
 
         @classmethod
         def from_recovery(cls, state: Recovery):
             logging.info('Recovery -> Searching')
             buffer = SymbolBuffer.from_previous(state.buffer, searching_batch_size)
-            search_args = {'min_match_size': searching_min_match_size}
-            return cls(state.sequence, buffer, full_search, search_args=search_args,
+            return cls(state.sequence, buffer, full_search, search_args=cls._search_args,
                        lost_offset=state.lost_offset)
 
         @classmethod
         def from_searching(cls, state: 'Searching'):
             logging.info('Searching -> Searching')
-            search_args = {'min_match_size': searching_min_match_size}
-            return cls(state.sequence, state.buffer, full_search, search_args=search_args,
+            return cls(state.sequence, state.buffer, full_search, search_args=cls._search_args,
                        lost_offset=state.lost_offset)
 
         def handle_search_done(self) -> StateWithEvent:
