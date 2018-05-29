@@ -1,7 +1,7 @@
 from collections import deque
 from typing import List
 
-from detector.types import Symbol, Delay, Symbols
+from detector.types import Symbol, Reordering, Symbols
 from utils.iteration import partition
 
 DEFAULT_MAX_SIZE = 50
@@ -32,9 +32,9 @@ class MissingBuffer:
         self._queue = deque(remaining, maxlen=self.max_size)
         return [offset for _, offset in timed_out]
 
-    def remove_if_found(self, needle: Symbols) -> List[Delay]:
+    def remove_if_found(self, needle: Symbols) -> List[Reordering]:
         """Walks the buffer, removing symbols that match the ones in `needle`, returning their
-        offsets and delays. Walk direction is determined by `is_fifo`."""
+        offsets and reordering amounts. Walk direction is determined by `is_fifo`."""
         found = []
         remaining = list(self._queue) if self.is_fifo else list(reversed(self._queue))
         for index, symbol in enumerate(needle.symbols):
@@ -44,6 +44,6 @@ class MissingBuffer:
             except StopIteration:
                 continue
             del remaining[found_idx]
-            found.append(Delay(item.offset, needle.offset - item.offset - index))
+            found.append(Reordering(item.offset, needle.offset - item.offset - index))
         self._queue = deque(remaining, maxlen=self.max_size)
         return found

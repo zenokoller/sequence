@@ -3,12 +3,12 @@ from typing import Iterable, Callable
 
 from detector.missing_buffer import MissingBuffer
 from detector.pairs_between_matches import pairs_between_matches
-from detector.types import Event, Symbols, Loss, Delay
+from detector.types import Event, Symbols, Loss, Reordering
 from sequence.sequence import Sequence
 from synchronizer.sync_event import SyncEvent
 
 
-def get_detect_losses_and_delays(max_reorder_dist: int, max_size: int = None) -> Callable:
+def get_detect_losses_and_reorderings(max_reorder_dist: int, max_size: int = None) -> Callable:
     missing = MissingBuffer(max_reorder_dist, max_size=max_size)
 
     def detect_for_pair(actual: Symbols, expected: Symbols, found_offset: int) -> Iterable[Event]:
@@ -26,21 +26,24 @@ def get_detect_losses_and_delays(max_reorder_dist: int, max_size: int = None) ->
         return chain.from_iterable([loss_events, reorder_events])
 
     def detect(sync_event: SyncEvent, sequence: Sequence) -> Iterable[Event]:
-        yield from adjust_delays(chain.from_iterable(
+        yield from adjust_reordering_amount(chain.from_iterable(
             detect_for_pair(actual, expected, sync_event.found_offset)
             for actual, expected in pairs_between_matches(sync_event, sequence)))
 
     return detect
 
 
-def adjust_delays(events: Iterable[Event]) -> Iterable[Event]:
+def adjust_reordering_amount(events: Iterable[Event]) -> Iterable[Event]:
+    """The amount of reordering is calculated with the offset of the found symbol in the
+    sync event. Thus, we need to adjust the reordering amount by the number of lost packets
+    before the reordering."""
     lost_count = 0
     for event in events:
         if isinstance(event, Loss):
             lost_count += 1
             yield event
-        elif isinstance(event, Delay):
+        elif isinstance(event, Reordering):
             offset, amount, _ = event
-            yield Delay(offset, amount + lost_count)
+            yield Reordering(offset, amount + lost_count)
         else:
             raise Exception('Did not expect another event type to be passed!')

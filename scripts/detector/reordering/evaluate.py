@@ -7,7 +7,7 @@ def evaluate(start_time: int, end_time: int, csv_path: str, _: dict):
     client = DataFrameClient(database='telegraf')
 
     sequence_df = client.query(
-        f'select "delays", "packets" '
+        f'select "reorderings", "packets" '
         f'from "telegraf"."autogen"."httpjson_knownsequence" '
         f'where time > {start_time} and time < {end_time};')['httpjson_knownsequence']
 

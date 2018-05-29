@@ -2,7 +2,7 @@ import logging
 
 from aiohttp import web
 
-from detector.types import Loss, Event, Delay
+from detector.types import Loss, Event, Reordering
 from reporter.reporter import Reporter
 
 JSON_REPORTER_PORT = 9090
@@ -17,7 +17,7 @@ class HttpReporter(Reporter):
         self.period = int(period)
         self.packets = 0
         self.losses = 0
-        self.delays = 0
+        self.reorderings = 0
         self._last_offset = 0
 
         app = web.Application()
@@ -35,8 +35,8 @@ class HttpReporter(Reporter):
     async def handle_event(self, event: Event):
         if isinstance(event, Loss):
             self.losses += 1
-        elif isinstance(event, Delay):
-            self.delays += 1
+        elif isinstance(event, Reordering):
+            self.reorderings += 1
         else:
             return
         self.packets += (event.offset - self._last_offset) % self.period
@@ -46,5 +46,5 @@ class HttpReporter(Reporter):
         return web.json_response({
             'packets': self.packets,
             'losses': self.losses,
-            'delays': self.delays
+            'reorderings': self.reorderings
         })

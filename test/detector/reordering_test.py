@@ -2,8 +2,8 @@ from array import array
 from typing import List
 from unittest import TestCase
 
-from detector.detect_losses_and_delays import get_detect_losses_and_delays
-from detector.types import Delay, Event, Loss
+from detector.detect_losses_and_reorderings import get_detect_losses_and_reorderings
+from detector.types import Reordering, Event, Loss
 from sequence.sequence import default_sequence_args, get_sequence_cls
 from synchronizer.sync_event import SyncEvent
 from utils.override_defaults import override_defaults
@@ -17,16 +17,16 @@ expected = [
 ]
 
 # Test cases
-swap = [  # Delay(5, 1)
+swap = [  # Reordering(5, 1)
     239, 242, 173, 246, 209, 188, 158, 46, 194, 27, 27, 185, 224, 16, 55, 43, 8, 198, 234, 136
 ]
-two_reorderings = [  # Delay(4, 4), Delay(3, 11)
+two_reorderings = [  # Reordering(4, 4), Reordering(3, 11)
     239, 242, 173, 158, 188, 46, 194, 27, 209, 27, 185, 224, 16, 55, 246, 43, 8, 198, 234, 136
 ]
 one_loss = [  # Loss(2, 20) - the tail loss causes detection of the first one!
     239, 242, 246, 209, 158, 188, 46, 194, 27, 27, 185, 224, 16, 55, 43, 8, 198, 234
 ]
-loss_and_reordering = [  # Loss(1, 20), Loss(2, 20), Delay(16, 3)
+loss_and_reordering = [  # Loss(1, 20), Loss(2, 20), Reordering(16, 3)
     239, 246, 209, 158, 188, 46, 194, 27, 27, 185, 224, 16, 55, 43, 198, 234, 136, 8
 ]
 
@@ -51,16 +51,16 @@ class ReorderingTest(TestCase):
                         'Expected events do not match actual events!')
 
     def setUp(self):
-        self.detect_events = get_detect_losses_and_delays(max_reorder_dist=12)
+        self.detect_events = get_detect_losses_and_reorderings(max_reorder_dist=12)
 
     def test_swap(self):
-        self._test(swap, [Delay(5, 1)])
+        self._test(swap, [Reordering(5, 1)])
 
     def test_detect_two_reorderings(self):
-        self._test(two_reorderings, [Delay(4, 4), Delay(3, 11)])
+        self._test(two_reorderings, [Reordering(4, 4), Reordering(3, 11)])
 
     def test_detect_one_loss(self):
         self._test(one_loss, [Loss(2, 20)])
 
     def test_detect_loss_and_reordering(self):
-        self._test(loss_and_reordering, [Loss(1, 20), Loss(2, 20), Delay(16, 3)])
+        self._test(loss_and_reordering, [Loss(1, 20), Loss(2, 20), Reordering(16, 3)])

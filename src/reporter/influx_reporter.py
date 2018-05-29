@@ -3,7 +3,7 @@ from typing import List
 
 import aiohttp
 
-from detector.types import Loss, Receive, Event, Delay
+from detector.types import Loss, Receive, Event, Reordering
 from reporter.reporter import Reporter
 
 
@@ -15,7 +15,7 @@ DEFAULT_BATCH_SIZE = 1000
 
 RECEIVE_LINE = 'receive offset={} {}'
 LOSS_LINE = 'loss offset={},found_offset={} {}'
-DELAY_LINE = 'delay offset={},amount={} {}'
+REORDERING_LINE = 'reordering offset={},amount={} {}'
 
 
 class InfluxReporter(Reporter):
@@ -52,8 +52,8 @@ class InfluxReporter(Reporter):
             return RECEIVE_LINE.format(*event)
         elif isinstance(event, Loss):
             return LOSS_LINE.format(*event)
-        elif isinstance(event, Delay):
-            return DELAY_LINE.format(*event)
+        elif isinstance(event, Reordering):
+            return REORDERING_LINE.format(*event)
         else:
             raise NotImplementedError(f'Unknown event type: {type(event)}')
 
