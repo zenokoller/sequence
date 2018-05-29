@@ -25,6 +25,13 @@ class Event:
         return (operator.attrgetter(attr) for attr
                 in self.__slots__[0 if include_timestamp else 1:])
 
+    def __eq__(self, other):
+        if type(other) is type(self) and other.__slots__ == self.__slots__:
+            return all(getter(self) == getter(other) for getter in self.getters())
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
 
 def make_event_type(typename: str, fields=Tuple[str]):
     slots = Event.__slots__ + fields
