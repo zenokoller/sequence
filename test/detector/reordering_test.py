@@ -20,7 +20,7 @@ expected = [
 swap = [  # Reordering(5, 1)
     239, 242, 173, 246, 209, 188, 158, 46, 194, 27, 27, 185, 224, 16, 55, 43, 8, 198, 234, 136
 ]
-two_reorderings = [  # Reordering(4, 4), Reordering(3, 11)
+burst_reordering = [  # Reordering(4, 4), Reordering(3, 11)
     239, 242, 173, 158, 188, 46, 194, 27, 209, 27, 185, 224, 16, 55, 246, 43, 8, 198, 234, 136
 ]
 one_loss = [  # Loss(2, 20) - the tail loss causes detection of the first one!
@@ -28,6 +28,9 @@ one_loss = [  # Loss(2, 20) - the tail loss causes detection of the first one!
 ]
 loss_and_reordering = [  # Loss(1, 20), Loss(2, 20), Reordering(16, 3)
     239, 246, 209, 158, 188, 46, 194, 27, 27, 185, 224, 16, 55, 43, 198, 234, 136, 8
+]
+two_reorderings = [  # Reordering(2, 2), Reordering(6, 3)
+    239, 242, 246, 209, 173, 158, 46, 194, 27, 188, 27, 185, 224, 16, 55, 43, 8, 198, 234, 136
 ]
 
 
@@ -56,11 +59,14 @@ class ReorderingTest(TestCase):
     def test_swap(self):
         self._test(swap, [Reordering(5, 1)])
 
-    def test_detect_two_reorderings(self):
-        self._test(two_reorderings, [Reordering(4, 4), Reordering(3, 11)])
+    def test_detect_burst_reordering(self):
+        self._test(burst_reordering, [Reordering(4, 4), Reordering(3, 11)])
 
     def test_detect_one_loss(self):
         self._test(one_loss, [Loss(2, 20)])
 
     def test_detect_loss_and_reordering(self):
         self._test(loss_and_reordering, [Loss(1, 20), Loss(2, 20), Reordering(16, 3)])
+
+    def test_detect_two_reorderings(self):
+        self._test(two_reorderings, [Reordering(2, 2), Reordering(6, 3)])
