@@ -1,5 +1,6 @@
 import operator
 from array import array
+from itertools import islice
 from typing import NamedTuple, Tuple, Callable, Iterable
 
 from utils.nanotime import nanosecond_timestamp
@@ -11,30 +12,31 @@ class Event:
     def __init__(self, *args, **kwargs):
         self.timestamp = nanosecond_timestamp()
         values = args if args else kwargs.values()
-        for slot, value in zip(self.__slots__[1:], values):
+        for slot, value in zip(self.__slots__, values):
             setattr(self, slot, value)
 
     def __iter__(self):
-        return iter((getter(self) for getter in self.getters(include_timestamp=True)))
+        return iter((getter(self) for getter in self.getters))
 
     def __repr__(self):
-        attributes = ', '.join(str(getter(self)) for getter in self.getters())
+        attributes = ', '.join(str(getter(self)) for getter in self.getters)
         return f'{self.__class__.__name__}({attributes})'
-
-    def getters(self, include_timestamp: bool = False) -> Iterable[Callable]:
-        return (operator.attrgetter(attr) for attr
-                in self.__slots__[0 if include_timestamp else 1:])
 
     def __eq__(self, other):
         if type(other) is type(self) and other.__slots__ == self.__slots__:
-            return all(getter(self) == getter(other) for getter in self.getters())
+            return all(getter(self) == getter(other) for getter
+                       in islice(self.getters, 0, len(self.__slots__) - 1))
 
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    @property
+    def getters(self) -> Iterable[Callable]:
+        return (operator.attrgetter(attr) for attr in self.__slots__)
+
 
 def make_event_type(typename: str, fields=Tuple[str]):
-    slots = Event.__slots__ + fields
+    slots = fields + Event.__slots__
     return type(typename, (Event,), {'__slots__': slots})
 
 

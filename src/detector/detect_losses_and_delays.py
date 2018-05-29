@@ -40,7 +40,7 @@ def adjust_delays(events: Iterable[Event]) -> Iterable[Event]:
             lost_count += 1
             yield event
         elif isinstance(event, Delay):
-            _, offset, amount = event
+            offset, amount, _ = event
             yield Delay(offset, amount + lost_count)
         else:
             raise Exception('Did not expect another event type to be passed!')

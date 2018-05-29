@@ -34,13 +34,9 @@ class HttpReporter(Reporter):
     async def handle_event(self, loss: Loss):
         if not isinstance(loss, Loss):
             return
-
-        _, offset, _ = loss
-
-        self.packets += (offset - self._last_offset) % self.period
+        self.packets += (loss.offset - self._last_offset) % self.period
         self.losses += 1
-
-        self._last_offset = offset
+        self._last_offset = loss.offset
 
     async def handle_request(self, request):
         return web.json_response({'packets': self.packets, 'losses': self.losses})

@@ -49,14 +49,11 @@ class InfluxReporter(Reporter):
     def _event_to_line(self, event: Event) -> str:
         """Converts an event to InfluxDB's line protocol."""
         if isinstance(event, Receive):
-            timestamp, offset = event
-            return RECEIVE_LINE.format(offset, timestamp)
+            return RECEIVE_LINE.format(*event)
         elif isinstance(event, Loss):
-            timestamp, offset, found_offset = event
-            return LOSS_LINE.format(offset, found_offset, timestamp)
+            return LOSS_LINE.format(*event)
         elif isinstance(event, Delay):
-            timestamp, offset, amount = event
-            return DELAY_LINE.format(offset, amount, timestamp)
+            return DELAY_LINE.format(*event)
         else:
             raise NotImplementedError(f'Unknown event type: {type(event)}')
 
