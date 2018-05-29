@@ -1,5 +1,6 @@
+import operator
 from array import array
-from typing import NamedTuple, Tuple
+from typing import NamedTuple, Tuple, Callable, Iterable
 
 from utils.nanotime import nanosecond_timestamp
 
@@ -14,11 +15,15 @@ class Event:
             setattr(self, slot, value)
 
     def __iter__(self):
-        return iter((getattr(self, slot) for slot in self.__slots__))
+        return iter((getter(self) for getter in self.getters(include_timestamp=True)))
 
     def __repr__(self):
-        attributes = ', '.join(str(getattr(self, slot)) for slot in self.__slots__[1:])
+        attributes = ', '.join(str(getter(self)) for getter in self.getters())
         return f'{self.__class__.__name__}({attributes})'
+
+    def getters(self, include_timestamp: bool = False) -> Iterable[Callable]:
+        return (operator.attrgetter(attr) for attr
+                in self.__slots__[0 if include_timestamp else 1:])
 
 
 def make_event_type(typename: str, fields=Tuple[str]):
