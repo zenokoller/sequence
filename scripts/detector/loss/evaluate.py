@@ -2,8 +2,7 @@ from influxdb import DataFrameClient
 
 
 def evaluate(start_time: int, end_time: int, csv_path: str, _: dict):
-    """Computes the packet rate for each second and writes to file, along with actual packet loss
-    rate."""
+    """Computes the loss rate for each interval and writes to file, along with actual loss rate."""
     client = DataFrameClient(database='telegraf')
 
     sequence_df = client.query(
@@ -30,7 +29,7 @@ def evaluate(start_time: int, end_time: int, csv_path: str, _: dict):
     joined_df = sequence_df.join(netem_df, lsuffix="_sequence", rsuffix="_netem")
 
     # Use netem packet counts to calculate sequence loss rate as shortcut to getting packet counts
-    # from offsets in each bucket
+    # from offsets in each interval
     joined_df['rate_sequence'] = compute_loss_rate(joined_df, 'losses_sequence', 'packets_netem')
     joined_df['rate_netem'] = compute_loss_rate(joined_df, 'losses_netem', 'packets_netem')
 

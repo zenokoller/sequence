@@ -1,0 +1,12 @@
+name: loss
+plot_title: Actual vs. Estimated Loss
+running_time: 100
+repeats: 1
+
+settings:
+  all:
+    symbol_bits: 2
+  client: {}
+  server:
+    reporter_name: http
+    reporter_args: 65536
