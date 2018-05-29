@@ -3,7 +3,7 @@ from typing import List
 
 import aiohttp
 
-from detector.types import Loss, Receive, Event
+from detector.types import Loss, Receive, Event, Delay
 from reporter.reporter import Reporter
 
 
@@ -15,6 +15,7 @@ DEFAULT_BATCH_SIZE = 1000
 
 RECEIVE_LINE = 'receive offset={} {}'
 LOSS_LINE = 'loss offset={},found_offset={} {}'
+DELAY_LINE = 'delay offset={},amount={} {}'
 
 
 class InfluxReporter(Reporter):
@@ -58,9 +59,11 @@ class InfluxReporter(Reporter):
                 lines = (LOSS_LINE.format(offset_, found_offset, timestamp) for offset_ in
                          range(offset, offset + size))
                 return f'\n'.join(list(lines))
+        elif isinstance(event, Delay):
+            timestamp, offset, amount = event
+            return DELAY_LINE.format(offset, amount, timestamp)
         else:
-            # Reordering and duplicates yet to be implemented
-            raise NotImplementedError
+            raise NotImplementedError(f'Unknown event type: {type(event)}')
 
     async def cleanup(self):
         await self._flush_batch()
