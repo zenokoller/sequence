@@ -3,7 +3,7 @@ from typing import List
 from unittest import TestCase
 
 from detector.detect_losses_and_reorderings import get_detect_losses_and_reorderings
-from detector.types import Reordering, Event, Loss
+from detector.events import Reordering, Event, Loss
 from sequence.sequence import default_sequence_args, get_sequence_cls
 from synchronizer.sync_event import SyncEvent
 from utils.override_defaults import override_defaults

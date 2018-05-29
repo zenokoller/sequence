@@ -1,7 +1,8 @@
 from typing import Iterable, List
 
 from detector.pairs_between_matches import pairs_between_matches
-from detector.types import Event, Symbols, Loss
+from detector.events import Event, Loss
+from detector.types import Symbols
 from sequence.sequence import Sequence
 from synchronizer.sync_event import SyncEvent
 

@@ -1,8 +1,9 @@
 from collections import deque
 from typing import List
 
-from detector.types import Symbol, Reordering, Symbols
+from detector.events import Reordering
 from utils.iteration import partition
+from detector.types import Symbol, Symbols
 
 DEFAULT_MAX_SIZE = 50
 DEFAULT_IS_FIFO = False

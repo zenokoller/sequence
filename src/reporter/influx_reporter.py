@@ -3,7 +3,7 @@ from typing import List
 
 import aiohttp
 
-from detector.types import Loss, Receive, Event, Reordering
+from detector.events import Loss, Receive, Event, Reordering
 from reporter.reporter import Reporter
 
 

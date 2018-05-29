@@ -2,7 +2,7 @@ import logging
 
 from aiohttp import web
 
-from detector.types import Loss, Event, Reordering
+from detector.events import Loss, Event, Reordering
 from reporter.reporter import Reporter
 
 JSON_REPORTER_PORT = 9090

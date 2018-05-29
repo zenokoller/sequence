@@ -3,7 +3,8 @@ from typing import Iterable, Callable
 
 from detector.missing_buffer import MissingBuffer
 from detector.pairs_between_matches import pairs_between_matches
-from detector.types import Event, Symbols, Loss, Reordering
+from detector.events import Event, Loss, Reordering
+from detector.types import Symbols
 from sequence.sequence import Sequence
 from synchronizer.sync_event import SyncEvent
 

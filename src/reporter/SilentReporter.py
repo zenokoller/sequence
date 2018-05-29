@@ -1,6 +1,6 @@
 import asyncio
 
-from detector.types import Event
+from detector.events import Event
 from reporter.reporter import Reporter
 
 
