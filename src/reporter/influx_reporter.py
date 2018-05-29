@@ -52,13 +52,8 @@ class InfluxReporter(Reporter):
             timestamp, offset = event
             return RECEIVE_LINE.format(offset, timestamp)
         elif isinstance(event, Loss):
-            timestamp, offset, size, found_offset = event
-            if size == 1:
-                return LOSS_LINE.format(offset, found_offset, timestamp)
-            else:
-                lines = (LOSS_LINE.format(offset_, found_offset, timestamp) for offset_ in
-                         range(offset, offset + size))
-                return f'\n'.join(list(lines))
+            timestamp, offset, found_offset = event
+            return LOSS_LINE.format(offset, found_offset, timestamp)
         elif isinstance(event, Delay):
             timestamp, offset, amount = event
             return DELAY_LINE.format(offset, amount, timestamp)

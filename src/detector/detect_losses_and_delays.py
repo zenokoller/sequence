@@ -13,7 +13,7 @@ def get_detect_losses_and_delays(max_reorder_dist: int, max_size: int = None) ->
 
     def detect_for_pair(actual: Symbols, expected: Symbols, found_offset: int) -> Iterable[Event]:
         timed_out = missing.remove_timed_out(actual.offset)
-        loss_events = (Loss(offset, 1, found_offset) for offset in timed_out)
+        loss_events = (Loss(offset, found_offset) for offset in timed_out)
 
         reorder_events = []
         if len(actual.symbols) == 0:
@@ -37,7 +37,7 @@ def adjust_delays(events: Iterable[Event]) -> Iterable[Event]:
     lost_count = 0
     for event in events:
         if isinstance(event, Loss):
-            lost_count += event.size
+            lost_count += 1
             yield event
         elif isinstance(event, Delay):
             _, offset, amount = event

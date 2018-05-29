@@ -39,7 +39,7 @@ def make_event_type(typename: str, fields=Tuple[str]):
 
 
 Receive = make_event_type('Receive', ('offset',))
-Loss = make_event_type('Loss', ('offset', 'size', 'found_offset'))
+Loss = make_event_type('Loss', ('offset', 'found_offset'))
 Delay = make_event_type('Delay', ('offset', 'amount'))
 
 Symbol = NamedTuple('Symbol', [('symbol', int), ('offset', int)])

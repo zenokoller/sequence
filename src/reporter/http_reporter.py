@@ -35,10 +35,10 @@ class HttpReporter(Reporter):
         if not isinstance(loss, Loss):
             return
 
-        _, offset, size, _ = loss
+        _, offset, _ = loss
 
         self.packets += (offset - self._last_offset) % self.period
-        self.losses += size
+        self.losses += 1
 
         self._last_offset = offset
 
