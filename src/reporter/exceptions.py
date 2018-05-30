@@ -1,0 +1,2 @@
+class ReporterError(Exception):
+    pass
