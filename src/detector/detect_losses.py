@@ -1,3 +1,4 @@
+from itertools import chain
 from typing import Iterable, List
 
 from detector.pairs_between_matches import pairs_between_matches
@@ -8,8 +9,9 @@ from synchronizer.sync_event import SyncEvent
 
 
 def detect_losses(sync_event: SyncEvent, sequence: Sequence) -> Iterable[Event]:
-    yield from (detect_for_pair(actual, expected, sync_event.found_offset)
-                for actual, expected in pairs_between_matches(sync_event, sequence))
+    yield from chain.from_iterable(
+        detect_for_pair(actual, expected, sync_event.found_offset)
+        for actual, expected in pairs_between_matches(sync_event, sequence))
 
 
 def detect_for_pair(actual: Symbols, expected: Symbols, found_offset: int) -> List[Loss]:

@@ -1,6 +1,5 @@
 import asyncio
 
-from detector.events import Event
 from reporter.reporter import Reporter
 
 
@@ -14,7 +13,7 @@ class SilentReporter(Reporter):
     async def run(self, queue: asyncio.Queue):
         await asyncio.sleep(0)
 
-    async def handle_event(self, event: Event):
+    async def handle_event(self, event):
         await asyncio.sleep(0)
 
     async def cleanup(self):

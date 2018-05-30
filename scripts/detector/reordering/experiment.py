@@ -1,8 +1,8 @@
 from functools import partial
 
 from scripts.client_server_experiment import ClientServerExperiment, main
-from scripts.detector.reordering import evaluate
-from scripts.detector import plot
+from scripts.detector.reordering.evaluate import evaluate
+from scripts.detector.plot import plot
 
 ReorderingDetectorExperiment = partial(ClientServerExperiment,
                                        post_run_fn=evaluate,

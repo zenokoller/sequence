@@ -129,9 +129,8 @@ class ClientServerExperiment:
              for nodename in self.nodenames} for override in overrides]
 
     def close_node_logs(self):
-        for stdout, stderr in self.node_stdouts.values():
+        for stdout in self.node_stdouts.values():
             stdout.close()
-            stderr.close()
 
 
 def main(testbed_cls, config_file: str = None):
