@@ -16,6 +16,8 @@ def detect_losses(sync_event: SyncEvent, sequence: Sequence) -> Iterable[Event]:
 
 def detect_for_pair(actual: Symbols, expected: Symbols, found_offset: int) -> List[Loss]:
     if len(actual.symbols) == 0:
-        return [Loss(expected.offset + i, found_offset) for i in range(len(expected))]
+        return [Loss(expected.offset + i, found_offset) for i, _ in enumerate(expected.symbols)]
     else:
         return []
+
+
