@@ -1,6 +1,6 @@
 import asyncio
 
-from reporter.SilentReporter import SilentReporter
+from reporter.silent_reporter import SilentReporter
 from reporter.http_reporter import HttpReporter
 from reporter.influx_reporter import InfluxReporter
 from reporter.reporter import Reporter
