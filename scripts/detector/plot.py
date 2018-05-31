@@ -24,6 +24,12 @@ def plot(csv_path: str, title: str):
     plt.savefig(os.path.join(out_dir, f'{name}.png'))
 
 
+def print_mean_rates(csv_path):
+    df = pd.read_csv(csv_path, index_col=0)
+    mean_rate_seq, mean_rate_netem = [df[name].mean() for name in ['rate_sequence', 'rate_netem']]
+    print(f'Mean rates:\n-----------\nnetem:{mean_rate_netem}\nsequence:{mean_rate_seq}')
+
+
 if __name__ == '__main__':
     try:
         csv_path = sys.argv[1]
@@ -33,3 +39,4 @@ if __name__ == '__main__':
         sys.exit(0)
 
     plot(csv_path, title)
+    print_mean_rates(csv_path)

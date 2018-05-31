@@ -87,9 +87,6 @@ class GilbertCounts(NamedTuple):
                 'r': r,
                 '1-h': 1 - h,
                 '1-k': 0,
-                'a': a,
-                'b': b,
-                'c': c
             }
         except ZeroDivisionError:
             return {}

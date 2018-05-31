@@ -1,6 +1,6 @@
 name: loss
 plot_title: Actual vs. Estimated Loss
-running_time: 100
+running_time: 500
 repeats: 1
 
 settings:

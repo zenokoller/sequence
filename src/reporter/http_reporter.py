@@ -5,9 +5,12 @@ from aiohttp import web
 
 from detector.events import Event
 from reporter.accumulators.count import count_accumulator
+from reporter.accumulators.gilbert import gilbert_accumulator
+from reporter.accumulators.rate import rate_accumulator
 from reporter.reporter import Reporter
 
 HTTP_REPORTER_PORT = 9090
+DEFAULT_ACCUMULATOR = count_accumulator
 
 
 class HttpReporter(Reporter):
@@ -16,7 +19,7 @@ class HttpReporter(Reporter):
 
     def __init__(self,
                  *accumulator_args,
-                 accumulator: Callable[[Any], Coroutine[dict, Event, None]] = count_accumulator):
+                 accumulator: Callable[[Any], Coroutine[dict, Event, None]] = DEFAULT_ACCUMULATOR):
         logging.getLogger('aiohttp.access').setLevel(logging.WARNING)
 
         self.values = {}

@@ -1,0 +1,18 @@
+name: pattern_detection
+plot_title: Pattern Detection
+running_time: 500
+repeats: 1
+
+settings:
+  all:
+    symbol_bits: 2
+    period: 524288
+  client:
+    rate: 1000
+  server:
+    reporter_name: influx
+    report_received: true
+
+override_settings:
+  - all:
+      symbol_bits: 2
