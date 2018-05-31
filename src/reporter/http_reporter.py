@@ -3,30 +3,11 @@ from typing import Coroutine, Callable, Any
 
 from aiohttp import web
 
-from detector.events import Event, Reordering, Loss
-from reporter.exceptions import ReporterError
+from detector.events import Event
+from reporter.accumulators.count import count_accumulator
 from reporter.reporter import Reporter
-from utils.coroutine import coroutine
 
 HTTP_REPORTER_PORT = 9090
-
-
-@coroutine
-def count_accumulator(period) -> Coroutine[dict, Event, None]:
-    """Accumulates packet, loss and reordering counts _without_ relying on explicit `Receive`
-    events. Instead uses the difference in the offset of subsequent packets."""
-    period = int(period)
-    packets, losses, reorderings, _last_offset = 0, 0, 0, 0
-    while True:
-        event = yield {'packets': packets, 'losses': losses, 'reorderings': reorderings}
-        if isinstance(event, Loss):
-            losses += 1
-        elif isinstance(event, Reordering):
-            reorderings += 1
-        else:
-            raise ReporterError(f'Unexpected event: {event}')
-        packets += (event.offset - _last_offset) % period
-        _last_offset = event.offset
 
 
 class HttpReporter(Reporter):

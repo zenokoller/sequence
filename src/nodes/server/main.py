@@ -51,7 +51,7 @@ get_seed = partial(seed_from_addresses, seed_fn, recv_addr=(local_ip, local_port
 sequence_args = override_defaults(default_sequence_args, vars(args))
 sequence_cls = get_sequence_cls(**sequence_args)
 
-reporter_args = args.reporter_args.split()
+reporter_args = map(int, args.reporter_args.split())
 reporter = create_reporter(args.reporter_name, *reporter_args)
 reporter_queue = start_reporter(reporter)
 
