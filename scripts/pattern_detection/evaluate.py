@@ -12,7 +12,7 @@ def evaluate(start_time: int, end_time: int, csv_path: str, settings: dict):
     """Collects actual and predicted losses from InfluxDB after one experiment run and computes
     the paremeters for the Gilbert model."""
 
-    print(f'{start_time} {end_time}')
+    # print(f'{start_time} {end_time}')
 
     client = InfluxDBClient(database='telegraf')
     query = f'select "offset" from "telegraf"."autogen"."{{series}}" ' \
@@ -42,7 +42,7 @@ def evaluate(start_time: int, end_time: int, csv_path: str, settings: dict):
     #     pass
 
 
-def compute_gilbert_params(loss_offsets: List[int]) -> dict:
+def compute_gilbert_params(loss_offsets: Iterable[int]) -> dict:
     period = default_sequence_args['period']
     return GilbertCounts.from_loss_offsets(period, loss_offsets).to_params()
 

@@ -20,25 +20,25 @@ class TestGilbertCounts(TestCase):
 
     def test_non_consecutive_losses(self):
         loss_offsets = [4, 12, 15]
-        expected = GilbertCounts(11, 3, 0, 0, 0, 15)
+        expected = GilbertCounts(11, 3, 0, 0, 0)
         self._test_with_offsets(loss_offsets, expected)
 
     def test_triple_burst(self):
         loss_offsets = [4, 5, 6]
-        expected = GilbertCounts(2, 3, 2, 0, 1, 6)
+        expected = GilbertCounts(2, 3, 2, 0, 1)
         self._test_with_offsets(loss_offsets, expected)
 
     def test_double_burst(self):
         loss_offsets = [1, 5, 6]
-        expected = GilbertCounts(5, 3, 1, 0, 0, 6)
+        expected = GilbertCounts(5, 3, 1, 0, 0)
         self._test_with_offsets(loss_offsets, expected)
 
     def test_101_burst(self):
         loss_offsets = [2, 6, 8]
-        expected = GilbertCounts(6, 3, 0, 1, 0, 8)
+        expected = GilbertCounts(6, 3, 0, 1, 0)
         self._test_with_offsets(loss_offsets, expected)
 
     def test_longer(self):
         loss_offsets = [2, 4, 5, 6, 8, 9, 12]
-        expected = GilbertCounts(10, 7, 3, 2, 1, 12)
+        expected = GilbertCounts(10, 7, 3, 2, 1)
         self._test_with_offsets(loss_offsets, expected)

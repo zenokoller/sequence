@@ -1,6 +1,6 @@
-from collections.__init__ import deque
-from functools import partial
 from typing import NamedTuple, Iterable
+
+import numpy as np
 
 from detector.events import Event, Loss
 
@@ -24,7 +24,6 @@ class GilbertCounts(NamedTuple):
     burst_11: int = 0
     burst_101: int = 0
     burst_111: int = 0
-    highest_seen_offset: int = 0
 
     @classmethod
     def from_events(cls, period: int, events: Iterable[Event]) -> 'GilbertCounts':
@@ -33,60 +32,38 @@ class GilbertCounts(NamedTuple):
 
     @classmethod
     def from_loss_offsets(cls, period: int, offsets: Iterable[int]) -> 'GilbertCounts':
-        offsets = iter(offsets)
-        update = partial(GilbertCounts._update, period)
-        first_two = (next(offsets, None), next(offsets, None))
-        counts = GilbertCounts._from_first_two_loss_offsets(period, *first_two)
-        last_three = deque(maxlen=3)
-        last_three.extend(first_two)
-        for offset in offsets:
-            last_three.append(offset)
-            counts = update(counts, last_three)
-        return counts
+        offsets = np.fromiter(offsets, dtype=int)
+        if len(offsets) == 1:
+            return GilbertCounts(packet=1, loss=1)
+        diff = np.diff(offsets)
+        return GilbertCounts(packet=GilbertCounts._count_packets(period, offsets),
+                             loss=len(offsets),
+                             burst_11=int(np.sum(diff == 1)),
+                             burst_101=int(np.sum(diff == 2)),
+                             burst_111=int(np.sum(np.diff(np.where(diff == 1)[0]) == 1)))
 
-    @classmethod
-    def _from_first_two_loss_offsets(cls, period: int, first: int, second: int):
-        if first is None:
-            return GilbertCounts()
-        elif second is None:
-            return GilbertCounts(loss=1, highest_seen_offset=first)
+    @staticmethod
+    def _count_packets(period: int, offsets: np.array) -> int:
+        if len(offsets) == 1:
+            return 1
         else:
-            return GilbertCounts(packet=(second - first) % period,
-                                 loss=2,
-                                 burst_11=(second - first) % period == 1,
-                                 burst_101=(second - first) % period == 2,
-                                 highest_seen_offset=second)
+            return sum((b - a) % period for a, b in zip(offsets[:-1], offsets[1:]))
 
-    @classmethod
-    def _update(cls, period: int, previous: 'GilbertCounts', last_three: deque) -> 'GilbertCounts':
-        if len(last_three) != 3:
-            raise Exception(f'Did not except `last_three` to have {len(last_three)} elements')
-        first, second, third = last_three
-        burst_11 = (third - second) % period == 1
-        burst_101 = (third - second) % period == 2
-        burst_111 = burst_11 and (second - first) % period == 1
-        newly_seen_packets = (third - previous.highest_seen_offset) % period
-        return GilbertCounts(packet=previous.packet + newly_seen_packets,
-                             loss=previous.loss + 1,
-                             burst_11=previous.burst_11 + burst_11,
-                             burst_101=previous.burst_101 + burst_101,
-                             burst_111=previous.burst_111 + burst_111,
-                             highest_seen_offset=third)
-
-    def to_params(self):
+    def to_params(self, simplify_h: bool = False) -> dict:
+        """Compute Gilbert model parameters from counts. Uses h = 0.5 if `simplify_h`"""
         try:
-            p_1, p_11, p_101, p_111 = [count / self.packet for count
-                                       in (self.loss, self.burst_11, self.burst_101,
-                                           self.burst_111)]
-            a, b = p_1, p_11
+            a, p_101, p_111 = [count / self.packet for count in (self.loss, self.burst_101,
+                                                                 self.burst_111)]
+            b = self.burst_11 / self.loss
             c = p_111 / (p_101 + p_111)
-            r = -1 * ((a * c - b * b) / (2 * a * c - b * (a + c)) - 1)
-            h = 1 - (b / (1 - r))
+            one_minus_r = (a * c - b * b) / (2 * a * c - b * (a + c))
+            h = 0.5 if simplify_h else 1 - b / one_minus_r
+            r = 1 - one_minus_r
             return {
                 'p': a * r / (1 - h - a),
                 'r': r,
                 '1-h': 1 - h,
-                '1-k': 0,
+                '1-k': 0
             }
         except ZeroDivisionError:
             return {}
