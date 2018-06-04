@@ -5,8 +5,6 @@ from aiohttp import web
 
 from detector.events import Event
 from reporter.accumulators.count import count_accumulator
-from reporter.accumulators.gilbert import gilbert_accumulator
-from reporter.accumulators.rate import rate_accumulator
 from reporter.reporter import Reporter
 
 HTTP_REPORTER_PORT = 9090

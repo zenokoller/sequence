@@ -1,6 +1,7 @@
 import sys
 from typing import Iterable, List
 
+import pandas as pd
 from influxdb import InfluxDBClient
 from influxdb.resultset import ResultSet
 
@@ -12,7 +13,7 @@ def evaluate(start_time: int, end_time: int, csv_path: str, settings: dict):
     """Collects actual and predicted losses from InfluxDB after one experiment run and computes
     the paremeters for the Gilbert model."""
 
-    # print(f'{start_time} {end_time}')
+    print(f'\n{start_time} {end_time}')
 
     client = InfluxDBClient(database='telegraf')
     query = f'select "offset" from "telegraf"."autogen"."{{series}}" ' \
@@ -28,18 +29,23 @@ def evaluate(start_time: int, end_time: int, csv_path: str, settings: dict):
 
     # derive actual loss offsets from received offsets
     lower, upper = min(received), max(received) + 1
-    actual_losses = (i for i in range(lower, upper) if not i in received)
+    actual_losses = list(i for i in range(lower, upper) if not i in received)
 
-    # compute parameters of Gilbert model
-    detected_loss_params = compute_gilbert_params(detected_losses)
-    actual_loss_params = compute_gilbert_params(actual_losses)
+    params_df = pd.concat([gilbert_params_by_trace_lengths(detected_losses, 'sequence'),
+                           gilbert_params_by_trace_lengths(actual_losses, 'ground_truth')])
 
-    print(f'\nGilbert Params\n--------------\nfrom detected losses: {detected_loss_params}\n'
-          f'from actual losses: {actual_loss_params}')
+    params_df['symbol_bits'] = settings['client']['symbol_bits']
+    params_df.to_csv(csv_path)
 
-    # symbol_bits = settings['client']['symbol_bits']
-    # with open(csv_path, 'a+') as out_file:
-    #     pass
+
+def gilbert_params_by_trace_lengths(loss_offsets: List[int], source: str) -> pd.DataFrame:
+    max_packets = max(loss_offsets)
+    powers_of_ten = (10 ** k for k in range(2, 5))
+    dataframes = [
+        pd.DataFrame({'trace_length': trace_length, 'source': source,
+                      **compute_gilbert_params(loss_offsets[:trace_length])},
+                     index=[i]) for i, trace_length in enumerate(powers_of_ten)]
+    return pd.concat(dataframes)
 
 
 def compute_gilbert_params(loss_offsets: Iterable[int]) -> dict:
@@ -53,4 +59,4 @@ if __name__ == '__main__':
         csv_path = sys.argv[3]
     except IndexError:
         print('Usage: $0 <start_time> <end_time> <csv_path>')
-    evaluate(start_time, end_time, csv_path, {})
+    evaluate(start_time, end_time, csv_path)

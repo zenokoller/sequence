@@ -20,6 +20,7 @@ DEFAULT_ARGS = {
 START_NODE_CMD = 'docker exec -t {nodename} timeout -sINT {running_time}s python ' \
                  '/root/python/nodes/{nodename}/main.py'
 DEFAULT_RUNNING_TIME = 5  # seconds
+WARMUP_TIME = 10  # seconds
 COOLDOWN_TIME = 3  # seconds
 
 
@@ -108,6 +109,7 @@ class ClientServerExperiment:
             self.node_pids.append(process.pid)
 
     def post_run(self, start_time: int, end_time: int, node_settings: dict):
+        start_time = round(start_time + WARMUP_TIME * 1e09)
         if self.post_run_fn is not None:
             self.post_run_fn(start_time, end_time, self.csv_path, node_settings)
 
