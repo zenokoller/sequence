@@ -13,8 +13,6 @@ def evaluate(start_time: int, end_time: int, csv_path: str, settings: dict):
     """Collects actual and predicted losses from InfluxDB after one experiment run and computes
     the paremeters for the Gilbert model."""
 
-    print(f'\n{start_time} {end_time}')
-
     client = InfluxDBClient(database='telegraf')
     query = f'select "offset" from "telegraf"."autogen"."{{series}}" ' \
             f'where time > {start_time} and time < {end_time};'
@@ -34,17 +32,19 @@ def evaluate(start_time: int, end_time: int, csv_path: str, settings: dict):
     params_df = pd.concat([gilbert_params_by_trace_lengths(detected_losses, 'sequence'),
                            gilbert_params_by_trace_lengths(actual_losses, 'ground_truth')])
 
+    symbol_bits = settings['client']['symbol_bits']
     params_df['symbol_bits'] = settings['client']['symbol_bits']
-    params_df.to_csv(csv_path)
+    add_header = symbol_bits == 2
+    params_df.to_csv(csv_path, mode='a+', header=add_header)
 
 
 def gilbert_params_by_trace_lengths(loss_offsets: List[int], source: str) -> pd.DataFrame:
-    max_packets = max(loss_offsets)
     powers_of_ten = (10 ** k for k in range(2, 5))
-    dataframes = [
-        pd.DataFrame({'trace_length': trace_length, 'source': source,
+    dataframes = (
+        pd.DataFrame({'trace_length': trace_length,
+                      'source': source,
                       **compute_gilbert_params(loss_offsets[:trace_length])},
-                     index=[i]) for i, trace_length in enumerate(powers_of_ten)]
+                     index=[i]) for i, trace_length in enumerate(powers_of_ten))
     return pd.concat(dataframes)
 
 

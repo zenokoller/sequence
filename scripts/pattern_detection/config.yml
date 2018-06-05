@@ -11,3 +11,13 @@ settings:
   server:
     reporter_name: influx
     report_received: true
+
+override_settings:
+  - all:
+      symbol_bits: 2
+  - all:
+      symbol_bits: 3
+  - all:
+      symbol_bits: 4
+  - all:
+      symbol_bits: 8
