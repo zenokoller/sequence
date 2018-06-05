@@ -13,6 +13,7 @@ from utils.iteration import n_cycles
 from utils.nanotime import nanosecond_timestamp
 
 DATE_FMT = '%y%m%d-%H%M%S'
+NETEM_FILENAME = 'netem_params.log'
 DEFAULT_ARGS = {
     'client': '5634 3996',
     'server': '3996'
@@ -60,6 +61,7 @@ class ClientServerExperiment:
         print(f'>>> Starting Testbed. Outputs at {self.out_path}\n')
         self.check_containers()
         self.create_out_dir()
+        self.store_netem_params()
         self.create_node_logs()
 
         repeats = self.config.get('repeats', 1)
@@ -86,6 +88,17 @@ class ClientServerExperiment:
 
     def create_out_dir(self):
         os.makedirs(self.out_path, exist_ok=True)
+
+    def store_netem_params(self):
+        print('>>> Storing netem params...\n')
+
+        def netem_params(nodename: str):
+            cmd = ['docker', 'exec', '-t', nodename, 'tc', 'qdisc', 'show']
+            result = subprocess.run(cmd, stdout=subprocess.PIPE)
+            return f'{nodename}:\n{str(result.stdout)}\n'
+
+        with open(os.path.join(self.out_path, NETEM_FILENAME), 'w+') as netem_file:
+            netem_file.write('\n'.join(netem_params(nodename) for nodename in self.nodenames))
 
     def create_node_logs(self):
         def log_file(nodename: str) -> TextIO:
