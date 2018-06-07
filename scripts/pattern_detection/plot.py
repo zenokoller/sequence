@@ -20,7 +20,7 @@ TITLE_FMT = '{}; p={:.2f}, r={:.2f}, h={:.2f}'
 def plot(csv_path: str, title: str):
     out_dir, csv_name = os.path.split(csv_path)
     df = pd.read_csv(csv_path, index_col=5)
-    netem_params = read_netem_params(out_dir)
+    netem_params = read_ge_params(out_dir)
 
     fig, axes = plt.subplots(nrows=1, ncols=3, sharex=True, figsize=(10, 3))
 
@@ -54,7 +54,8 @@ def plot(csv_path: str, title: str):
         ax.set_title(name)
 
     # Title
-    title = TITLE_FMT.format(title, *(netem_params.get(name, '') for name in NAMES))
+    if len(netem_params) > 0:
+        title = TITLE_FMT.format(title, *(netem_params.get(name, '') for name in NAMES))
     fig.suptitle(title, fontsize=12)
 
     name, _ = csv_name.split('.')
@@ -67,7 +68,7 @@ def remove_spines(ax):
     ax.spines['right'].set_visible(False)
 
 
-def read_netem_params(directory: str) -> Dict[str, float]:
+def read_ge_params(directory: str) -> Dict[str, float]:
     pattern = re.compile('loss gemodel p (\d+)% r (\d+)% 1-h (\d+)%', re.MULTILINE)
     with open(os.path.join(directory, NETEM_FILENAME)) as netem_file:
         netem_str = netem_file.read()
