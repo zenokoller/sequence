@@ -6,6 +6,7 @@ from typing import List, Dict
 
 import matplotlib
 
+from pattern.ge_params import GEParams
 from scripts.client_server_experiment import NETEM_FILENAME
 
 matplotlib.use('TKAgg')
@@ -14,13 +15,12 @@ from matplotlib import pyplot as plt
 import pandas as pd
 
 NAMES = ('p', 'r', 'h')
-TITLE_FMT = '{}; p={:.2f}, r={:.2f}, h={:.2f}'
 
 
 def plot(csv_path: str, title: str):
     out_dir, csv_name = os.path.split(csv_path)
     df = pd.read_csv(csv_path, index_col=5)
-    netem_params = read_ge_params(out_dir)
+    expected_params = GEParams.from_file(os.path.join(out_dir, NETEM_FILENAME))
 
     fig, axes = plt.subplots(nrows=1, ncols=3, sharex=True, figsize=(10, 3))
 
@@ -40,7 +40,7 @@ def plot(csv_path: str, title: str):
                                       marker='o',
                                       logx=True,
                                       color=color)
-        expected_value = netem_params.get(name, None)
+        expected_value = getattr(expected_params, name)
         if expected_value is not None:
             ax.axhline(y=expected_value, color='r', linestyle='--', lw=2)
         remove_spines(ax)
@@ -54,8 +54,8 @@ def plot(csv_path: str, title: str):
         ax.set_title(name)
 
     # Title
-    if len(netem_params) > 0:
-        title = TITLE_FMT.format(title, *(netem_params.get(name, '') for name in NAMES))
+    if len(expected_params) > 0:
+        title = f'{title}; {GEParams.netem_format()}'
     fig.suptitle(title, fontsize=12)
 
     name, _ = csv_name.split('.')
@@ -66,22 +66,6 @@ def remove_spines(ax):
     ax.spines['left'].set_visible(False)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-
-
-def read_ge_params(directory: str) -> Dict[str, float]:
-    pattern = re.compile('loss gemodel p (\d+)% r (\d+)% 1-h (\d+)%', re.MULTILINE)
-    with open(os.path.join(directory, NETEM_FILENAME)) as netem_file:
-        netem_str = netem_file.read()
-    match = pattern.search(netem_str)
-
-    def adjust(value, name) -> float:
-        value = float(value) / 100
-        return 1.0 - value if name == 'h' else value
-
-    if match is not None:
-        return {name: adjust(value, name) for name, value in zip(NAMES, match.groups())}
-    else:
-        return {}
 
 
 if __name__ == '__main__':

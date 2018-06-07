@@ -30,7 +30,7 @@ def evaluate(start_time: int, end_time: int, csv_path: str, settings: dict):
 
     loss_df = pd.DataFrame({
         'actual': [0 if i in received else 1 for i in range(lower, upper)],
-        'detected': [1 if i in detected_losses else 1 for i in range(lower, upper)]})
+        'detected': [1 if i in detected_losses else 0 for i in range(lower, upper)]})
 
     loss_df.to_csv(csv_path, mode='a+')
 

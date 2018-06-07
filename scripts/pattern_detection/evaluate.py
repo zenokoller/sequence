@@ -5,6 +5,7 @@ import pandas as pd
 from influxdb import InfluxDBClient
 from influxdb.resultset import ResultSet
 
+from pattern.ge_params import GEParams
 from pattern.gilbert_counts import GilbertCounts
 from sequence.sequence import default_sequence_args
 
@@ -50,7 +51,8 @@ def gilbert_params_by_trace_lengths(loss_offsets: List[int], source: str) -> pd.
 
 def compute_gilbert_params(loss_offsets: Iterable[int]) -> dict:
     period = default_sequence_args['period']
-    return GilbertCounts.from_loss_offsets(period, loss_offsets).to_params()
+    ge_params = GilbertCounts.from_loss_offsets(period, loss_offsets).to_params()
+    return ge_params.to_dict()
 
 
 if __name__ == '__main__':
