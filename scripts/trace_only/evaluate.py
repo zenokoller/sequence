@@ -1,12 +1,9 @@
 import sys
-from typing import Iterable, List
+from typing import Iterable
 
 import pandas as pd
 from influxdb import InfluxDBClient
 from influxdb.resultset import ResultSet
-
-from pattern.gilbert_counts import GilbertCounts
-from sequence.sequence import default_sequence_args
 
 
 def evaluate(start_time: int, end_time: int, csv_path: str, settings: dict):

@@ -148,18 +148,25 @@ class ClientServerExperiment:
             stdout.close()
 
 
-def main(testbed_cls, config_file: str = None):
+def main(experiment_cls, config_file: str = None):
     parser = ArgumentParser()
     parser.add_argument('-c', '--config_path', type=str)
     parser.add_argument('-o', '--out_dir', type=str)
     parser.add_argument('-t', '--testbed_path', type=str)
     args = parser.parse_args()
 
-    config_path = os.path.join(os.path.dirname(__file__), config_file or args.config_path)
-    with open(config_path, 'r') as config_file:
-        config = yaml.load(config_file)
+    start_experiment(experiment_cls,
+                     config=config_file or args.config_path,
+                     out_dir=args.out_dir,
+                     testbed_path=args.testbed_path)
 
-    experiment = testbed_cls(config, args.out_dir, args.testbed_path)
+
+def start_experiment(experiment_cls, config: str = None, out_dir: str = None, testbed_path:
+str = None):
+    config_path = os.path.join(os.path.dirname(__file__), config)
+    with open(config_path, 'r') as file_:
+        config = yaml.load(file_)
+    experiment = experiment_cls(config, out_dir, testbed_path)
     experiment.start()
 
 
