@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-
 import os
 import sys
+from itertools import chain
 
 import matplotlib
 
@@ -9,31 +9,53 @@ matplotlib.use('pdf')
 from matplotlib import pyplot as plt
 
 import pandas as pd
+import numpy as np
+
+CONDITIONS = [
+    'random_05', 'random_1', 'random_2', 'ge_05', 'ge_1', 'ge_2'
+]
+
+plt.style.use('ggplot')
 
 
-def plot(csv_path: str, title: str):
-    # TODO Create CDF plots
+def plot(base_path: str, title: str):
+    """Plots small multiples of ecdfs for batch_size vs packet latency for different loss
+    conditions.
+    Note: Uses `base_path/condition/results.csv` for each condition in CONDITIONS
+    """
+
+    def csv_path(condition: str) -> str:
+        return os.path.join(base_path, f'{condition}/results.csv')
+
+    df = pd.concat(read_df(csv_path(condition), condition) for condition in CONDITIONS)
+
+    fig, axes = plt.subplots(nrows=2, ncols=3, sharex=True, figsize=(10, 5))
+    for ax, condition in zip(chain.from_iterable(axes), CONDITIONS):
+        cond_df = df[df.condition == condition]
+        for label, values in cond_df.groupby(cond_df.index):
+            series = values.packet_latency.sort_values()
+            cdf = np.linspace(0., 1., len(series))
+            pd.Series(cdf, index=series).plot(ax=ax, label=label)
+        ax.set_title(condition, fontsize=12)
+    plt.suptitle(title, fontsize=14)
+    plt.legend()
+    plt.savefig(os.path.join(base_path, f'packet_latency_ecdf.pdf'))
+
+
+def read_df(csv_path: str, condition: str) -> pd.DataFrame:
     df = pd.read_csv(csv_path,
                      names=['batch_size', 'packet_latency'],
                      index_col=0)
-    agg_df = df.groupby(['batch_size']).aggregate({'packet_latency': ['mean', 'std']})
-
-    fig, ax = plt.subplots()
-    agg_df.packet_latency['mean'].plot(yerr=agg_df.packet_latency['std'], marker='o',
-                                       fontsize=10, ax=ax)
-    plt.title(title, fontsize=14)
-
-    out_dir, csv_name = os.path.split(csv_path)
-    name, _ = csv_name.split('.')
-    plt.savefig(os.path.join(out_dir, f'{name}.pdf'))
+    df['condition'] = condition
+    return df
 
 
 if __name__ == '__main__':
     try:
-        csv_path = sys.argv[1]
+        base_path = sys.argv[1]
         title = sys.argv[2]
     except IndexError:
-        print('Usage: $0 <csv_path> <title>')
+        print('Usage: $0 <base_path> <title>')
         sys.exit(0)
 
-    plot(csv_path, title)
+    plot(base_path, title)
