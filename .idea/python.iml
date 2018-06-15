@@ -5,6 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/experiments/sequence/distributed" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/experiments/sequence/local" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/data" />
       <excludeFolder url="file://$MODULE_DIR$/experiments/sequence/distributed/build" />
       <excludeFolder url="file://$MODULE_DIR$/lib" />
     </content>

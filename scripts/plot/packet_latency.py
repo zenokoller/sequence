@@ -5,7 +5,7 @@ import sys
 
 import matplotlib
 
-matplotlib.use('TKAgg')
+matplotlib.use('pdf')
 from matplotlib import pyplot as plt
 
 import pandas as pd
@@ -24,7 +24,7 @@ def plot(csv_path: str, title: str):
 
     out_dir, csv_name = os.path.split(csv_path)
     name, _ = csv_name.split('.')
-    plt.savefig(os.path.join(out_dir, f'{name}.png'))
+    plt.savefig(os.path.join(out_dir, f'{name}.pdf'))
 
 
 if __name__ == '__main__':

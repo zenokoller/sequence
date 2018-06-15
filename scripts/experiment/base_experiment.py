@@ -36,15 +36,11 @@ def start_node_command(nodename: str, settings: dict, running_time: int) -> List
     ]
 
 
-class ClientServerExperiment:
+class BaseExperiment:
     nodenames = ['client', 'server']
 
-    def __init__(self,
-                 config: dict,
-                 out_base_path: str,
-                 testbed_path: str,
-                 post_run_fn: Callable[[int, int, str, dict], None] = None,
-                 post_experiment_fn: Callable[[str, dict], None] = None):
+    def __init__(self, config: dict, out_base_path: str, testbed_path: str,
+                 post_run_fn: Callable[[int, int, str, dict], None] = None):
         self.config = config
         self.node_pids = []
         self.node_stdouts = {}
@@ -53,7 +49,6 @@ class ClientServerExperiment:
         self.csv_path = os.path.join(self.out_path, 'results.csv')
         self.testbed_path = testbed_path
         self.post_run_fn = post_run_fn
-        self.post_experiment_fn = post_experiment_fn
 
     def start(self):
         os.chdir(self.testbed_path)
@@ -74,7 +69,6 @@ class ClientServerExperiment:
         for settings in tqdm(n_cycles(node_settings, repeats), total=total_runs):
             self.run(settings, running_time)
 
-        self.post_experiment()
         self.close_node_logs()
 
     def check_containers(self):
@@ -126,11 +120,6 @@ class ClientServerExperiment:
         if self.post_run_fn is not None:
             self.post_run_fn(start_time, end_time, self.csv_path, node_settings)
 
-    def post_experiment(self):
-        if self.post_experiment_fn is not None:
-            plot_title = self.config.get('plot_title', None) or self.config.get('name', None)
-            self.post_experiment_fn(self.csv_path, plot_title)
-
     def get_node_settings(self) -> List[dict]:
         def apply_all(settings: dict) -> dict:
             common_settings = settings.copy().pop('all') if 'all' in settings else {}
@@ -171,4 +160,4 @@ str = None):
 
 
 if __name__ == '__main__':
-    main(ClientServerExperiment)
+    main(BaseExperiment)

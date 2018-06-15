@@ -1,7 +1,11 @@
+from functools import partial
+
 from influxdb import DataFrameClient
 
+from scripts.experiment.base_experiment import BaseExperiment, main
 
-def evaluate(start_time: int, end_time: int, csv_path: str, _: dict):
+
+def reordering_rate_to_csv(start_time: int, end_time: int, csv_path: str, _: dict):
     """Computes reordering rate as of RFC4737 for each interval and writes to file, along with
     actual reordering rate."""
     client = DataFrameClient(database='telegraf')
@@ -36,3 +40,10 @@ def evaluate(start_time: int, end_time: int, csv_path: str, _: dict):
     joined_df['rate_netem'] = compute_reordering_rate(joined_df, 'reorders_netem', 'packets_netem')
 
     joined_df.to_csv(csv_path)
+
+
+RateExperiment = partial(BaseExperiment,
+                         post_run_fn=reordering_rate_to_csv)
+
+if __name__ == '__main__':
+    main(RateExperiment, config_file='config/rate-2-bit.yml')

@@ -1,11 +1,15 @@
+from functools import partial
 from typing import Iterable
 
 from influxdb import InfluxDBClient
 from influxdb.resultset import ResultSet
 
+from scripts.experiment.base_experiment import BaseExperiment, main
 
-def evaluate(start_time: int, end_time: int, csv_path: str, settings: dict):
-    """Collects actual and predicted losses from InfluxDB after one experiment run."""
+
+def precision_recall_to_csv(start_time: int, end_time: int, csv_path: str, settings: dict):
+    """Collects actual and predicted losses from InfluxDB, computes precision and recall and
+    stores it as csv."""
     client = InfluxDBClient(database='telegraf')
     query = f'select "offset" from "telegraf"."autogen"."{{series}}" ' \
             f'where time > {start_time} and time < {end_time};'
@@ -33,3 +37,10 @@ def evaluate(start_time: int, end_time: int, csv_path: str, settings: dict):
     symbol_bits = settings['client']['symbol_bits']
     with open(csv_path, 'a+') as out_file:
         out_file.write(f'{symbol_bits},{precision},{recall}\n')
+
+
+PrecisionRecallExperiment = partial(BaseExperiment,
+                                    post_run_fn=precision_recall_to_csv)
+
+if __name__ == '__main__':
+    main(PrecisionRecallExperiment, config_file='config/precision_recall.yml')

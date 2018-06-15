@@ -1,5 +1,3 @@
-name: reordering_detector
-plot_title: Actual vs. Estimated Reordering
 running_time: 100
 repeats: 1
 

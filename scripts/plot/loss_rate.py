@@ -5,7 +5,7 @@ import sys
 import matplotlib
 import pandas as pd
 
-matplotlib.use('TKAgg')
+matplotlib.use('pdf')
 from matplotlib import pyplot as plt
 
 import matplotlib.ticker as mtick
@@ -21,13 +21,7 @@ def plot(csv_path: str, title: str):
 
     out_dir, csv_name = os.path.split(csv_path)
     name, _ = csv_name.split('.')
-    plt.savefig(os.path.join(out_dir, f'{name}.png'))
-
-
-def print_mean_rates(csv_path):
-    df = pd.read_csv(csv_path, index_col=0)
-    mean_rate_seq, mean_rate_netem = [df[name].mean() for name in ['rate_sequence', 'rate_netem']]
-    print(f'Mean rates:\n-----------\nnetem:{mean_rate_netem}\nsequence:{mean_rate_seq}')
+    plt.savefig(os.path.join(out_dir, f'{name}.pdf'))
 
 
 if __name__ == '__main__':
@@ -39,4 +33,3 @@ if __name__ == '__main__':
         sys.exit(0)
 
     plot(csv_path, title)
-    print_mean_rates(csv_path)
