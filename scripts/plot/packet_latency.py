@@ -4,18 +4,17 @@ import sys
 from itertools import chain
 
 import matplotlib
+import numpy as np
+import pandas as pd
 
 matplotlib.use('pdf')
 from matplotlib import pyplot as plt
 
-import pandas as pd
-import numpy as np
+plt.style.use('seaborn')
 
 CONDITIONS = [
     'random_05', 'random_1', 'random_2', 'ge_05', 'ge_1', 'ge_2'
 ]
-
-plt.style.use('ggplot')
 
 
 def plot(base_path: str, title: str):

@@ -10,11 +10,14 @@ from matplotlib import pyplot as plt
 
 import matplotlib.ticker as mtick
 
+plt.style.use('seaborn')
+
 
 def plot(csv_path: str, title: str):
     df = pd.read_csv(csv_path, index_col=0)
     df.index = pd.to_datetime(df.index)
     df = df.filter(['rate_sequence', 'rate_netem'])
+    df.columns = ['detected', 'actual']
     ax = df.plot(grid=True)
     ax.set_title(title, fontsize=14)
     ax.yaxis.set_major_formatter(mtick.PercentFormatter())
