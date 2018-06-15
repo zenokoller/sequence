@@ -6,7 +6,7 @@ import numpy as np
 
 from detector.events import Event, Loss
 from pattern.ge_params import GEParams
-from pattern.read_losses_from_csv import read_losses_from_csv, SEQUENCE_COL
+from pattern.read_losses_from_csv import read_losses_from_csv, SEQUENCE_COL, RECEIVED_COL
 
 
 class GilbertCounts(NamedTuple):
@@ -69,14 +69,7 @@ class GilbertCounts(NamedTuple):
             return None
 
 
-if __name__ == '__main__':
-    try:
-        csv_path = sys.argv[1]
-        max_length = int(sys.argv[2])
-    except IndexError:
-        print('Usage: $0 <csv_path>')
-        sys.exit(0)
-
+def main(csv_path: str, max_length: int, use_received: bool = False, verbose: bool = False):
     out_dir, csv_name = os.path.split(csv_path)
     expected = None
     try:
@@ -84,13 +77,28 @@ if __name__ == '__main__':
     except:
         print('Could not parse expected ge params.')
 
-    losses = read_losses_from_csv(csv_path, SEQUENCE_COL, max_length=max_length)
+    column = RECEIVED_COL if use_received else SEQUENCE_COL
+    losses = read_losses_from_csv(csv_path, column, max_length=max_length)
     loss_offsets = [offset for offset, loss in enumerate(losses) if loss == 1]
-    actual = GilbertCounts.from_loss_offsets(2**16, loss_offsets).to_params()
+    actual = GilbertCounts.from_loss_offsets(2 ** 16, loss_offsets).to_params()
 
-    if expected is not None:
-        print(f'Expected: {expected.netem_format()}')
-    if actual is not None:
-        print(f'Actual:   {actual.netem_format()}')
-    else:
-        print('Could not derive params.')
+    if verbose:
+        if expected is not None:
+            print(f'Expected: {expected.netem_format()}')
+        if actual is not None:
+            print(f'Actual:   {actual.netem_format()}')
+        else:
+            print('Could not derive params.')
+
+    return actual, expected
+
+
+if __name__ == '__main__':
+    try:
+        csv_path = sys.argv[1]
+        max_length = int(sys.argv[2])
+    except IndexError:
+        print('Usage: $0 <csv_path> <max_length>')
+        sys.exit(0)
+
+    main(csv_path, max_length, verbose=True)
