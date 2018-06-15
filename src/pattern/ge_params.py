@@ -1,5 +1,5 @@
 import re
-from typing import NamedTuple, Optional
+from typing import NamedTuple, Optional, List
 
 NETEM_GE_RE = 'loss gemodel p (\d*\.?\d+)% r (\d*\.?\d+)% 1-h (\d*\.?\d+)% 1-k (\d*\.?\d+)%'
 NETEM_FORMAT = '{:.1f} {:.0f} {:.0f} {:0.1f}'
@@ -44,3 +44,7 @@ class GEParams(NamedTuple):
 
     def to_dict(self) -> dict:
         return {'p': self.p, 'r': self.r, 'h': self.h, 'k': self.k}
+
+    def rel_errors(self, ground_truth: 'GEParams') -> List[float]:
+        return [abs(x - gt) / gt if gt != 0 else 0
+                for x, gt in zip(self, ground_truth)]
