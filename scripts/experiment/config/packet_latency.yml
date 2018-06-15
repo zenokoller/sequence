@@ -1,3 +1,4 @@
+name: packet_latency
 running_time: 20
 repeats: 10
 

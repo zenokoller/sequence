@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 from itertools import repeat, chain, product
 
 from scripts.experiment.base_experiment import start_experiment
-from scripts.trace_only.experiment import TraceExperiment
+from scripts.experiment.trace_experiment import TraceExperiment
 
 """Alternately reconfigure netem and run experiments."""
 
@@ -23,10 +23,10 @@ netem_confs = [
 
 experiment_cls = TraceExperiment
 experiment_confs = [
-    'trace_only/trace-2-bit.yml',
-    'trace_only/config-3-bit.yml',
-    'trace_only/config-4-bit.yml',
-    'trace_only/config-8-bit.yml'
+    'config/trace-2-bit.yml',
+    'config/trace-3-bit.yml',
+    'config/trace-4-bit.yml',
+    'config/trace-8-bit.yml',
 ]
 
 
