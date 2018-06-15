@@ -12,6 +12,7 @@ import pandas as pd
 
 
 def plot(csv_path: str, title: str):
+    # TODO Create CDF plots
     df = pd.read_csv(csv_path,
                      names=['batch_size', 'packet_latency'],
                      index_col=0)
