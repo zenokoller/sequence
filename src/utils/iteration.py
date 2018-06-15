@@ -25,3 +25,8 @@ def partition(pred: Callable[[Any], bool], iterable: Iterable) -> Tuple[Iterable
     """Use a predicate to partition entries into false entries and true entries"""
     t1, t2 = tee(iterable)
     return filterfalse(pred, t1), filter(pred, t2)
+
+
+def len_iter(items: Iterable) -> int:
+    """Returns the length of an iterable. Caution: Iterable will be consumed."""
+    return sum(1 for _ in items)
