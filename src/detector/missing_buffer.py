@@ -21,17 +21,17 @@ class MissingBuffer:
         self.is_fifo = is_fifo
         self._queue = deque(maxlen=max_size)
 
-    def append(self, item: Symbols):
+    def append(self, item: Symbols, buf_offset: int):
         for index, symbol in enumerate(item.symbols):
-            self._queue.append(Symbol(symbol, item.offset + index))
+            self._queue.append(Symbol(symbol, item.offset + index, buf_offset))
 
     def remove_timed_out(self, offset: int) -> List[int]:
         """Removes symbols where `offset - symbol_offset > max_reorder_dist` and returns their
         offsets."""
-        remaining, timed_out = partition(lambda item: offset - item.offset > self.max_reorder_dist,
+        remaining, timed_out = partition(lambda item: offset - item.seq_offset > self.max_reorder_dist,
                                          self._queue)
         self._queue = deque(remaining, maxlen=self.max_size)
-        return [offset for _, offset in timed_out]
+        return [offset for _, offset, _ in timed_out]
 
     def remove_if_found(self, needle: Symbols) -> List[Reordering]:
         """Walks the buffer, removing symbols that match the ones in `needle`, returning their
@@ -45,6 +45,6 @@ class MissingBuffer:
             except StopIteration:
                 continue
             del remaining[found_idx]
-            found.append(Reordering(item.offset, needle.offset - item.offset - index))
+            found.append(Reordering(item.seq_offset, needle.offset - item.buf_offset + index))
         self._queue = deque(remaining, maxlen=self.max_size)
         return found

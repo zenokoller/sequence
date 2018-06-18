@@ -33,7 +33,7 @@ class Event:
 
     @property
     def getters_without_timestamp(self) -> Iterable[Callable]:
-        return (operator.attrgetter(attr) for attr in self.__slots__[:1])
+        return (operator.attrgetter(attr) for attr in self.__slots__[:-1])
 
 
 def make_event_type(typename: str, fields=Tuple[str]):
