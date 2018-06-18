@@ -17,12 +17,10 @@ def get_detect_losses_and_reorderings(max_reorder_dist: int, max_size: int = Non
         loss_events = (Loss(offset, found_offset) for offset in timed_out)
 
         reorder_events = []
-        if len(actual.symbols) == 0:
+        if expected.symbols:
             missing.append(expected)
-        elif len(expected.symbols) == 0:
+        if actual.symbols:
             reorder_events = missing.remove_if_found(actual)
-        else:
-            raise Exception('Did not expect both `actual` and `expected` to be nonempty!')
 
         return chain.from_iterable([loss_events, reorder_events])
 
