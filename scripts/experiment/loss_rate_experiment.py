@@ -45,4 +45,4 @@ RateExperiment = partial(BaseExperiment,
                          post_run_fn=loss_rate_to_csv)
 
 if __name__ == '__main__':
-    main(RateExperiment, config_file='config/rate-2-bit.yml')
+    main(RateExperiment, config_file='config/rate_2_bit.yml')

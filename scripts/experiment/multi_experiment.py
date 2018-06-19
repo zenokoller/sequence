@@ -23,10 +23,10 @@ netem_confs = [
 
 experiment_cls = TraceExperiment
 experiment_confs = [
-    'config/trace-2-bit.yml',
-    'config/trace-3-bit.yml',
-    'config/trace-4-bit.yml',
-    'config/trace-8-bit.yml',
+    'config/trace_2_bit.yml',
+    'config/trace_3_bit.yml',
+    'config/trace_4_bit.yml',
+    'config/trace_8_bit.yml',
 ]
 
 

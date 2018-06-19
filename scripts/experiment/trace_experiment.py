@@ -40,4 +40,4 @@ TraceExperiment = partial(BaseExperiment,
                           post_run_fn=event_trace_to_csv)
 
 if __name__ == '__main__':
-    main(TraceExperiment, config_file='config/trace-2-bit.yml')
+    main(TraceExperiment, config_file='config/trace_2_bit.yml')
