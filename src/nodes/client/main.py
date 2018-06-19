@@ -57,7 +57,7 @@ logging.info(f'offset={offset}')
 # Start client
 with closing(create_socket(local_port=local_port)) as sock:
     seed = seed_fn(local_host, local_port, remote_host, remote_port)
-    logging.debug(f'Seed: {seed}')
+    logging.info(f'Seed={seed}')
     stop_sending = send_sequence(sock, (remote_host, remote_port), seed=seed,
                                  sending_rate=sending_rate, offset=offset)
     while True:

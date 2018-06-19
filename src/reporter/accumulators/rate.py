@@ -1,9 +1,9 @@
 from collections import deque
 from functools import partial
-from typing import Iterator
+from typing import Iterable
 
-from detector.events import Event, Loss
-from reporter.accumulators.utils import filter_last_n_seconds
+from detector.events import Loss, Event
+from reporter.accumulators.filter_last_n import filter_last_n_seconds
 from utils.coroutine import coroutine
 
 DEFAULT_LAST_N_SECONDS = 5
@@ -23,7 +23,8 @@ def rate_accumulator(period: int,
         buffer.append(event)
 
 
-def loss_rate(period: int, events: Iterator[Event]) -> float:
+def loss_rate(period: int, events: Iterable[Event]) -> float:
+    events = iter(events)
     loss_count = 0
     first = last = next(events, None)
     for last in events:
