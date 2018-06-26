@@ -50,7 +50,7 @@ class BaseExperiment:
         self.testbed_path = testbed_path
         self.post_run_fn = post_run_fn
 
-    def start(self):
+    def start(self) -> str:
         os.chdir(self.testbed_path)
 
         print(f'>>> Starting Testbed. Outputs at {self.out_path}\n')
@@ -70,6 +70,7 @@ class BaseExperiment:
             self.run(settings, running_time)
 
         self.close_node_logs()
+        return self.out_path
 
     def check_containers(self):
         print('>>> Making sure containers are running...\n')
@@ -137,26 +138,26 @@ class BaseExperiment:
             stdout.close()
 
 
-def main(experiment_cls, config_file: str = None):
+def main(experiment_cls, config_file: str = None) -> str:
     parser = ArgumentParser()
     parser.add_argument('-c', '--config_path', type=str)
     parser.add_argument('-o', '--out_dir', type=str)
     parser.add_argument('-t', '--testbed_path', type=str)
     args = parser.parse_args()
 
-    start_experiment(experiment_cls,
-                     config=config_file or args.config_path,
-                     out_dir=args.out_dir,
-                     testbed_path=args.testbed_path)
+    return start_experiment(experiment_cls,
+                            config=config_file or args.config_path,
+                            out_dir=args.out_dir,
+                            testbed_path=args.testbed_path)
 
 
 def start_experiment(experiment_cls, config: str = None, out_dir: str = None, testbed_path:
-str = None):
+str = None) -> str:
     config_path = os.path.join(os.path.dirname(__file__), config)
     with open(config_path, 'r') as file_:
         config = yaml.load(file_)
     experiment = experiment_cls(config, out_dir, testbed_path)
-    experiment.start()
+    return experiment.start()
 
 
 if __name__ == '__main__':
