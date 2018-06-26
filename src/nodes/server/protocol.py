@@ -18,7 +18,7 @@ def get_server_protocol(seed_from_addr: Callable,
         def __init__(self, echo=False):
             self.echo = echo
             self.transport = None
-            self.queues: Dict[Address: Queue] = {}
+            self.queues: Dict[Address, Queue] = {}
 
         def connection_made(self, transport):
             self.transport = transport

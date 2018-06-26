@@ -21,7 +21,7 @@ def get_demultiplex_flow_fn(seed_from_flow_id: Callable,
         return symbol_queue
 
     async def demultiplex_flows(in_queue: aioprocessing.Queue):
-        out_queues: Dict[FlowId:asyncio.Queue] = {}
+        out_queues: Dict[FlowId,asyncio.Queue] = {}
 
         while True:
             flow_id, symbol, time = await in_queue.coro_get()
