@@ -22,11 +22,7 @@ def plot(base_path: str, title: str):
     conditions.
     Note: Uses `base_path/condition/results.csv` for each condition in CONDITIONS
     """
-
-    def csv_path(condition: str) -> str:
-        return os.path.join(base_path, f'{condition}/results.csv')
-
-    df = pd.concat(read_df(csv_path(condition), condition) for condition in CONDITIONS)
+    df = pd.concat(read_df(csv_path(base_path, condition), condition) for condition in CONDITIONS)
 
     fig, axes = plt.subplots(nrows=2, ncols=3, sharex=True, figsize=(10, 5))
     for ax, condition in zip(chain.from_iterable(axes), CONDITIONS):
@@ -39,6 +35,10 @@ def plot(base_path: str, title: str):
     plt.suptitle(title, fontsize=14)
     plt.legend()
     plt.savefig(os.path.join(base_path, f'packet_latency_ecdf.pdf'))
+
+
+def csv_path(base_path: str, condition: str) -> str:
+    return os.path.join(base_path, f'{condition}/results.csv')
 
 
 def read_df(csv_path: str, condition: str) -> pd.DataFrame:
