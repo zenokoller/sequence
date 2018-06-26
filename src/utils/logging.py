@@ -8,11 +8,11 @@ DEFAULT_FILE_LEVEL = logging.DEBUG
 DEFAULT_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 
 
-def setup_logger(name: str = None,
-                 log_dir: str = None,
-                 stream_level: int = DEFAULT_STREAM_LEVEL,
-                 file_level: int = DEFAULT_FILE_LEVEL,
-                 format: str = DEFAULT_FORMAT):
+def setup_logger(name: object = None,
+                 log_dir: object = None,
+                 stream_level: object = DEFAULT_STREAM_LEVEL,
+                 file_level: object = DEFAULT_FILE_LEVEL,
+                 format: object = DEFAULT_FORMAT) -> logging.Logger:
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
     logger.propagate = False
