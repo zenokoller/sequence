@@ -26,13 +26,13 @@ def plot(hdf5_path: str, df_name: str):
         df = store[df_name]
 
     def plot_row(expected_params_str: str, row_axes: Iterable):
-        expected = GEParams.from_str(expected_params_str)
+        expected = GEParams.from_percent_str(expected_params_str)
         relevant_df = df[df['expected_params'] == expected_params_str]
         trace_lengths = relevant_df['trace_length'].unique()
 
         rel_error_df = pd.DataFrame(
             list(chain.from_iterable([{**{'trace_length': trace_length},
-                                       **expected.rel_errors(GEParams.from_str(actual_str))}
+                                       **expected.rel_errors(GEParams.from_percent_str(actual_str))}
                                       for actual_str in relevant_df[relevant_df['trace_length'] ==
                                                                     trace_length][
                                           'actual_params']]
@@ -40,20 +40,23 @@ def plot(hdf5_path: str, df_name: str):
 
         for trace_length in trace_lengths:
             df_ = rel_error_df[rel_error_df['trace_length'] == trace_length]
-            for ax, param_name in zip(row_axes, PARAM_NAMES):
+            for (i, ax), param_name in zip(enumerate(row_axes), PARAM_NAMES):
                 series = df_[param_name].sort_values()
                 cdf = np.linspace(0., 1., len(series))
-                pd.Series(cdf, index=series).plot(ax=ax, label=trace_length)
-        ax.set_title(expected, fontsize=12)
+                label = f'{trace_length} packets'
+                pd.Series(cdf, index=series).plot(ax=ax, label=label, linewidth=1.0)
+                if i == 1:
+                    ax.set_title(expected.to_percent_str(), fontsize=12)
 
     all_expected_params = df['expected_params'].unique()
     nrows = len(all_expected_params)
 
-    fig, axes = plt.subplots(nrows=nrows, ncols=3, figsize=(10, 3))
+    fig, axes = plt.subplots(nrows=nrows, ncols=3, figsize=(10, 3 * nrows))
     for params, row in zip(all_expected_params, axes):
         plot_row(params, row)
 
-    plt.suptitle(title, fontsize=14)
+    fig.tight_layout()
+    plt.legend()
 
     out_dir, hdf5_name = os.path.split(hdf5_path)
     name, _ = hdf5_name.split('.')
@@ -76,9 +79,8 @@ if __name__ == '__main__':
     try:
         hdf5_path = sys.argv[1]
         df_name = sys.argv[2]
-        title = sys.argv[3]
     except IndexError:
-        print('Usage: $0 <hdf5_path> <df_name> <title>')
+        print('Usage: $0 <hdf5_path> <df_name>')
         sys.exit(0)
 
     plot(hdf5_path, df_name)

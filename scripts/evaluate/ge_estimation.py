@@ -51,8 +51,8 @@ def compute_ge_params(run_fn: Callable, directory: str, store_fn: Callable = Non
             results.append(
                 {'trace_length': trace_length,
                  'symbol_bits': symbol_bits,
-                 'actual_params': actual.netem_format(),
-                 'expected_params': expected.netem_format()
+                 'actual_params': actual.to_percent_str(),
+                 'expected_params': expected.to_percent_str()
                  })
 
         if store_each is not None and index % store_each == 0:

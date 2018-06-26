@@ -46,9 +46,9 @@ def main(csv_path: str, max_length: int, use_received: bool = False, verbose: bo
     actual = fit_ge_params(losses)
 
     if verbose:
-        print(f'Actual:   {actual.netem_format()}')
+        print(f'Actual:   {actual.to_netem_str()}')
         if expected is not None:
-            print(f'Expected: {expected.netem_format()}')
+            print(f'Expected: {expected.to_netem_str()}')
 
     return actual, expected
 
