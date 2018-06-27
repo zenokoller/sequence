@@ -7,7 +7,6 @@ from datetime import datetime, timedelta
 from typing import Callable, List, TextIO
 
 import yaml
-from tqdm import tqdm
 
 from utils.iteration import n_cycles
 from utils.nanotime import nanosecond_timestamp
@@ -20,8 +19,8 @@ DEFAULT_ARGS = {
 }
 START_NODE_CMD = 'docker exec -t {nodename} timeout -sINT {running_time}s python ' \
                  '/root/python/nodes/{nodename}/main.py'
-DEFAULT_RUNNING_TIME = 5  # seconds
-WARMUP_TIME = 10  # seconds
+DEFAULT_RUNNING_TIME = 60  # seconds
+WARMUP_TIME = 3  # seconds
 COOLDOWN_TIME = 3  # seconds
 
 
@@ -66,7 +65,7 @@ class BaseExperiment:
         print(f'>>> Running {repeats} repeats of {len(node_settings)} settings for {running_time}s,'
               f' expected running time: ~{timedelta(seconds=total_runs * running_time)}\n')
 
-        for settings in tqdm(n_cycles(node_settings, repeats), total=total_runs):
+        for settings in n_cycles(node_settings, repeats):
             self.run(settings, running_time)
 
         self.close_node_logs()

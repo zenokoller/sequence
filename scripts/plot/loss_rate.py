@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import os
 import sys
-from datetime import timedelta
 
 import matplotlib
 import pandas as pd
@@ -13,34 +12,29 @@ import matplotlib.ticker as mtick
 
 plt.style.use('seaborn')
 
-CONF_DELAY = 4
-LINES_LABELS = ['0.125%', '0.25%', '0.5%', '1%', '2%', '4%']
+LINES_LABELS = ['0.125%', '0.25%', '0.5%', '1%', '2%']
 YMAX = 0.08
 LABEL_PADDING = [0.5, -0.003]
 
-def plot(out_dir: str, title: str):
-    data_df, conf_df = [
-        pd.read_csv(os.path.join(out_dir, filename), index_col=0)
-        for filename in ['results.csv', 'repeated_netem_confs.log']
-    ]
 
+def plot(out_dir: str, title: str):
+    data_df = pd.read_csv(os.path.join(out_dir, 'results.csv'), index_col=0)
     data_df.index = pd.to_datetime(data_df.index)
+    conf_df = pd.read_csv(os.path.join(out_dir, 'repeated_netem_confs.log'), index_col=0,
+                          header=None)
     conf_df.index = pd.to_datetime(conf_df.index)
 
-    # Add shift to netem confs
-    conf_df.index = [i + timedelta(seconds=CONF_DELAY) for i in conf_df.index]
-
-    # Use relative indices
-    reference_timestamp = data_df.index[0]
-    data_df.index = map(lambda x: x.total_seconds(), [i - reference_timestamp for i in
-                                                      data_df.index])
-    conf_df.index = map(lambda x: x.total_seconds(), [i - reference_timestamp for i in
-                                                      conf_df.index])
+    # Use relative time axis
+    data_df.index = map(lambda x: x.total_seconds(), [i - data_df.index[0]
+                                                      for i in data_df.index])
+    conf_df.index = map(lambda x: x.total_seconds(), [i - conf_df.index[0]
+                                                      for i in conf_df.index])
 
     # Plot data
     data_df = data_df.filter(['rate_sequence', 'rate_netem'])
     data_df.columns = ['detected', 'actual']
     ax = data_df.plot(grid=True, figsize=(10, 3), linewidth=0.75)
+    plt.legend(loc='upper right')
 
     # Plot vertical lines for conf changes
     plt.vlines(conf_df.index, ymin=0, ymax=YMAX, color='r', linewidth=0.5)

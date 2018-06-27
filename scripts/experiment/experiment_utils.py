@@ -1,16 +1,21 @@
+import datetime
 import os
 import subprocess
 import time
 from typing import List
 
-from utils.nanotime import nanosecond_timestamp
+
+def reset_netem(testbed_path: str):
+    os.chdir(testbed_path)
+    cmd = ['bin/link-reset.bash', '-t']
+    _ = subprocess.check_call(cmd)
 
 
-def configure_netem(testbed_path: str, config_file: str) -> int:
+def configure_netem(testbed_path: str, config_file: str) -> str:
     print(f'>>> Configuring netem with {config_file}...')
     os.chdir(testbed_path)
-    cmd = ['bin/link-config.bash', '-t', '-c', config_file]
-    timestamp = nanosecond_timestamp()
+    cmd = ['bin/link-config.bash', '-t', '-n', '-c', config_file]
+    timestamp = datetime.datetime.now().isoformat()
     _ = subprocess.run(cmd, stdout=subprocess.PIPE)
     return timestamp
 
@@ -21,6 +26,6 @@ def repeatedly_configure_netem(testbed_path: str,
                                log_queue):
     next_times = [time.time() + (i + 1) * interval for i, _ in enumerate(config_files)]
     for next_time, conf in zip(next_times, config_files):
+        time.sleep(max(0, next_time - time.time()))
         timestamp = configure_netem(testbed_path, conf)
         log_queue.put((timestamp, conf))
-        time.sleep(max(0, next_time - time.time()))
