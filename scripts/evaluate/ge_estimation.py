@@ -1,19 +1,19 @@
 import os
-from functools import partial
-
-import pandas as pd
 import re
 import sys
+from functools import partial
 from typing import Optional, Callable
 
+import pandas as pd
 from tqdm import tqdm
 
 from pattern.gilbert_counts import main as run_gilbert
 from pattern.hmm import main as run_hmm
 
 SYMBOL_BITS_RE = "'symbol_bits': (\d+)"
-COLUMNS = ['trace_length', 'symbol_bits', 'actual_params', 'expected_params']
-TRACE_LENGHTS = [1000, 5000, 10000, 20000]
+COLUMNS = ['trace_length', 'symbol_bits', 'p_act', 'r_act', 'h_act', 'p_exp',
+           'r_exp', 'h_exp']
+TRACE_LENGTHS = [1000, 5000, 10000, 20000]
 STORE_EACH = 10
 
 
@@ -45,14 +45,18 @@ def compute_ge_params(run_fn: Callable, directory: str, store_fn: Callable = Non
                 trace_path):
             continue
 
-        for trace_length in TRACE_LENGHTS:
+        for trace_length in TRACE_LENGTHS:
             actual, expected = run_fn(trace_path, trace_length)
 
             results.append(
                 {'trace_length': trace_length,
                  'symbol_bits': symbol_bits,
-                 'actual_params': actual.to_percent_str(),
-                 'expected_params': expected.to_percent_str()
+                 'p_act': actual.p,
+                 'r_act': actual.r,
+                 'h_act': actual.h,
+                 'p_exp': expected.p,
+                 'r_exp': expected.r,
+                 'h_exp': expected.h
                  })
 
         if store_each is not None and index % store_each == 0:

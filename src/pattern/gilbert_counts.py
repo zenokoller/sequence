@@ -64,9 +64,13 @@ class GilbertCounts(NamedTuple):
             h = 0.5 if simplify_h else 1 - b / one_minus_r
             r = 1 - one_minus_r
             p = a * r / (1 - h - a)
-            return GEParams(p, r, h, k=1)
+            return GEParams(*[clip(value, 0, 1) for value in [p, r, h, 1]] )
         except ZeroDivisionError:
-            return GEParams(0, 1, 0, 0)
+            return GEParams()
+
+
+def clip(value, lower, upper):
+    return min(upper, max(lower, value))
 
 
 def main(csv_path: str, max_length: int, use_received: bool = False, verbose: bool = False):

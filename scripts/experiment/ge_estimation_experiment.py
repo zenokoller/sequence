@@ -1,11 +1,22 @@
+from argparse import ArgumentParser
 from functools import partial
+from itertools import repeat, chain
 from typing import Iterable
 
 import pandas as pd
 from influxdb import InfluxDBClient
 from influxdb.resultset import ResultSet
 
-from scripts.experiment.base_experiment import BaseExperiment, main
+from scripts.experiment.base_experiment import start_experiment, BaseExperiment
+from scripts.experiment.experiment_utils import configure_netem, reset_netem
+
+"""Alternately reconfigure netem and run experiments."""
+
+NETEM_CONFS = [
+    'conf/ge_estimation/loss_prob_50.conf',
+    'conf/ge_estimation/loss_prob_75.conf',
+    'conf/ge_estimation/loss_prob_100.conf'
+]
 
 
 def event_trace_to_csv(start_time: int, end_time: int, csv_path: str, settings: dict):
@@ -36,8 +47,19 @@ def event_trace_to_csv(start_time: int, end_time: int, csv_path: str, settings: 
     loss_df.to_csv(csv_path, mode='a+')
 
 
-TraceExperiment = partial(BaseExperiment,
-                          post_run_fn=event_trace_to_csv)
-
+GEEstimationExperiment = partial(BaseExperiment,
+                                 post_run_fn=event_trace_to_csv)
 if __name__ == '__main__':
-    main(TraceExperiment, config_file='config/trace_2_bit.yml')
+    parser = ArgumentParser()
+    parser.add_argument('-o', '--out_dir', type=str)
+    parser.add_argument('-t', '--testbed_path', type=str)
+    parser.add_argument('-r', '--repeats', type=int)
+    args = parser.parse_args()
+
+    reset_netem(args.testbed_path)
+
+    repeated_netem_confs = chain.from_iterable(repeat(NETEM_CONFS, args.repeats))
+    for netem_conf in repeated_netem_confs:
+        configure_netem(args.testbed_path, netem_conf, blocking=True)
+        start_experiment(GEEstimationExperiment, config='config/ge_estimation.yml', out_dir=args.out_dir,
+                         testbed_path=args.testbed_path)

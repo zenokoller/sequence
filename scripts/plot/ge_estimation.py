@@ -2,11 +2,8 @@
 import os
 import sys
 from collections import Iterable
-from itertools import chain
 
 import matplotlib
-
-from pattern.ge_params import GEParams
 
 matplotlib.use('pdf')
 from matplotlib import pyplot as plt
@@ -16,51 +13,74 @@ import pandas as pd
 
 plt.style.use('seaborn')
 
+DF_NAMES = ['hmm', 'gilbert']
+LINESTYLES = ['-', ':']
 PARAM_NAMES = ['p', 'r', 'h']
+COLORS = ['#4C72B0', '#55A868', '#C44E52', '#8172B2']
+NROWS = 3  # One row per configuration
 
 
-def plot(hdf5_path: str, df_name: str):
-    """Plot of ECDF of the relative error between the expected and actual parameter for the
-    Gilbert parameters p, r, h for all values of `actual_params`."""
+def plot(hdf5_path: str):
     with pd.HDFStore(hdf5_path) as store:
-        df = store[df_name]
+        dfs = {name: store[name] for name in DF_NAMES}
 
-    def plot_row(expected_params_str: str, row_axes: Iterable):
-        expected = GEParams.from_percent_str(expected_params_str)
-        relevant_df = df[df['expected_params'] == expected_params_str]
-        trace_lengths = relevant_df['trace_length'].unique()
+    fig, axes = plt.subplots(nrows=NROWS, ncols=3, figsize=(10, 3 * NROWS))
 
-        rel_error_df = pd.DataFrame(
-            list(chain.from_iterable([{**{'trace_length': trace_length},
-                                       **expected.rel_errors(GEParams.from_percent_str(actual_str))}
-                                      for actual_str in relevant_df[relevant_df['trace_length'] ==
-                                                                    trace_length][
-                                          'actual_params']]
-                                     for trace_length in trace_lengths)))
-
-        for trace_length in trace_lengths:
-            df_ = rel_error_df[rel_error_df['trace_length'] == trace_length]
-            for (i, ax), param_name in zip(enumerate(row_axes), PARAM_NAMES):
-                series = df_[param_name].sort_values()
-                cdf = np.linspace(0., 1., len(series))
-                label = f'{trace_length} packets'
-                pd.Series(cdf, index=series).plot(ax=ax, label=label, linewidth=1.0)
-                if i == 1:
-                    ax.set_title(expected.to_percent_str(), fontsize=12)
-
-    all_expected_params = df['expected_params'].unique()
-    nrows = len(all_expected_params)
-
-    fig, axes = plt.subplots(nrows=nrows, ncols=3, figsize=(10, 3 * nrows))
-    for params, row in zip(all_expected_params, axes):
-        plot_row(params, row)
+    for name, linestyle in zip(DF_NAMES, LINESTYLES):
+        plot_df(dfs[name], axes, linestyle, name)
 
     fig.tight_layout()
     plt.legend()
 
     out_dir, hdf5_name = os.path.split(hdf5_path)
     name, _ = hdf5_name.split('.')
-    plt.savefig(os.path.join(out_dir, f'{df_name}.pdf'))
+    plt.savefig(os.path.join(out_dir, f'{name}.pdf'))
+
+
+def plot_df(df: pd.DataFrame, axes: Iterable, linestyle: str, name: str):
+    """Plot of ECDF of the relative error between the expected and actual parameter for the
+    Gilbert parameters p, r, h for all values of `actual_params`."""
+    df['expected_params'] = df[['p_exp', 'r_exp', 'h_exp']].apply(
+        lambda x: 'p: {:.3f}, r: {:.2f}, h: {:.2f}'.format(*x),
+        axis=1)
+    all_expected_params = df['expected_params'].unique()
+
+    for params, row_axes in zip(all_expected_params, axes):
+        plot_row(df, params, row_axes, linestyle, name)
+
+
+def plot_row(df: pd.DataFrame, expected_params: str, row_axes: Iterable, linestyle: str, name: str):
+    relevant_df = df[df['expected_params'] == expected_params]
+    trace_lengths = relevant_df['trace_length'].unique()
+
+    rel_err_df = pd.DataFrame([{**{'trace_length': tup.trace_length},
+                                **rel_errs(tup)
+                                } for tup in relevant_df.itertuples()])
+
+    for trace_length, color in zip(trace_lengths, COLORS):
+        df_ = rel_err_df[rel_err_df['trace_length'] == trace_length]
+        for (i, ax), param_name in zip(enumerate(row_axes), PARAM_NAMES):
+            series = df_[param_name].sort_values()
+            cdf = np.linspace(0., 1., len(series))
+            label = f'{name}/{trace_length}'
+            pd.Series(cdf, index=series).plot(ax=ax,
+                                              label=label,
+                                              color=color,
+                                              linestyle=linestyle,
+                                              linewidth=1.0)
+            if i == 1:
+                ax.set_title(expected_params, fontsize=12)
+
+
+def rel_errs(tup) -> dict:
+    def rel_err(exp, act):
+        return abs(act - exp) / (1 + exp)
+
+    return {
+        'p': rel_err(tup.p_exp, tup.p_act),
+        'r': rel_err(tup.r_exp, tup.r_act),
+        'h': rel_err(tup.h_exp, tup.h_act),
+    }
 
 
 def csv_path(base_path: str, condition: str) -> str:
@@ -80,7 +100,7 @@ if __name__ == '__main__':
         hdf5_path = sys.argv[1]
         df_name = sys.argv[2]
     except IndexError:
-        print('Usage: $0 <hdf5_path> <df_name>')
+        print('Usage: $0 <hdf5_path>')
         sys.exit(0)
 
-    plot(hdf5_path, df_name)
+    plot(hdf5_path)

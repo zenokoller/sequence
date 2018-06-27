@@ -1,10 +1,10 @@
-name: trace_8_bit
+name: ge_estimation
 running_time: 50
 repeats: 1
 
 settings:
   all:
-    symbol_bits: 8
+    symbol_bits: 2
   client:
     rate: 1000
   server:
