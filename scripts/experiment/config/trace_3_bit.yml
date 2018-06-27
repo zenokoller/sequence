@@ -9,4 +9,3 @@ settings:
     rate: 1000
   server:
     reporter_name: influx
-    report_received: true

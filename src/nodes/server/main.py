@@ -24,7 +24,6 @@ parser.add_argument('-s', '--symbol_bits', type=int, help='number of bits for ea
 parser.add_argument('--reporter_name', type=str, help='reporter name, see reporter.utils')
 parser.add_argument('--reporter_args', type=str, default='',
                     help='space-separated reporter args in quotes')
-parser.add_argument('--report_received', action='store_true')
 parser.add_argument('--recovery_batch_size', type=int,
                     help='packets are buffered until search attempt is started in `recovery`')
 parser.add_argument('--recovery_range_length', type=int,
@@ -57,15 +56,13 @@ reporter_queue = start_reporter(reporter)
 
 synchronize_args = override_defaults(default_synchronize_args, vars(args))
 synchronize = get_synchronize_fn(**synchronize_args)
-server_protocol = get_server_protocol(get_seed, sequence_cls, synchronize, reporter_queue,
-                                      report_received=args.report_received)
+server_protocol = get_server_protocol(get_seed, sequence_cls, synchronize, reporter_queue)
 
 # Print settings
 logging.info(f'Starting UDP server, listening on {local_ip}:{local_port}')
 logging.info(f'sequence_args={sequence_args}')
 logging.info(f'synchronize_args={synchronize_args}')
 logging.info(f'reporter={args.reporter_name} {reporter_args}')
-logging.info(f'report_received={args.report_received}')
 
 # Start server
 loop = asyncio.get_event_loop()

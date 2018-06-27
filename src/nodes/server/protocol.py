@@ -12,8 +12,7 @@ from utils.types import Address
 def get_server_protocol(seed_from_addr: Callable,
                         sequence_cls: Callable,
                         synchronize: Callable,
-                        reporter_queue: Queue,
-                        report_received: bool = False):
+                        reporter_queue: Queue):
     class SequenceServerProtocol:
         def __init__(self, echo=False):
             self.echo = echo
@@ -36,8 +35,7 @@ def get_server_protocol(seed_from_addr: Callable,
             symbol, offset = decode_symbol_with_offset(data)
             queue.put_nowait(symbol)
 
-            if report_received:
-                reporter_queue.put_nowait(Receive(offset))
+            reporter_queue.put_nowait(Receive(offset))
 
             if self.echo:
                 self.transport.sendto(data, addr)
