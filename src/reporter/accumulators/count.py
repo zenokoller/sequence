@@ -6,7 +6,7 @@ from utils.coroutine import coroutine
 
 
 @coroutine
-def count_accumulator(period: int) -> Coroutine[dict, Event, None]:
+def count_accumulator() -> Coroutine[dict, Event, None]:
     """Accumulates packet, loss and reordering counts."""
     packets, losses, reorderings = 0, 0, 0
     while True:

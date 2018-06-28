@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 from functools import partial
 
 from nodes.server.protocol import get_server_protocol
-from reporter.utils import create_reporter, start_reporter
+from reporter.utils import create_reporter, start_reporter, accumulators
 from sequence.seed import seed_from_addresses, seed_from_flow_id
 from sequence.sequence import get_sequence_cls, default_sequence_args
 from synchronizer.synchronizer import default_synchronize_args, get_synchronize_fn
@@ -24,6 +24,8 @@ parser.add_argument('-s', '--symbol_bits', type=int, help='number of bits for ea
 parser.add_argument('--reporter_name', type=str, help='reporter name, see reporter.utils')
 parser.add_argument('--reporter_args', type=str, default='',
                     help='space-separated reporter args in quotes')
+parser.add_argument('--accumulator_name', type=str, default=None,
+                    help='accumulator name, see reporter.utils')
 parser.add_argument('--recovery_batch_size', type=int,
                     help='packets are buffered until search attempt is started in `recovery`')
 parser.add_argument('--recovery_range_length', type=int,
@@ -51,7 +53,8 @@ sequence_args = override_defaults(default_sequence_args, vars(args))
 sequence_cls = get_sequence_cls(**sequence_args)
 
 reporter_args = map(int, args.reporter_args.split())
-reporter = create_reporter(args.reporter_name, *reporter_args)
+accumulator = accumulators.get(args.accumulator_name, None)
+reporter = create_reporter(args.reporter_name, *reporter_args, accumulator=accumulator)
 reporter_queue = start_reporter(reporter)
 
 synchronize_args = override_defaults(default_synchronize_args, vars(args))

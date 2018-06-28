@@ -5,12 +5,12 @@ from typing import Iterable
 
 import numpy as np
 
-from detector.events import Loss
+from detector.events import Loss, Receive
 from reporter.accumulators.rate import loss_rate
 from reporter.accumulators.filter_last_n import filter_last_n_packets
 from utils.coroutine import coroutine
 
-DEFAULT_LAST_N_PACKETS = 1000
+DEFAULT_LAST_N_PACKETS = 500
 DEFAULT_BUFFER_SIZE = 10 ** 4
 DEFAULT_MEDIAN_THRESHOLD = 2
 
@@ -21,12 +21,13 @@ def pattern_accumulator(period: int,
                         median_threshold: int = DEFAULT_MEDIAN_THRESHOLD) -> dict:
     losses = deque(maxlen=last_n_packets)
     filter_relevant = partial(filter_last_n_packets, period, last_n_packets)
+    packets = 0
 
     def collect_values() -> dict:
-        relevant_0, relevant_1 = tee(filter_relevant(losses))
+        relevant = filter_relevant(losses)
         return {
-            **{'loss_rate': loss_rate(period, relevant_0)},
-            **detect_pattern(period, median_threshold, relevant_1)
+            **{'packets': packets},
+            **detect_pattern(period, median_threshold, relevant)
         }
 
     while True:
@@ -34,6 +35,8 @@ def pattern_accumulator(period: int,
         event = yield values
         if isinstance(event, Loss):
             losses.append(event)
+        if isinstance(event, Receive):
+            packets += 1
 
 
 def detect_pattern(period: int, median_threshold: int, losses: Iterable[Loss]) -> dict:
@@ -43,14 +46,14 @@ def detect_pattern(period: int, median_threshold: int, losses: Iterable[Loss]) -
     values, counts = np.unique(bursts, return_counts=True)
 
     if len(counts) == 0:
-        return {}
+        return {'bursty': 0, 'mode': 0, 'median': 0}
 
     m = counts.argmax()
     mode = values[m]
     median = np.median(values)
-    pattern = 'random' if mode == 1 and median < median_threshold else 'bursty'
+    bursty = 0 if mode == 1 and median < median_threshold else 1
     return {
-        'pattern': pattern,
+        'bursty': bursty,
         'mode': int(mode),
         'median': int(median)
     }

@@ -17,11 +17,11 @@ class HttpReporter(Reporter):
 
     def __init__(self,
                  *accumulator_args,
-                 accumulator: Callable[[Any], Coroutine[dict, Event, None]] = DEFAULT_ACCUMULATOR):
+                 accumulator: Callable[[Any], Coroutine[dict, Event, None]] = None):
         logging.getLogger('aiohttp.access').setLevel(logging.WARNING)
 
         self.values = {}
-        self.accumulator = accumulator(*accumulator_args)
+        self.accumulator = (accumulator or DEFAULT_ACCUMULATOR)(*accumulator_args)
 
         app = web.Application()
         app.add_routes([web.get('/', self.handle_request)])

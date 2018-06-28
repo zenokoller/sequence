@@ -1,5 +1,9 @@
 import asyncio
 
+from reporter.accumulators.count import count_accumulator
+from reporter.accumulators.pattern import pattern_accumulator
+from reporter.accumulators.rate import rate_accumulator
+
 from reporter.silent_reporter import SilentReporter
 from reporter.http_reporter import HttpReporter
 from reporter.influx_reporter import InfluxReporter
@@ -9,6 +13,12 @@ reporters = {
     'default': SilentReporter,
     'http': HttpReporter,
     'influx': InfluxReporter,
+}
+
+accumulators = {
+    'count': count_accumulator,
+    'rate': rate_accumulator,
+    'pattern': pattern_accumulator,
 }
 
 
