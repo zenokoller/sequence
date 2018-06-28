@@ -1,10 +1,20 @@
+import os
+from argparse import ArgumentParser
 from functools import partial
 from typing import Iterable
 
 from influxdb import InfluxDBClient
 from influxdb.resultset import ResultSet
 
-from scripts.experiment.base_experiment import BaseExperiment, main
+from scripts.experiment.base_experiment import BaseExperiment, start_experiment
+from scripts.experiment.experiment_utils import reset_netem, configure_netem
+from scripts.plot.precision_recall import plot
+
+TITLES = ['Gilbert-Elliott 1%', 'Random 1%']
+NETEM_CONFS = [
+    'conf/precision_recall/ge_1.conf',
+    'conf/precision_recall/random_1.conf',
+]
 
 
 def precision_recall_to_csv(start_time: int, end_time: int, csv_path: str, settings: dict):
@@ -43,4 +53,19 @@ PrecisionRecallExperiment = partial(BaseExperiment,
                                     post_run_fn=precision_recall_to_csv)
 
 if __name__ == '__main__':
-    main(PrecisionRecallExperiment, config_file='config/precision_recall.yml')
+    parser = ArgumentParser()
+    parser.add_argument('-o', '--out_dir', type=str)
+    parser.add_argument('-t', '--testbed_path', type=str)
+    args = parser.parse_args()
+
+    reset_netem(args.testbed_path)
+
+    for title, netem_conf in zip(TITLES, NETEM_CONFS):
+        configure_netem(args.testbed_path, netem_conf, blocking=True)
+
+        out_dir = start_experiment(PrecisionRecallExperiment,
+                                   config='config/precision_recall.yml',
+                                   out_dir=args.out_dir,
+                                   testbed_path=args.testbed_path)
+
+        plot(os.path.join(out_dir, 'results.csv'), title)

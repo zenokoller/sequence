@@ -1,14 +1,14 @@
 name: precision_recall
-running_time: 20
-repeats: 10
+running_time: 30
+repeats: 5
 
 settings:
   all:
     symbol_bits: 2
-  client: {}
+  client:
+    rate: 500
   server:
     reporter_name: influx
-    report_received: true
 
 override_settings:
   - all:

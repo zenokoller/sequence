@@ -9,6 +9,8 @@ from matplotlib import pyplot as plt
 
 import pandas as pd
 
+plt.style.use('seaborn')
+
 
 def plot(csv_path: str, title: str):
     df = pd.read_csv(csv_path, names=['symbol_bits', 'precision', 'recall'], index_col=0)
@@ -20,11 +22,13 @@ def plot(csv_path: str, title: str):
     for k, v in agg_df.iterrows():
         ax.annotate(k, v,
                     xytext=(10, -5), textcoords='offset points',
-                    family='sans-serif', fontsize=14, color='darkslategrey')
+                    family='sans-serif', fontsize=20, color='darkslategrey')
 
-    plt.title(title, fontsize=14)
-    plt.xlabel('Precision', fontsize=12)
-    plt.ylabel('Recall', fontsize=12)
+    plt.title(title, fontsize=20)
+    plt.xlabel('Precision', fontsize=20)
+    plt.ylabel('Recall', fontsize=20)
+    plt.xticks(fontsize=16)
+    plt.yticks(fontsize=16)
 
     out_dir, csv_name = os.path.split(csv_path)
     name, _ = csv_name.split('.')
