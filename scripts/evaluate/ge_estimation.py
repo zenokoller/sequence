@@ -1,6 +1,7 @@
 import os
 import re
 import sys
+import time
 from functools import partial
 from typing import Optional, Callable
 
@@ -12,7 +13,7 @@ from pattern.hmm import main as run_hmm
 
 SYMBOL_BITS_RE = "'symbol_bits': (\d+)"
 COLUMNS = ['trace_length', 'symbol_bits', 'p_act', 'r_act', 'h_act', 'p_exp',
-           'r_exp', 'h_exp']
+           'r_exp', 'h_exp', 'time_taken']
 TRACE_LENGTHS = [1000, 5000, 10000, 20000]
 STORE_EACH = 10
 
@@ -46,7 +47,9 @@ def compute_ge_params(run_fn: Callable, directory: str, store_fn: Callable = Non
             continue
 
         for trace_length in TRACE_LENGTHS:
+            start_time = time.time()
             actual, expected = run_fn(trace_path, trace_length)
+            elapsed = time.time() - start_time
 
             results.append(
                 {'trace_length': trace_length,
@@ -56,7 +59,8 @@ def compute_ge_params(run_fn: Callable, directory: str, store_fn: Callable = Non
                  'h_act': actual.h,
                  'p_exp': expected.p,
                  'r_exp': expected.r,
-                 'h_exp': expected.h
+                 'h_exp': expected.h,
+                 'time_taken': elapsed
                  })
 
         if store_each is not None and index % store_each == 0:
