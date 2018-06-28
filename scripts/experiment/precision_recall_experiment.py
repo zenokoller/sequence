@@ -8,7 +8,7 @@ from influxdb.resultset import ResultSet
 
 from scripts.experiment.base_experiment import BaseExperiment, start_experiment
 from scripts.experiment.experiment_utils import reset_netem, configure_netem
-from scripts.plot.precision_recall import plot
+from scripts.plot.precision_recall_plot import plot
 
 TITLES = ['Gilbert-Elliott 1%', 'Random 1%']
 NETEM_CONFS = [

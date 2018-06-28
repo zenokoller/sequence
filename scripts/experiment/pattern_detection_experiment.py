@@ -8,7 +8,7 @@ from influxdb import DataFrameClient
 
 from scripts.experiment.base_experiment import BaseExperiment, start_experiment
 from scripts.experiment.experiment_utils import repeatedly_configure_netem, reset_netem
-from scripts.plot.pattern_detection import plot
+from scripts.plot.pattern_detection_plot import plot
 
 # TODO two different burst lengths, two different loss probs
 

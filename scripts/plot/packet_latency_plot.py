@@ -30,7 +30,7 @@ def plot(base_path: str, title: str):
         for label, values in cond_df.groupby(cond_df.index):
             series = values.packet_latency.sort_values()
             cdf = np.linspace(0., 1., len(series))
-            pd.Series(cdf, index=series).plot(ax=ax, label=label)
+            pd.Series(cdf, index=series).plot(ax=ax, label=label, linewidth=1.0)
         ax.set_title(condition, fontsize=12)
     plt.suptitle(title, fontsize=14)
     plt.legend()

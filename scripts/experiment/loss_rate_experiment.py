@@ -8,9 +8,9 @@ from influxdb import DataFrameClient
 
 from scripts.experiment.base_experiment import BaseExperiment, start_experiment
 from scripts.experiment.experiment_utils import repeatedly_configure_netem, reset_netem
-from scripts.plot.loss_rate import plot
+from scripts.plot.loss_rate_plot import plot
 
-"""Run an experiment while cycling configurations."""
+"""Runs an experiment while cycling configurations."""
 
 TITLE = 'Random Configurations'
 # TITLE = 'Gilbert-Elliott Configurations'
