@@ -1,5 +1,5 @@
 name: precision_recall
-running_time: 30
+running_time: 60
 repeats: 5
 
 settings:
