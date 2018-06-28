@@ -54,7 +54,8 @@ sequence_cls = get_sequence_cls(**sequence_args)
 
 reporter_args = map(int, args.reporter_args.split())
 accumulator = accumulators.get(args.accumulator_name, None)
-reporter = create_reporter(args.reporter_name, *reporter_args, accumulator=accumulator)
+reporter_kwargs = {'accumulator': accumulator} if accumulator is not None else {}
+reporter = create_reporter(args.reporter_name, *reporter_args, **reporter_kwargs)
 reporter_queue = start_reporter(reporter)
 
 synchronize_args = override_defaults(default_synchronize_args, vars(args))
