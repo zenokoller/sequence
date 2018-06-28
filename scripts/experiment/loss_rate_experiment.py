@@ -45,7 +45,7 @@ def loss_rate_to_csv(start_time: int, end_time: int, csv_path: str, _: dict):
 
     domain = "client-domain-uplink"
     netem_df = client.query(
-        f'select "{domain}.packet.dropped" AS "losses", "{domain}.packet.count" AS "packets" '
+        f'select "{domain}.packet.dropped" AS "losses", "{domain}.packet.count"` AS "packets" '
         f'from "telegraf"."autogen"."httpjson_netem" '
         f'where time > {start_time} and time < {end_time};')['httpjson_netem']
 
@@ -64,9 +64,6 @@ def loss_rate_to_csv(start_time: int, end_time: int, csv_path: str, _: dict):
     # Use sequence packet counts to netem sequence to prevent netem oddities
     joined_df['rate_sequence'] = compute_loss_rate(joined_df, 'losses_sequence', 'packets_sequence')
     joined_df['rate_netem'] = compute_loss_rate(joined_df, 'losses_netem', 'packets_sequence')
-
-    # Where netem failed to count packets, set the loss rate to zero
-    joined_df['rate_sequence'][joined_df['packets_netem'] == 0] = 0
 
     joined_df.to_csv(csv_path)
 
@@ -87,7 +84,7 @@ if __name__ == '__main__':
                     args=(args.testbed_path, NETEM_CONFS, INTERVAL, log_queue))
     thread.start()
     out_dir = start_experiment(RateExperiment,
-                               config='config/rate_2_bit.yml',
+                               config='config/loss_rate.yml',
                                out_dir=args.out_dir,
                                testbed_path=args.testbed_path)
     thread.join()
