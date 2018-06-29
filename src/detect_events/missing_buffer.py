@@ -1,9 +1,10 @@
+import logging
 from collections import deque
 from typing import List
 
-from detector.events import Reordering
+from detect_events.events import Reordering
 from utils.iteration import partition
-from detector.types import Symbol, Symbols
+from detect_events.types import Symbol, Symbols
 
 DEFAULT_MAX_SIZE = 50
 DEFAULT_IS_FIFO = False
@@ -45,6 +46,7 @@ class MissingBuffer:
             except StopIteration:
                 continue
             del remaining[found_idx]
+            logging.info(f'Reordering extent: {needle.offset - item.buf_offset + index}')
             found.append(Reordering(item.seq_offset, needle.offset - item.buf_offset + index))
         self._queue = deque(remaining, maxlen=self.max_size)
         return found

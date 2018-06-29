@@ -2,7 +2,7 @@ from collections import deque
 from functools import partial
 from typing import Iterable
 
-from detector.events import Loss, Event
+from detect_events.events import Loss, Event
 from reporter.accumulators.filter_last_n import filter_last_n_seconds
 from utils.coroutine import coroutine
 

@@ -1,7 +1,7 @@
 from typing import List, Iterable
 from unittest import TestCase
 
-from detector.events import Loss
+from detect_events.events import Loss
 from pattern.gilbert_counts import GilbertCounts
 
 TEST_PERIOD = 2 ** 16

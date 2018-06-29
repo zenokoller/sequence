@@ -3,16 +3,14 @@ import logging
 from asyncio import Queue
 from typing import Callable, Dict
 
-from detector.detector import detector
-from detector.events import Receive
+from detect_events.detector import detector
+from detect_events.events import Receive
 from utils.integer_codec import decode_symbol_with_offset
 from utils.types import Address
 
 
-def get_server_protocol(seed_from_addr: Callable,
-                        sequence_cls: Callable,
-                        synchronize: Callable,
-                        reporter_queue: Queue):
+def get_server_protocol(seed_from_addr: Callable, sequence_cls: Callable, synchronize: Callable,
+                        detect_events: Callable, reporter_queue: Queue):
     class SequenceServerProtocol:
         def __init__(self, echo=False):
             self.echo = echo
@@ -29,7 +27,7 @@ def get_server_protocol(seed_from_addr: Callable,
         def datagram_received(self, data, addr):
             queue = self.queues.get(addr, None)
             if queue is None:
-                queue = self.start_sync_and_detector(addr)
+                queue = self.start_sync_and_detect_events(addr)
                 self.queues[addr] = queue
 
             symbol, offset = decode_symbol_with_offset(data)
@@ -40,12 +38,14 @@ def get_server_protocol(seed_from_addr: Callable,
             if self.echo:
                 self.transport.sendto(data, addr)
 
-        def start_sync_and_detector(self, addr) -> Queue:
+        def start_sync_and_detect_events(self, addr) -> Queue:
             seed = seed_from_addr(addr)
             logging.info(f'Start observing flow; addr={addr}; seed={seed}')
             symbol_queue, event_queue = Queue(), Queue()
-            _ = asyncio.ensure_future(synchronize(seed, symbol_queue, event_queue, sequence_cls))
-            _ = asyncio.ensure_future(detector(seed, event_queue, reporter_queue, sequence_cls))
+            _ = asyncio.ensure_future(
+                synchronize(seed, symbol_queue, event_queue, sequence_cls))
+            _ = asyncio.ensure_future(
+                detector(seed, event_queue, reporter_queue, sequence_cls, detect_events))
             return symbol_queue
 
     return SequenceServerProtocol

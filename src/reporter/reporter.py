@@ -1,6 +1,6 @@
 import asyncio
 
-from detector.events import Event
+from detect_events.events import Event
 
 
 class Reporter:

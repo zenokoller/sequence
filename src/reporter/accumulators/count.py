@@ -1,6 +1,6 @@
 from typing import Coroutine
 
-from detector.events import Reordering, Loss, Event, Receive
+from detect_events.events import Reordering, Loss, Event, Receive
 from reporter.exceptions import ReporterError
 from utils.coroutine import coroutine
 
@@ -10,7 +10,7 @@ def count_accumulator() -> Coroutine[dict, Event, None]:
     """Accumulates packet, loss and reordering counts."""
     packets, losses, reorderings = 0, 0, 0
     while True:
-        event = yield {'packets': packets, 'losses': losses, 'reorderings': reorderings}
+        event = yield {'packets': packets, 'losses': losses, 'reorders': reorderings}
         if isinstance(event, Receive):
             packets += 1
         elif isinstance(event, Loss):

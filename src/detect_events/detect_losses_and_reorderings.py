@@ -1,16 +1,18 @@
+import logging
 from itertools import chain
 from typing import Iterable, Callable
 
-from detector.missing_buffer import MissingBuffer
-from detector.pairs_between_matches import pairs_between_matches
-from detector.events import Event, Loss, Reordering
-from detector.types import Symbols
+from detect_events.events import Event, Loss
+from detect_events.missing_buffer import MissingBuffer
+from detect_events.pairs_between_matches import pairs_between_matches
+from detect_events.types import Symbols
 from sequence.sequence import Sequence
 from synchronizer.sync_event import SyncEvent
 
 
-def get_detect_losses_and_reorderings(max_reorder_dist: int, max_size: int = None) -> Callable:
-    missing = MissingBuffer(max_reorder_dist, max_size=max_size)
+def get_detect_losses_and_reorderings(max_reorder_dist: int) -> Callable:
+    logging.info(f'max_reorder_dist: {max_reorder_dist}')
+    missing = MissingBuffer(max_reorder_dist)
 
     def detect_for_pair(actual: Symbols, expected: Symbols, found_offset: int) -> Iterable[Event]:
         timed_out = missing.remove_timed_out(actual.offset)

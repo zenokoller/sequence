@@ -3,7 +3,7 @@ from typing import Coroutine, Callable, Any
 
 from aiohttp import web
 
-from detector.events import Event
+from detect_events.events import Event
 from reporter.accumulators.count import count_accumulator
 from reporter.reporter import Reporter
 

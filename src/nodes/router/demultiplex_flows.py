@@ -4,7 +4,7 @@ from typing import Callable, Dict
 
 import aioprocessing
 
-from detector.detector import detector
+from detect_events.detector import detector
 from utils.types import FlowId
 
 

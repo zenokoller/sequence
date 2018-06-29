@@ -1,0 +1,13 @@
+name: reordering_rate
+running_time: 60
+repeats: 1
+
+settings:
+  all:
+    symbol_bits: 2
+  client:
+    rate: 500
+  server:
+    detect_events_name: loss_and_reordering
+    max_reorder_dist: 50
+    reporter_name: http

@@ -5,7 +5,7 @@ from typing import Iterable
 
 import numpy as np
 
-from detector.events import Loss, Receive
+from detect_events.events import Loss, Receive
 from reporter.accumulators.rate import loss_rate
 from reporter.accumulators.filter_last_n import filter_last_n_packets
 from utils.coroutine import coroutine

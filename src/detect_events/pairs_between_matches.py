@@ -3,7 +3,7 @@ from difflib import SequenceMatcher, Match
 from itertools import chain
 from typing import Iterable, List
 
-from detector.types import ActualExpected, Symbols
+from detect_events.types import ActualExpected, Symbols
 from sequence.sequence import Sequence
 from synchronizer.sync_event import SyncEvent
 from utils.iteration import pairwise

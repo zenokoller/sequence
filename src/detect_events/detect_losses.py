@@ -1,9 +1,9 @@
 from itertools import chain
 from typing import Iterable, List
 
-from detector.pairs_between_matches import pairs_between_matches
-from detector.events import Event, Loss
-from detector.types import Symbols
+from detect_events.pairs_between_matches import pairs_between_matches
+from detect_events.events import Event, Loss
+from detect_events.types import Symbols
 from sequence.sequence import Sequence
 from synchronizer.sync_event import SyncEvent
 

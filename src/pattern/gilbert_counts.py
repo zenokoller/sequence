@@ -4,7 +4,7 @@ from typing import NamedTuple, Iterable, Optional
 
 import numpy as np
 
-from detector.events import Event, Loss
+from detect_events.events import Event, Loss
 from pattern.ge_params import GEParams
 from pattern.read_losses_from_csv import read_losses_from_csv, SEQUENCE_COL, RECEIVED_COL
 
