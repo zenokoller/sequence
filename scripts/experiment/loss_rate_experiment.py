@@ -15,6 +15,7 @@ from scripts.plot.loss_rate_plot import plot
 TITLE = 'Random Configurations'
 # TITLE = 'Gilbert-Elliott Configurations'
 NETEM_CONFS = [
+    'conf/loss_rate/random_2.conf',
     'conf/loss_rate/random_0125.conf',
     'conf/loss_rate/random_025.conf',
     'conf/loss_rate/random_05.conf',

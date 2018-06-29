@@ -12,8 +12,9 @@ import matplotlib.ticker as mtick
 
 plt.style.use('seaborn')
 
+SKIP_FIRST = 13  #seconds
 LINES_LABELS = ['0.125%', '0.25%', '0.5%', '1%', '2%']
-YMAX = 0.08
+YMAX = 0.04
 LABEL_PADDING = [0.5, -0.003]
 
 
@@ -24,6 +25,10 @@ def plot(out_dir: str, title: str):
                           header=None)
     conf_df.index = pd.to_datetime(conf_df.index)
 
+    # SKIP_FIRST seconds
+    data_df = data_df.iloc[SKIP_FIRST:]
+    conf_df = conf_df.iloc[1:]
+
     # Use relative time axis
     data_df.index = map(lambda x: x.total_seconds(), [i - data_df.index[0]
                                                       for i in data_df.index])
@@ -33,7 +38,7 @@ def plot(out_dir: str, title: str):
     # Plot data
     data_df = data_df.filter(['rate_sequence', 'rate_netem'])
     data_df.columns = ['detected', 'actual']
-    ax = data_df.plot(grid=True, figsize=(10, 3), linewidth=0.75)
+    ax = data_df.plot(grid=True, figsize=(9, 3), linewidth=0.75)
     plt.legend(loc='upper right')
 
     # Plot vertical lines for conf changes
@@ -44,6 +49,9 @@ def plot(out_dir: str, title: str):
 
     ax.set_title(title, fontsize=14)
     ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0))
+    plt.xlabel('Time [seconds]')
+    plt.ylabel('Loss rate')
+    plt.gcf().subplots_adjust(bottom=0.15)
 
     plt.savefig(os.path.join(out_dir, f'{title}.pdf'))
 
