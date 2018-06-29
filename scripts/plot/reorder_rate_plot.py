@@ -12,8 +12,9 @@ import matplotlib.ticker as mtick
 
 plt.style.use('seaborn')
 
-LINES_LABELS = ['1%', '2%', '4%', '8%']
-YMAX = 0.14
+SKIP_FIRST = 13  #seconds
+LINES_LABELS = ['0.125%', '0.25%', '0.5%', '1%', '2%']
+YMAX = 0.03
 LABEL_PADDING = [0.5, -0.003]
 
 
@@ -23,6 +24,10 @@ def plot(out_dir: str, title: str):
     conf_df = pd.read_csv(os.path.join(out_dir, 'repeated_netem_confs.log'), index_col=0,
                           header=None)
     conf_df.index = pd.to_datetime(conf_df.index)
+
+    # SKIP_FIRST seconds
+    data_df = data_df.iloc[SKIP_FIRST:]
+    conf_df = conf_df.iloc[1:]
 
     # Use relative time axis
     data_df.index = map(lambda x: x.total_seconds(), [i - data_df.index[0]
@@ -45,6 +50,9 @@ def plot(out_dir: str, title: str):
 
     ax.set_title(title, fontsize=14)
     ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0))
+    plt.xlabel('Time [seconds]')
+    plt.ylabel('Loss rate')
+    plt.gcf().subplots_adjust(bottom=0.15)
 
     plt.savefig(os.path.join(out_dir, f'{title}.pdf'))
 

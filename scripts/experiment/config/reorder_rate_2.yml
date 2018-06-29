@@ -9,5 +9,5 @@ settings:
     rate: 500
   server:
     detect_events_name: loss_and_reordering
-    max_reorder_dist: 50
+    max_reorder_dist: 500
     reporter_name: http
