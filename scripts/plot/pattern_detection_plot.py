@@ -14,10 +14,11 @@ import matplotlib.ticker as mtick
 plt.style.use('seaborn')
 
 IS_BURSTY = [1, 0, 1, 0, 1, 0, 1, 0, 1, 0]
-LOSS_RATES = ['2%', '2%', '1%', '1%', '0.5%', '0.5%', '0.25%', '0.25%','0.125%', '0.125%']
+LOSS_RATES = ['2%', '2%', '1%', '1%', '0.5%', '0.5%', '0.25%', '0.25%', '0.125%', '0.125%']
 YMAX = 0.04
 LABEL_PADDING = [0.5, -0.003]
 ALPHA = 0.25
+
 
 def plot(out_dir: str, title: str):
     data_df = pd.read_csv(os.path.join(out_dir, 'results.csv'), index_col=0)

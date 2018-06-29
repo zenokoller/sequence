@@ -1,19 +1,18 @@
 import os
 from argparse import ArgumentParser
 from functools import partial
-from typing import Iterable
 
 from influxdb import InfluxDBClient
-from influxdb.resultset import ResultSet
 
 from scripts.experiment.base_experiment import BaseExperiment, start_experiment
-from scripts.experiment.experiment_utils import reset_netem, configure_netem
-from scripts.plot.precision_recall_plot import plot
+from scripts.experiment.influx_utils import get_actual_losses, get_detected_losses
+from scripts.experiment.netem_utils import reset_netem, configure_netem
+from scripts.plot.loss_precision_recall_plot import plot
 
 TITLES = ['Gilbert-Elliott 1%', 'Random 1%']
 NETEM_CONFS = [
-    'conf/precision_recall/ge_1.conf',
-    'conf/precision_recall/random_1.conf',
+    'conf/loss_precision_recall/ge_1.conf',
+    'conf/loss_precision_recall/random_1.conf',
 ]
 
 
@@ -21,20 +20,8 @@ def precision_recall_to_csv(start_time: int, end_time: int, csv_path: str, setti
     """Collects actual and predicted losses from InfluxDB, computes precision and recall and
     stores it as csv."""
     client = InfluxDBClient(database='telegraf')
-    query = f'select "offset" from "telegraf"."autogen"."{{series}}" ' \
-            f'where time > {start_time} and time < {end_time};'
-
-    def result_to_values(result: ResultSet, series: str, field: str) -> Iterable:
-        return (item[field] for item in result.get_points(series))
-
-    received = set(
-        result_to_values(client.query(query.format(series='receive')), 'receive', 'offset'))
-    detected_losses = set(
-        result_to_values(client.query(query.format(series='loss')), 'loss', 'offset'))
-
-    # derive actual loss offsets from received offsets
-    lower, upper = min(received), max(received) + 1
-    actual_losses = set([i for i in range(lower, upper) if not i in received])
+    actual_losses = get_actual_losses(client, start_time, end_time)
+    detected_losses = get_detected_losses(client, start_time, end_time)
 
     # compute precision and recall
     true_positive_count = len(actual_losses.intersection(detected_losses))
@@ -64,7 +51,7 @@ if __name__ == '__main__':
         configure_netem(args.testbed_path, netem_conf, blocking=True)
 
         out_dir = start_experiment(PrecisionRecallExperiment,
-                                   config='config/precision_recall.yml',
+                                   config='config/loss_precision_recall.yml',
                                    out_dir=args.out_dir,
                                    testbed_path=args.testbed_path)
 

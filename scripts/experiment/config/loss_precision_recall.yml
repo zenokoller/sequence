@@ -1,4 +1,4 @@
-name: precision_recall
+name: loss_precision_recall
 running_time: 60
 repeats: 5
 

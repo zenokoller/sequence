@@ -9,4 +9,3 @@ settings:
     rate: 500
   server:
     reporter_name: http
-    reporter_args: 65536
