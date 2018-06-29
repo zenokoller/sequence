@@ -1,4 +1,3 @@
-import logging
 from itertools import chain
 from typing import Iterable, Callable
 
@@ -11,7 +10,6 @@ from synchronizer.sync_event import SyncEvent
 
 
 def get_detect_losses_and_reorderings(max_reorder_dist: int) -> Callable:
-    logging.info(f'max_reorder_dist: {max_reorder_dist}')
     missing = MissingBuffer(max_reorder_dist)
 
     def detect_for_pair(actual: Symbols, expected: Symbols, found_offset: int) -> Iterable[Event]:

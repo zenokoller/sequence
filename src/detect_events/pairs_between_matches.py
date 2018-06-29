@@ -17,16 +17,16 @@ def pairs_between_matches(sync_event: SyncEvent, sequence: Sequence) -> Iterable
     expected = sequence[lost_offset:found_offset]
     matches = get_matching_blocks(sync_event.buffer.array, expected)
 
-    actual_indices = chain.from_iterable(
-        [[0], *((m.a, m.a + m.size) for m in matches), [len(buffer)]])
-    expected_indices = chain.from_iterable(
-        [[0], *((m.b, m.b + m.size) for m in matches), [len(expected)]])
+    actual_indices = list(chain.from_iterable(
+        [[0], *((m.a, m.a + m.size) for m in matches), [len(buffer)]]))
+    expected_indices = list(chain.from_iterable(
+        [[0], *((m.b, m.b + m.size) for m in matches), [len(expected)]]))
 
-    actual = (
+    actual_symbols = (
         Symbols(buffer[i:j], lost_offset + i) for i, j in pairwise(actual_indices))
-    expected = (
-        Symbols(sequence[i:j], lost_offset + i) for i, j in pairwise(expected_indices))
-    return (ActualExpected(act, exp) for act, exp in zip(actual, expected)
+    expected_symbols = (
+        Symbols(expected[i:j], lost_offset + i) for i, j in pairwise(expected_indices))
+    return (ActualExpected(act, exp) for act, exp in zip(actual_symbols, expected_symbols)
             if not len(act.symbols) == len(exp.symbols) == 0)
 
 
