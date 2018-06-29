@@ -1,21 +1,24 @@
-import pandas as pd
-from typing import Iterable, Set, List
+from typing import Iterable, Set, Dict, List
 
+import pandas as pd
 from influxdb import DataFrameClient, InfluxDBClient
 from influxdb.resultset import ResultSet
 
-HTTP_SEQ_QUERY = 'select "losses", "packets" ' \
+HTTP_SEQ_QUERY = 'select "losses", "packets", "reorders" ' \
                  'from "telegraf"."autogen"."httpjson_knownsequence" ' \
-                 'where time > {start_time} and time < {end_time};'
+                 'where time > {0} and time < {1};'
 
 DOMAIN = 'client-domain-uplink'
 HTTP_NETEM_QUERY = f'select "{DOMAIN}.packet.dropped" AS "losses",  ' \
                    f'"{DOMAIN}.packet.reordered" AS "reorders" ' \
                    f'from "telegraf"."autogen"."httpjson_netem" ' \
-                   f'where time > {{start_time}} and time < {{end_time}};'
+                   f'where time > {{0}} and time < {{1}};'
 
-INFLUX_QUERY = 'select "offset" from "telegraf"."autogen"."{series}" ' \
-               'where time > {start_time} and time < {end_time};'
+INFLUX_QUERY = 'select "offset" from "telegraf"."autogen"."{0}" ' \
+               'where time > {1} and time < {2};'
+
+INFLUX_REORDER_QUERY = 'select "offset", "amount" from "telegraf"."autogen"."reordering" ' \
+               'where time > {0} and time < {1};'
 
 
 def get_sequence_df(client: DataFrameClient, start_time: int, end_time: int) -> pd.DataFrame:
@@ -58,4 +61,40 @@ def result_to_values(result: ResultSet, series: str, field: str) -> Iterable:
 
 def get_detected_losses(client: InfluxDBClient, start_time: int, end_time: int) -> Set[int]:
     return set(result_to_values(client.query(
-        INFLUX_QUERY.format('loss', start_time, end_time)), 'receive', 'offset'))
+        INFLUX_QUERY.format('loss', start_time, end_time)), 'loss', 'offset'))
+
+
+def get_actual_reorders(client: InfluxDBClient, start_time: int, end_time: int) \
+        -> Dict[int, int]:
+    received = list(result_to_values(client.query(
+        INFLUX_QUERY.format('receive', start_time, end_time)), 'receive', 'offset'))
+    return reordering_extents(received)
+
+
+def reordering_extents(seq_nrs: List[int]) -> Dict[int, int]:
+    extents = {}
+    next = seq_nrs[0] + 1
+    missing = {}
+    for i, seq_nr in enumerate(seq_nrs[1:]):
+        if next < seq_nr:
+            for j in range(next, seq_nr):
+                missing[j] = i
+            next = seq_nr + 1
+        else:
+            if seq_nr in missing:
+                extents[seq_nr] = i - missing[seq_nr]
+                del missing[seq_nr]
+            else:
+                next = seq_nr + 1
+
+    return extents
+
+
+def get_detected_reorders(client: InfluxDBClient, start_time: int, end_time: int) \
+        -> Dict[int, int]:
+    reorders_result = client.query(
+        INFLUX_REORDER_QUERY.format(start_time, end_time))
+
+    return {offset: amount for offset, amount in zip(
+        result_to_values(reorders_result, 'reordering', 'offset'),
+        result_to_values(reorders_result, 'reordering', 'amount'))}

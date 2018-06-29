@@ -36,7 +36,7 @@ def start_node_command(nodename: str, settings: dict, running_time: int) -> List
 
 
 class BaseExperiment:
-    nodenames = ['client', 'server']
+    nodenames = ['server', 'client']
 
     def __init__(self, config: dict, out_base_path: str, testbed_path: str,
                  post_run_fn: Callable[[int, int, str, dict], None] = None):
