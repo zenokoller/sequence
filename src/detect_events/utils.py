@@ -1,6 +1,6 @@
 from typing import Callable
 
-from detect_events import detect_losses
+from detect_events.detect_losses import detect_losses
 from detect_events.detect_losses_and_reorderings import get_detect_losses_and_reorderings
 
 DEFAULT_DETECT_EVENTS = detect_losses

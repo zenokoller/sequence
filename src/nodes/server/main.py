@@ -24,7 +24,7 @@ parser.add_argument('-p', '--period', type=int, help='sequence period')
 parser.add_argument('-s', '--symbol_bits', type=int, help='number of bits for each symbol')
 parser.add_argument('--detect_events_name', type=str, help='detect_events name, '
                                                            'see detect_events.utils')
-parser.add_argument('--max_reorder_dist', type=str, default='',
+parser.add_argument('--max_reorder_dist', type=str, default=0,
                     help='maximum reordering distance')
 parser.add_argument('--reporter_name', type=str, help='reporter name, see reporter.utils')
 parser.add_argument('--reporter_args', type=str, default='',
