@@ -10,20 +10,20 @@ from scripts.experiment.base_experiment import BaseExperiment, start_experiment
 from scripts.experiment.netem_utils import repeatedly_configure_netem, reset_netem
 from scripts.plot.pattern_detection_plot import plot
 
-# TODO two different burst lengths, two different loss probs
-
 BURST_LEN = 5
-TITLE = f'Pattern Detection, Burst Length: {BURST_LEN}'
+LOSS_PROB = 50
+TITLE = f'Pattern Detection, Burst Length: {BURST_LEN}, 1-h: {LOSS_PROB}'
 NETEM_CONFS = [
-    f'conf/pattern_detection/burst_{BURST_LEN}/ge_2.conf',
     'conf/pattern_detection/random_0125.conf',
-    f'conf/pattern_detection/burst_{BURST_LEN}/ge_1.conf',
-    'conf/pattern_detection/random_0125.conf',
-    f'conf/pattern_detection/burst_{BURST_LEN}/ge_05.conf',
-    'conf/pattern_detection/random_0125.conf',
-    f'conf/pattern_detection/burst_{BURST_LEN}/ge_025.conf',
-    'conf/pattern_detection/random_0125.conf',
-    f'conf/pattern_detection/burst_{BURST_LEN}/ge_0125.conf',
+    f'conf/pattern_detection/burst_{BURST_LEN}_{LOSS_PROB}/ge_2.conf',
+    'conf/pattern_detection/random_2.conf',
+    f'conf/pattern_detection/burst_{BURST_LEN}_{LOSS_PROB}/ge_1.conf',
+    'conf/pattern_detection/random_1.conf',
+    f'conf/pattern_detection/burst_{BURST_LEN}_{LOSS_PROB}/ge_05.conf',
+    'conf/pattern_detection/random_05.conf',
+    f'conf/pattern_detection/burst_{BURST_LEN}_{LOSS_PROB}/ge_025.conf',
+    'conf/pattern_detection/random_025.conf',
+    f'conf/pattern_detection/burst_{BURST_LEN}_{LOSS_PROB}/ge_0125.conf',
     'conf/pattern_detection/random_0125.conf',
 ]
 INTERVAL = 10.  # seconds
