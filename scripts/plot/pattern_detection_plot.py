@@ -13,7 +13,8 @@ import matplotlib.ticker as mtick
 
 # plt.style.use('seaborn')
 
-SKIP_FIRST = 7  # seconds
+SKIP_FIRST = 6  # seconds
+SKIP_LAST = 4  # seconds
 IS_BURSTY = [1, 0, 1, 0, 1, 0, 1, 0, 1, 0]
 LOSS_RATES = ['2%', '2%', '1%', '1%', '0.5%', '0.5%', '0.25%', '0.25%', '0.125%', '0.125%']
 YMAX = 0.1
@@ -30,7 +31,7 @@ def plot(out_dir: str, title: str):
     conf_df.index = pd.to_datetime(conf_df.index)
 
     # SKIP_FIRST seconds
-    data_df = data_df.iloc[SKIP_FIRST:]
+    data_df = data_df.iloc[SKIP_FIRST:-SKIP_LAST]
     conf_df = conf_df.iloc[1:]
 
     # Use relative time axis

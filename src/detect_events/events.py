@@ -44,3 +44,4 @@ def make_event_type(typename: str, fields=Tuple[str]):
 Receive = make_event_type('Receive', ('offset',))
 Loss = make_event_type('Loss', ('offset', 'found_offset'))
 Reordering = make_event_type('Reordering', ('offset', 'amount'))
+LostSync = make_event_type('LostSync', ('last_offset',))

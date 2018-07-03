@@ -10,9 +10,5 @@ def filter_last_n_seconds(n: int, events: Iterable[Event]) -> Iterable[Event]:
     return (event for event in events if event.timestamp > cutoff)
 
 
-def filter_last_n_packets(period: int, n: int, events: deque) -> Iterable[Event]:
-    try:
-        last = events[-1]
-    except IndexError:
-        return []
-    return (event for event in events if (last.offset - event.offset) % period < n)
+def filter_last_n_packets(period: int, n: int, last_offset: int, events: deque) -> Iterable[Event]:
+    return (event for event in events if (last_offset - event.offset) % period < n)

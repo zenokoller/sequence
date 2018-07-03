@@ -5,7 +5,7 @@ from typing import Iterable
 
 import numpy as np
 
-from detect_events.events import Loss, Receive
+from detect_events.events import Loss, Receive, Event
 from reporter.accumulators.rate import loss_rate
 from reporter.accumulators.filter_last_n import filter_last_n_packets
 from utils.coroutine import coroutine
@@ -22,9 +22,10 @@ def pattern_accumulator(period: int,
     losses = deque(maxlen=last_n_packets)
     filter_relevant = partial(filter_last_n_packets, period, last_n_packets)
     packets = 0
+    offset = 0
 
     def collect_values() -> dict:
-        relevant = filter_relevant(losses)
+        relevant = filter_relevant(offset, losses)
         return {
             **{'packets': packets},
             **detect_pattern(period, median_threshold, relevant)
@@ -33,10 +34,12 @@ def pattern_accumulator(period: int,
     while True:
         values = collect_values()
         event = yield values
+        offset = event.offset
         if isinstance(event, Loss):
             losses.append(event)
         if isinstance(event, Receive):
             packets += 1
+
 
 
 def detect_pattern(period: int, median_threshold: int, losses: Iterable[Loss]) -> dict:
