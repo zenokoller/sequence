@@ -6,15 +6,15 @@ import matplotlib
 import pandas as pd
 
 matplotlib.use('pdf')
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt, patches
 
 import matplotlib.ticker as mtick
 
 plt.style.use('seaborn')
 
-SKIP_FIRST = 13  #seconds
+SKIP_FIRST = 13  # seconds
 LINES_LABELS = ['0.125%', '0.25%', '0.5%', '1%', '2%']
-YMAX = 0.04
+YMAX = 0.2
 LABEL_PADDING = [0.5, -0.003]
 
 
@@ -35,11 +35,23 @@ def plot(out_dir: str, title: str):
     conf_df.index = map(lambda x: x.total_seconds(), [i - conf_df.index[0]
                                                       for i in conf_df.index])
 
+    # Get lost_sync event
+    lost_sync_time = next(iter(data_df.index[data_df['lost_sync'] == 1].tolist()), None)
+
     # Plot data
     data_df = data_df.filter(['rate_sequence', 'rate_netem'])
     data_df.columns = ['detected', 'actual']
     ax = data_df.plot(grid=True, figsize=(9, 3), linewidth=0.75)
     plt.legend(loc='upper right')
+
+    # Plot lost_sync event
+    if lost_sync_time is not None:
+        ax.add_patch(patches.Rectangle(
+            (lost_sync_time, 0),
+            (max(data_df.index) - lost_sync_time),
+            YMAX,
+            color='red',
+            alpha=0.25))
 
     # Plot vertical lines for conf changes
     plt.vlines(conf_df.index, ymin=0, ymax=YMAX, color='r', linewidth=0.5)

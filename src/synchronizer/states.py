@@ -5,7 +5,7 @@ from typing import Callable, Tuple, Optional, Type
 from sequence.sequence import Sequence
 from synchronizer.exceptions import SearchError
 from synchronizer.search import recovery_search, full_search
-from synchronizer.sync_event import SyncEvent
+from synchronizer.sync_event import SyncEvent, LostSyncEvent
 from utils.symbol_buffer import SymbolBuffer
 
 StateWithEvent = Tuple['State', Optional[SyncEvent]]
@@ -156,11 +156,24 @@ def configure_states(initial_sync_confidence: int = None,
                        lost_offset=state.lost_offset)
 
         def handle_search_done(self) -> StateWithEvent:
-            found_offset = self.search_task.result()
+            try:
+                found_offset = self.search_task.result()
+            except SearchError:
+                return Failed(self.lost_offset), None
+
             self.sequence.set_offset(found_offset)
             if self.partial_batch_matches_sequence:
                 return Synchronized(self.sequence), self.get_sync_event(found_offset)
             else:
                 return Searching.from_searching(self), None
+
+    class Failed(State):
+        __slots__ = 'lost_offset'
+
+        def __init__(self, lost_offset: int):
+            self.lost_offset = lost_offset
+
+        async def next(self, symbol: int) -> StateWithEvent:
+            return self, LostSyncEvent(lost_offset=self.lost_offset)
 
     return Initial

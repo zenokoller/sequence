@@ -7,3 +7,7 @@ class SyncEvent(NamedTuple):
     lost_offset: int
     found_offset: int
     buffer: SymbolBuffer
+
+
+class LostSyncEvent(NamedTuple):
+    lost_offset: int
