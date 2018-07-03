@@ -41,7 +41,7 @@ def plot_df(df: pd.DataFrame, axes: Iterable, linestyle: str, name: str):
     """Plot of ECDF of the relative error between the expected and actual parameter for the
     Gilbert parameters p, r, h for all values of `actual_params`."""
     df['expected_params'] = df[['p_exp', 'r_exp', 'h_exp']].apply(
-        lambda x: 'p: {:.3f}, r: {:.2f}, h: {:.2f}'.format(*x),
+        lambda x: 'p: {:.3f}, r: {:.2f}, 1-h: {:.2f}'.format(*[x[0], x[1], 1 - x[2]]),
         axis=1)
     all_expected_params = df['expected_params'].unique()
 
@@ -98,7 +98,6 @@ def read_df(csv_path: str, condition: str) -> pd.DataFrame:
 if __name__ == '__main__':
     try:
         hdf5_path = sys.argv[1]
-        df_name = sys.argv[2]
     except IndexError:
         print('Usage: $0 <hdf5_path>')
         sys.exit(0)
