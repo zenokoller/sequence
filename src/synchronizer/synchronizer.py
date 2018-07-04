@@ -22,10 +22,10 @@ def get_synchronize_fn(**kwargs) -> Callable:
 default_synchronize_args = {
     'initial_sync_confidence': 10,
     'recovery_batch_size': 25,
-    'recovery_range_length': 125,
+    'recovery_range_length': 250,
     'recovery_min_match_size': 15,
-    'recovery_backoff_thresh': 5,
+    'recovery_backoff_thresh': 10,
     'searching_batch_size': 50,
     'searching_min_match_size': 25,
-    'searching_backoff_thresh': 10
+    'searching_backoff_thresh': 5
 }

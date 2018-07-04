@@ -12,9 +12,9 @@ import matplotlib.ticker as mtick
 
 plt.style.use('seaborn')
 
-SKIP_FIRST = 13  #seconds
+SKIP_FIRST = 11  # seconds
 LINES_LABELS = ['0.125%', '0.25%', '0.5%', '1%', '2%']
-YMAX = 0.03
+YMAX = 0.04
 LABEL_PADDING = [0.5, -0.003]
 
 
@@ -40,7 +40,7 @@ def plot(out_dir: str, title: str):
         ['loss_sequence', 'loss_netem', 'reordering_sequence', 'reordering_netem'])
     data_df.columns = ['detected loss', 'actual loss', 'detected reordering', 'actual reordering']
     ax = data_df.plot(grid=True, figsize=(10, 3), linewidth=0.75, style=['-', '-', ':', ':'])
-    plt.legend(loc='upper left')
+    plt.legend(loc='upper right', fontsize=8)
 
     # Plot vertical lines for conf changes
     plt.vlines(conf_df.index, ymin=0, ymax=YMAX, color='r', linewidth=0.5)

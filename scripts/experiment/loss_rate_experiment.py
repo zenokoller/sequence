@@ -7,7 +7,7 @@ from threading import Thread
 from influxdb import DataFrameClient
 
 from scripts.experiment.base_experiment import BaseExperiment, start_experiment
-from scripts.experiment.data_utils import compute_rate
+from scripts.experiment.data_utils import compute_loss_rate
 from scripts.experiment.influx_utils import get_sequence_df, get_netem_df
 from scripts.experiment.netem_utils import repeatedly_configure_netem, reset_netem
 from scripts.plot.loss_rate_plot import plot
@@ -43,8 +43,8 @@ def loss_rate_to_csv(start_time: int, end_time: int, csv_path: str, _: dict):
     joined_df = sequence_df.join(netem_df, lsuffix="_sequence", rsuffix="_netem")
 
     # Use sequence packet counts to netem sequence to prevent netem oddities
-    joined_df['rate_sequence'] = compute_rate(joined_df, 'losses_sequence', 'packets')
-    joined_df['rate_netem'] = compute_rate(joined_df, 'losses_netem', 'packets')
+    joined_df['rate_sequence'] = compute_loss_rate(joined_df, 'losses_sequence', 'packets')
+    joined_df['rate_netem'] = compute_loss_rate(joined_df, 'losses_netem', 'packets')
 
     joined_df.to_csv(csv_path)
 

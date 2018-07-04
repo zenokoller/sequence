@@ -1,2 +1,6 @@
-def compute_rate(df, events_name, packets_name):
-    return (df[events_name] / (df[events_name] + df[packets_name])).fillna(0)
+def compute_loss_rate(df, losses_name, packets_name):
+    return (df[losses_name] / (df[losses_name] + df[packets_name])).fillna(0)
+
+
+def compute_reordering_rate(df, reorders_name, packets_name):
+    return (df[reorders_name] / df[packets_name]).fillna(0)

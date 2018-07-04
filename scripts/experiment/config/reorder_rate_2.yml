@@ -1,5 +1,5 @@
-name: reordering_rate
-running_time: 60
+name: reorder_rate
+running_time: 90
 repeats: 1
 
 settings:

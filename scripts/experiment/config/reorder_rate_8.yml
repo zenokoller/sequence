@@ -1,10 +1,10 @@
-name: reordering_rate
-running_time: 60
+name: reorder_rate
+running_time: 90
 repeats: 1
 
 settings:
   all:
-    symbol_bits: 2
+    symbol_bits: 8
   client:
     rate: 500
   server:
