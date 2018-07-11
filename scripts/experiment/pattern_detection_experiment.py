@@ -11,7 +11,7 @@ from scripts.experiment.netem_utils import repeatedly_configure_netem, reset_net
 from scripts.plot.pattern_detection_plot import plot
 
 BURST_LEN = 5
-LOSS_PROB = 50
+LOSS_PROB = 100
 TITLE = f'Pattern Detection, Burst Length: {BURST_LEN}, 1-h: {LOSS_PROB}'
 NETEM_CONFS = [
     'conf/pattern_detection/random_0125.conf',

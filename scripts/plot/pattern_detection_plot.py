@@ -13,8 +13,8 @@ import matplotlib.ticker as mtick
 
 # plt.style.use('seaborn')
 
-SKIP_FIRST = 6  # seconds
-SKIP_LAST = 4  # seconds
+SKIP_FIRST = 7  # seconds
+SKIP_LAST = 24  # seconds
 IS_BURSTY = [1, 0, 1, 0, 1, 0, 1, 0, 1, 0]
 LOSS_RATES = ['2%', '2%', '1%', '1%', '0.5%', '0.5%', '0.25%', '0.25%', '0.125%', '0.125%']
 YMAX = 0.1
