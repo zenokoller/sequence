@@ -51,7 +51,7 @@ def plot(out_dir: str, title: str):
     ax.set_title(title, fontsize=14)
     ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0))
     plt.xlabel('Time [seconds]')
-    plt.ylabel('Loss rate')
+    plt.ylabel('Rate', rotation=0, labelpad=20)
     plt.gcf().subplots_adjust(bottom=0.15)
 
     plt.savefig(os.path.join(out_dir, f'{title}.pdf'))
