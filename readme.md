@@ -2,7 +2,7 @@ Known sequence experiment for master's thesis 'Measuring Loss and Reordering wit
 
 ## Installation
 
-To run, first [install python-libtrace](https://www.cs.auckland.ac.nz/~nevil/python-libtrace/). Then, install the required modules:
+To run, first [install python-libtrace](https://www.cs.auckland.ac.nz/~nevil/python-libtrace/) (only required for the observer node, but not for running the experiments). Then, install the required modules:
 
 ```
 pip install -r requirements.txt
